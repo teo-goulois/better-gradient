@@ -1,13 +1,9 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { ColorPicker } from "@/components/ui/color-picker";
-import { ColorSwatch } from "@/components/ui/color-swatch";
 import { useMeshStore } from "@/store/store-mesh";
-import { twJoin } from "tailwind-merge";
-import { cn } from "tailwind-variants";
 import { SidebarColorPicker } from "./sidebar-color-picker";
-import { IconPlus, IconX } from "@intentui/icons";
+import { IconPlus } from "@intentui/icons";
 
 type Props = {};
 
@@ -38,7 +34,6 @@ export const SidebarColorPalette = ({}: Props) => {
 
 const Color = ({ color, index }: { color: string; index: number }) => {
   const { palette, setPalette } = useMeshStore();
-  console.log({ palette });
 
   return (
     <div className="flex items-center gap-1 relative group">
@@ -46,7 +41,6 @@ const Color = ({ color, index }: { color: string; index: number }) => {
         value={color}
         onChange={(c) => {
           const value = c.toString("hex");
-          console.log("onChange", { value, c });
           const next = [...palette];
           next[index] = value as any;
           setPalette(next as any);
