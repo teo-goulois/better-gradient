@@ -11,23 +11,14 @@
 import { createServerRootRoute } from '@tanstack/react-start/server'
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as TestRouteImport } from './routes/test'
 import { Route as EditorRouteImport } from './routes/editor'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ShareStateRouteImport } from './routes/share.$state'
-import { Route as DemoTanstackQueryRouteImport } from './routes/demo.tanstack-query'
-import { Route as DemoStartServerFuncsRouteImport } from './routes/demo.start.server-funcs'
-import { Route as DemoStartApiRequestRouteImport } from './routes/demo.start.api-request'
-import { ServerRoute as ApiDemoTqTodosServerRouteImport } from './routes/api.demo-tq-todos'
-import { ServerRoute as ApiDemoNamesServerRouteImport } from './routes/api.demo-names'
+import { ServerRoute as SitemapDotxmlServerRouteImport } from './routes/sitemap[.]xml'
+import { ServerRoute as RobotsDottxtServerRouteImport } from './routes/robots[.]txt'
 
 const rootServerRouteImport = createServerRootRoute()
 
-const TestRoute = TestRouteImport.update({
-  id: '/test',
-  path: '/test',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const EditorRoute = EditorRouteImport.update({
   id: '/editor',
   path: '/editor',
@@ -43,134 +34,74 @@ const ShareStateRoute = ShareStateRouteImport.update({
   path: '/share/$state',
   getParentRoute: () => rootRouteImport,
 } as any)
-const DemoTanstackQueryRoute = DemoTanstackQueryRouteImport.update({
-  id: '/demo/tanstack-query',
-  path: '/demo/tanstack-query',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const DemoStartServerFuncsRoute = DemoStartServerFuncsRouteImport.update({
-  id: '/demo/start/server-funcs',
-  path: '/demo/start/server-funcs',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const DemoStartApiRequestRoute = DemoStartApiRequestRouteImport.update({
-  id: '/demo/start/api-request',
-  path: '/demo/start/api-request',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ApiDemoTqTodosServerRoute = ApiDemoTqTodosServerRouteImport.update({
-  id: '/api/demo-tq-todos',
-  path: '/api/demo-tq-todos',
+const SitemapDotxmlServerRoute = SitemapDotxmlServerRouteImport.update({
+  id: '/sitemap.xml',
+  path: '/sitemap.xml',
   getParentRoute: () => rootServerRouteImport,
 } as any)
-const ApiDemoNamesServerRoute = ApiDemoNamesServerRouteImport.update({
-  id: '/api/demo-names',
-  path: '/api/demo-names',
+const RobotsDottxtServerRoute = RobotsDottxtServerRouteImport.update({
+  id: '/robots.txt',
+  path: '/robots.txt',
   getParentRoute: () => rootServerRouteImport,
 } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/editor': typeof EditorRoute
-  '/test': typeof TestRoute
-  '/demo/tanstack-query': typeof DemoTanstackQueryRoute
   '/share/$state': typeof ShareStateRoute
-  '/demo/start/api-request': typeof DemoStartApiRequestRoute
-  '/demo/start/server-funcs': typeof DemoStartServerFuncsRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/editor': typeof EditorRoute
-  '/test': typeof TestRoute
-  '/demo/tanstack-query': typeof DemoTanstackQueryRoute
   '/share/$state': typeof ShareStateRoute
-  '/demo/start/api-request': typeof DemoStartApiRequestRoute
-  '/demo/start/server-funcs': typeof DemoStartServerFuncsRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/editor': typeof EditorRoute
-  '/test': typeof TestRoute
-  '/demo/tanstack-query': typeof DemoTanstackQueryRoute
   '/share/$state': typeof ShareStateRoute
-  '/demo/start/api-request': typeof DemoStartApiRequestRoute
-  '/demo/start/server-funcs': typeof DemoStartServerFuncsRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths:
-    | '/'
-    | '/editor'
-    | '/test'
-    | '/demo/tanstack-query'
-    | '/share/$state'
-    | '/demo/start/api-request'
-    | '/demo/start/server-funcs'
+  fullPaths: '/' | '/editor' | '/share/$state'
   fileRoutesByTo: FileRoutesByTo
-  to:
-    | '/'
-    | '/editor'
-    | '/test'
-    | '/demo/tanstack-query'
-    | '/share/$state'
-    | '/demo/start/api-request'
-    | '/demo/start/server-funcs'
-  id:
-    | '__root__'
-    | '/'
-    | '/editor'
-    | '/test'
-    | '/demo/tanstack-query'
-    | '/share/$state'
-    | '/demo/start/api-request'
-    | '/demo/start/server-funcs'
+  to: '/' | '/editor' | '/share/$state'
+  id: '__root__' | '/' | '/editor' | '/share/$state'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   EditorRoute: typeof EditorRoute
-  TestRoute: typeof TestRoute
-  DemoTanstackQueryRoute: typeof DemoTanstackQueryRoute
   ShareStateRoute: typeof ShareStateRoute
-  DemoStartApiRequestRoute: typeof DemoStartApiRequestRoute
-  DemoStartServerFuncsRoute: typeof DemoStartServerFuncsRoute
 }
 export interface FileServerRoutesByFullPath {
-  '/api/demo-names': typeof ApiDemoNamesServerRoute
-  '/api/demo-tq-todos': typeof ApiDemoTqTodosServerRoute
+  '/robots.txt': typeof RobotsDottxtServerRoute
+  '/sitemap.xml': typeof SitemapDotxmlServerRoute
 }
 export interface FileServerRoutesByTo {
-  '/api/demo-names': typeof ApiDemoNamesServerRoute
-  '/api/demo-tq-todos': typeof ApiDemoTqTodosServerRoute
+  '/robots.txt': typeof RobotsDottxtServerRoute
+  '/sitemap.xml': typeof SitemapDotxmlServerRoute
 }
 export interface FileServerRoutesById {
   __root__: typeof rootServerRouteImport
-  '/api/demo-names': typeof ApiDemoNamesServerRoute
-  '/api/demo-tq-todos': typeof ApiDemoTqTodosServerRoute
+  '/robots.txt': typeof RobotsDottxtServerRoute
+  '/sitemap.xml': typeof SitemapDotxmlServerRoute
 }
 export interface FileServerRouteTypes {
   fileServerRoutesByFullPath: FileServerRoutesByFullPath
-  fullPaths: '/api/demo-names' | '/api/demo-tq-todos'
+  fullPaths: '/robots.txt' | '/sitemap.xml'
   fileServerRoutesByTo: FileServerRoutesByTo
-  to: '/api/demo-names' | '/api/demo-tq-todos'
-  id: '__root__' | '/api/demo-names' | '/api/demo-tq-todos'
+  to: '/robots.txt' | '/sitemap.xml'
+  id: '__root__' | '/robots.txt' | '/sitemap.xml'
   fileServerRoutesById: FileServerRoutesById
 }
 export interface RootServerRouteChildren {
-  ApiDemoNamesServerRoute: typeof ApiDemoNamesServerRoute
-  ApiDemoTqTodosServerRoute: typeof ApiDemoTqTodosServerRoute
+  RobotsDottxtServerRoute: typeof RobotsDottxtServerRoute
+  SitemapDotxmlServerRoute: typeof SitemapDotxmlServerRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/test': {
-      id: '/test'
-      path: '/test'
-      fullPath: '/test'
-      preLoaderRoute: typeof TestRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/editor': {
       id: '/editor'
       path: '/editor'
@@ -192,43 +123,22 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ShareStateRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/demo/tanstack-query': {
-      id: '/demo/tanstack-query'
-      path: '/demo/tanstack-query'
-      fullPath: '/demo/tanstack-query'
-      preLoaderRoute: typeof DemoTanstackQueryRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/demo/start/server-funcs': {
-      id: '/demo/start/server-funcs'
-      path: '/demo/start/server-funcs'
-      fullPath: '/demo/start/server-funcs'
-      preLoaderRoute: typeof DemoStartServerFuncsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/demo/start/api-request': {
-      id: '/demo/start/api-request'
-      path: '/demo/start/api-request'
-      fullPath: '/demo/start/api-request'
-      preLoaderRoute: typeof DemoStartApiRequestRouteImport
-      parentRoute: typeof rootRouteImport
-    }
   }
 }
 declare module '@tanstack/react-start/server' {
   interface ServerFileRoutesByPath {
-    '/api/demo-tq-todos': {
-      id: '/api/demo-tq-todos'
-      path: '/api/demo-tq-todos'
-      fullPath: '/api/demo-tq-todos'
-      preLoaderRoute: typeof ApiDemoTqTodosServerRouteImport
+    '/sitemap.xml': {
+      id: '/sitemap.xml'
+      path: '/sitemap.xml'
+      fullPath: '/sitemap.xml'
+      preLoaderRoute: typeof SitemapDotxmlServerRouteImport
       parentRoute: typeof rootServerRouteImport
     }
-    '/api/demo-names': {
-      id: '/api/demo-names'
-      path: '/api/demo-names'
-      fullPath: '/api/demo-names'
-      preLoaderRoute: typeof ApiDemoNamesServerRouteImport
+    '/robots.txt': {
+      id: '/robots.txt'
+      path: '/robots.txt'
+      fullPath: '/robots.txt'
+      preLoaderRoute: typeof RobotsDottxtServerRouteImport
       parentRoute: typeof rootServerRouteImport
     }
   }
@@ -237,18 +147,14 @@ declare module '@tanstack/react-start/server' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   EditorRoute: EditorRoute,
-  TestRoute: TestRoute,
-  DemoTanstackQueryRoute: DemoTanstackQueryRoute,
   ShareStateRoute: ShareStateRoute,
-  DemoStartApiRequestRoute: DemoStartApiRequestRoute,
-  DemoStartServerFuncsRoute: DemoStartServerFuncsRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
 const rootServerRouteChildren: RootServerRouteChildren = {
-  ApiDemoNamesServerRoute: ApiDemoNamesServerRoute,
-  ApiDemoTqTodosServerRoute: ApiDemoTqTodosServerRoute,
+  RobotsDottxtServerRoute: RobotsDottxtServerRoute,
+  SitemapDotxmlServerRoute: SitemapDotxmlServerRoute,
 }
 export const serverRouteTree = rootServerRouteImport
   ._addFileChildren(rootServerRouteChildren)
