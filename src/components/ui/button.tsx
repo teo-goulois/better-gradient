@@ -125,4 +125,4 @@ const Button = ({
 };
 
 export type { ButtonProps };
-export { Button, buttonStyles };
+export { Button, buttonStyles, ButtonPrimitive };

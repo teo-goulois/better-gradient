@@ -1,6 +1,12 @@
 "use client";
-import { IconDownload } from "@intentui/icons";
-import { Button } from "../ui/button";
+import {
+  IconDownload,
+  IconFile,
+  IconGallery,
+  IconGalleryFill,
+  IconCheck,
+} from "@intentui/icons";
+import { Button, ButtonPrimitive } from "../ui/button";
 import { Popover } from "../ui/popover";
 import { useMeshStore } from "@/store/store-mesh";
 import {
@@ -9,6 +15,10 @@ import {
   svgToPngDataUrl,
 } from "@/lib/mesh-svg";
 import { toPng } from "html-to-image";
+import { Separator } from "../ui/separator";
+import { twJoin } from "tailwind-merge";
+import { SVGProps } from "react";
+import { useState } from "react";
 
 type Props = {
   outerRef: { current: HTMLDivElement | null };
@@ -18,6 +28,16 @@ type Props = {
 export const MeshExports = ({ outerRef, contentRef }: Props) => {
   const { canvas, shapes, palette, filters, ui, toShareString } =
     useMeshStore();
+  
+  const [feedbackStates, setFeedbackStates] = useState<Record<string, boolean>>({});
+  
+  const showFeedback = (action: string) => {
+    setFeedbackStates(prev => ({ ...prev, [action]: true }));
+    setTimeout(() => {
+      setFeedbackStates(prev => ({ ...prev, [action]: false }));
+    }, 1500);
+  };
+
   const downloadViewPng = async () => {
     const node = contentRef?.current ?? outerRef.current;
     if (!node) return;
@@ -36,122 +56,240 @@ export const MeshExports = ({ outerRef, contentRef }: Props) => {
     a.download = "mesh-view.png";
     a.click();
   };
+
+  const downloadPng = async () => {
+    const outputSize = {
+      width: contentRef?.current?.clientWidth ?? ui.frameWidth ?? canvas.width,
+      height:
+        contentRef?.current?.clientHeight ?? ui.frameHeight ?? canvas.height,
+    };
+    const svg = svgStringFromState({
+      canvas,
+      shapes,
+      palette,
+      filters,
+      outputSize,
+    });
+    const url = await svgToPngDataUrl(svg, {
+      ...outputSize,
+      scale: 1,
+    });
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "mesh.png";
+    a.click();
+    showFeedback('png');
+  };
+
+  const downloadSvg = () => {
+    const width =
+      contentRef?.current?.clientWidth ?? ui.frameWidth ?? canvas.width;
+    const height =
+      contentRef?.current?.clientHeight ?? ui.frameHeight ?? canvas.height;
+    const svg = svgStringFromState({
+      canvas,
+      shapes,
+      palette,
+      filters,
+      outputSize: { width, height },
+    });
+    const blob = new Blob([svg], { type: "image/svg+xml" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "mesh.svg";
+    a.click();
+    URL.revokeObjectURL(url);
+    showFeedback('svg');
+  };
+
+  const copyCss = async () => {
+    const width =
+      contentRef?.current?.clientWidth ?? ui.frameWidth ?? canvas.width;
+    const height =
+      contentRef?.current?.clientHeight ?? ui.frameHeight ?? canvas.height;
+    const svg = svgStringFromState({
+      canvas,
+      shapes,
+      palette,
+      filters,
+      outputSize: { width, height },
+    });
+    const data = svgDataUrl(svg);
+    const css = `background-image: url("${data}");\nbackground-size: 100% 100%;\nbackground-repeat: no-repeat;`;
+    await navigator.clipboard.writeText(css);
+    showFeedback('css');
+  };
+
+  const copyShareUrl = async () => {
+    const share = toShareString();
+    await navigator.clipboard.writeText(`${location.origin}/share/${share}`);
+    showFeedback('share');
+  };
+
   return (
     <div className="absolute top-0 right-0 p-1 rounded-lg bg-bg z-50 shadow">
       <Popover>
         <Button>
-          {" "}
           <IconDownload /> Export
         </Button>
         <Popover.Content className="sm:min-w-72">
-          <Popover.Header>
+          <Popover.Header className="p-3">
             <Popover.Title>Export options</Popover.Title>
           </Popover.Header>
-          <Popover.Body className="flex flex-col gap-2">
-            <Button intent="outline" onPress={downloadViewPng}>
-              Download View (PNG)
-            </Button>
-            <Button
-              intent="outline"
-              onPress={async () => {
-                const width =
-                  contentRef?.current?.clientWidth ??
-                  ui.frameWidth ??
-                  canvas.width;
-                const height =
-                  contentRef?.current?.clientHeight ??
-                  ui.frameHeight ??
-                  canvas.height;
-                const svg = svgStringFromState({
-                  canvas,
-                  shapes,
-                  palette,
-                  filters,
-                  outputSize: { width, height },
-                });
-                const data = svgDataUrl(svg);
-                const css = `background-image: url("${data}");\nbackground-size: 100% 100%;\nbackground-repeat: no-repeat;`;
-                await navigator.clipboard.writeText(css);
-              }}
-            >
-              Copy CSS
-            </Button>
-            <Button
-              intent="outline"
-              onPress={() => {
-                const width =
-                  contentRef?.current?.clientWidth ??
-                  ui.frameWidth ??
-                  canvas.width;
-                const height =
-                  contentRef?.current?.clientHeight ??
-                  ui.frameHeight ??
-                  canvas.height;
-                const svg = svgStringFromState({
-                  canvas,
-                  shapes,
-                  palette,
-                  filters,
-                  outputSize: { width, height },
-                });
-                const blob = new Blob([svg], { type: "image/svg+xml" });
-                const url = URL.createObjectURL(blob);
-                const a = document.createElement("a");
-                a.href = url;
-                a.download = "mesh.svg";
-                a.click();
-                URL.revokeObjectURL(url);
-              }}
-            >
-              Download SVG
-            </Button>
-            <Button
-              intent="outline"
-              onPress={async () => {
-                const outputSize = {
-                  width:
-                    contentRef?.current?.clientWidth ??
-                    ui.frameWidth ??
-                    canvas.width,
-                  height:
-                    contentRef?.current?.clientHeight ??
-                    ui.frameHeight ??
-                    canvas.height,
-                };
-                const svg = svgStringFromState({
-                  canvas,
-                  shapes,
-                  palette,
-                  filters,
-                  outputSize,
-                });
-                const url = await svgToPngDataUrl(svg, {
-                  ...outputSize,
-                  scale: 1,
-                });
-                const a = document.createElement("a");
-                a.href = url;
-                a.download = "mesh.png";
-                a.click();
-              }}
-            >
-              Download PNG
-            </Button>
-            <Button
-              intent="outline"
-              onPress={async () => {
-                const share = toShareString();
-                await navigator.clipboard.writeText(
-                  `${location.origin}/share/${share}`
-                );
-              }}
-            >
-              Copy Share URL
-            </Button>
+          <Separator />
+          <Popover.Body className="flex flex-col gap-2 p-3">
+            <div className="flex flex-col gap-2">
+              <p className="text-sm font-medium text-muted-fg">Export</p>
+              <div className="flex flex-col gap-2">
+                <ButtonPrimitive
+                  onPress={downloadPng}
+                  className={twJoin(
+                    "flex gap-3 items-center px-3 py-2 rounded-lg cursor-pointer transition-all duration-200",
+                    "data-[hovered=true]:bg-primary/10",
+                    feedbackStates.png && "bg-primary/20 scale-[0.98]"
+                  )}
+                >
+                  <div className={twJoin(
+                    "rounded-full p-1.5 transition-all duration-200",
+                    feedbackStates.png 
+                      ? "bg-primary/30 text-primary" 
+                      : "bg-primary/20 text-primary"
+                  )}>
+                    {feedbackStates.png ? (
+                      <IconCheck className="size-6" />
+                    ) : (
+                      <IconGalleryFill className="size-6" />
+                    )}
+                  </div>
+                  <div className="flex flex-col gap-0 items-start">
+                    <p className="font-semibold">
+                      {feedbackStates.png ? "Downloaded!" : "PNG"}
+                    </p>
+                    <p className="text-sm text-muted-fg">for web</p>
+                  </div>
+                </ButtonPrimitive>
+                <ButtonPrimitive
+                  onPress={downloadSvg}
+                  className={twJoin(
+                    "flex gap-3 items-center px-3 py-2 rounded-lg cursor-pointer transition-all duration-200",
+                    "data-[hovered=true]:bg-purple-500/10",
+                    feedbackStates.svg && "bg-purple-500/20 scale-[0.98]"
+                  )}
+                >
+                  <div className={twJoin(
+                    "rounded-full p-1.5 transition-all duration-200",
+                    feedbackStates.svg 
+                      ? "bg-purple-500/30 text-purple-500" 
+                      : "bg-purple-500/20 text-purple-500"
+                  )}>
+                    {feedbackStates.svg ? (
+                      <IconCheck className="size-6" />
+                    ) : (
+                      <HugeiconsSvg01 className="size-6" />
+                    )}
+                  </div>
+                  <div className="flex flex-col gap-0 items-start">
+                    <p className="font-semibold">
+                      {feedbackStates.svg ? "Downloaded!" : "SVG"}
+                    </p>
+                    <p className="text-sm text-muted-fg">for print</p>
+                  </div>
+                </ButtonPrimitive>
+              </div>
+            </div>
+            <div className="flex flex-col gap-2">
+              <p className="text-sm font-medium text-muted-fg">Dev</p>
+              <div className="flex flex-col gap-2">
+                <ButtonPrimitive
+                  onPress={copyCss}
+                  className={twJoin(
+                    "flex gap-3 items-center px-3 py-2 rounded-lg cursor-pointer transition-all duration-200",
+                    "data-[hovered=true]:bg-orange-500/10",
+                    feedbackStates.css && "bg-orange-500/20 scale-[0.98]"
+                  )}
+                >
+                  <div className={twJoin(
+                    "rounded-full p-1.5 transition-all duration-200",
+                    feedbackStates.css 
+                      ? "bg-orange-500/30 text-orange-500" 
+                      : "bg-orange-500/20 text-orange-500"
+                  )}>
+                    {feedbackStates.css ? (
+                      <IconCheck className="size-6" />
+                    ) : (
+                      <HugeiconsSvg01 className="size-6" />
+                    )}
+                  </div>
+                  <div className="flex flex-col gap-0 items-start">
+                    <p className="font-semibold">
+                      {feedbackStates.css ? "Copied!" : "CSS"}
+                    </p>
+                    <p className="text-sm text-muted-fg">Copy CSS</p>
+                  </div>
+                </ButtonPrimitive>
+              </div>
+            </div>
+            <div className="flex flex-col gap-2">
+              <p className="text-sm font-medium text-muted-fg">Share</p>
+              <div className="flex flex-col gap-2">
+                <ButtonPrimitive
+                  onPress={copyShareUrl}
+                  className={twJoin(
+                    "flex gap-3 items-center px-3 py-2 rounded-lg cursor-pointer transition-all duration-200",
+                    "data-[hovered=true]:bg-green-500/10",
+                    feedbackStates.share && "bg-green-500/20 scale-[0.98]"
+                  )}
+                >
+                  <div className={twJoin(
+                    "rounded-full p-1.5 transition-all duration-200",
+                    feedbackStates.share 
+                      ? "bg-green-500/30 text-green-500" 
+                      : "bg-green-500/20 text-green-500"
+                  )}>
+                    {feedbackStates.share ? (
+                      <IconCheck className="size-6" />
+                    ) : (
+                      <HugeiconsSvg01 className="size-6" />
+                    )}
+                  </div>
+                  <div className="flex flex-col gap-0 items-start text-left">
+                    <p className="font-semibold">
+                      {feedbackStates.share ? "Copied!" : "Share URL"}
+                    </p>
+                    <p className="text-sm text-muted-fg">share with others</p>
+                  </div>
+                </ButtonPrimitive>
+              </div>
+            </div>
           </Popover.Body>
-          <Popover.Footer></Popover.Footer>
         </Popover.Content>
       </Popover>
     </div>
   );
 };
+
+export function HugeiconsSvg01(props: SVGProps<SVGSVGElement>) {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width="1em"
+      height="1em"
+      viewBox="0 0 24 24"
+      {...props}
+    >
+      {/* Icon from Huge Icons by Hugeicons - undefined */}
+      <g
+        fill="none"
+        stroke="currentColor"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth="1.5"
+        color="currentColor"
+      >
+        <path d="M3.5 13v-.804c0-2.967 0-4.45.469-5.636c.754-1.905 2.348-3.407 4.37-4.118C9.595 2 11.168 2 14.318 2c1.798 0 2.698 0 3.416.253c1.155.406 2.066 1.264 2.497 2.353c.268.677.268 1.525.268 3.22V13" />
+        <path d="M3.5 12a3.333 3.333 0 0 1 3.333-3.333c.666 0 1.451.116 2.098-.057a1.67 1.67 0 0 0 1.179-1.18c.173-.647.057-1.432.057-2.098A3.333 3.333 0 0 1 13.5 2m.509 14l-1.673 4.695c-.31.87-.465 1.305-.71 1.305s-.4-.435-.71-1.305L9.242 16M20.5 17c-.09-1.018-.913-1-1.781-1c-.85 0-1.276 0-1.54.293s-.264.764-.264 1.707v2c0 .943 0 1.414.264 1.707s.69.293 1.54.293s1.275 0 1.54-.293c.264-.293.264-.764.264-1.707c0-.704-1.353-.5-1.353-.5M6.04 16H4.93c-.444 0-.666 0-.842.076c-.596.26-.588.869-.588 1.424s-.008 1.165.588 1.424c.176.076.398.076.842.076s.666 0 .841.076c.597.26.589.869.589 1.424s.008 1.165-.589 1.424C5.596 22 5.374 22 4.93 22H3.72" />
+      </g>
+    </svg>
+  );
+}
