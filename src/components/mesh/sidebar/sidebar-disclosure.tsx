@@ -56,7 +56,7 @@ const Disclosure = ({ className, ref, ...props }: DisclosureProps) => {
       {...props}
       className={composeTailwindRenderProps(
         className,
-        "peer group/disclosure w-full border-b disabled:opacity-60 px-4"
+        "peer group/disclosure w-full border-b disabled:opacity-60 px-4 py-2"
       )}
     >
       {props.children}

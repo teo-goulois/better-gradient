@@ -185,7 +185,6 @@ export const SidebarSize = ({}: Props) => {
         </DisclosureTrigger>
         <DisclosurePanel>
           <div className="space-y-2">
-            <div className="text-sm font-medium">Export size</div>
             <div className="grid grid-cols-2 gap-2">
               <NumberField
                 label="Export Width"
@@ -218,9 +217,6 @@ export const SidebarSize = ({}: Props) => {
                     }`
                   : "Aspect ratio free"}
               </Switch>
-            </div>
-            <div className="text-xs text-gray-500">
-              Preview scales to fit your screen.
             </div>
 
             <div className="pt-3 space-y-2">

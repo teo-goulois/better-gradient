@@ -11,7 +11,7 @@ function Editor() {
   return (
     <div
       className={twJoin(
-        "flex-1 w-full bg-gray-100 relative pl-[17rem] editor-container",
+        "flex-1 w-full overflow-hidden bg-gray-100 relative pl-[17rem] editor-container",
         "[background-size:16px_16px] bg-[position:0_0] bg-repeat-round",
         "bg-[radial-gradient(#e5e7eb_1px,transparent_1px)]"
       )}
