@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { RgbHex, useMeshStore } from "@/store/store-mesh";
 import { SidebarColorPicker } from "./sidebar-color-picker";
 import { IconCircleQuestionmark, IconPlus } from "@intentui/icons";
-import { DragDropProvider } from "@dnd-kit/react";
+import { DragDropProvider, PointerSensor } from "@dnd-kit/react";
 import { useSortable } from "@dnd-kit/react/sortable";
 import { move } from "@dnd-kit/helpers";
 import { Tooltip } from "@/components/ui/tooltip";
@@ -13,6 +13,8 @@ type Props = {};
 
 export const SidebarColorPalette = ({}: Props) => {
   const { palette, setPalette } = useMeshStore();
+
+  console.log({ palette });
 
   return (
     <div className="space-y-2">
@@ -32,8 +34,8 @@ export const SidebarColorPalette = ({}: Props) => {
         </Tooltip>
       </div>
       <DragDropProvider
-        onDragStart={() => {
-          console.log("Drag started!");
+        onDragStart={({ operation }) => {
+          console.log("Started dragging", operation);
         }}
         onDragEnd={(event) => {
           setPalette(move(palette, event));
@@ -41,12 +43,7 @@ export const SidebarColorPalette = ({}: Props) => {
       >
         <div className="flex gap-2 flex-wrap">
           {palette.map((item, index) => (
-            <SortableColor
-              key={item.id}
-              id={item.id}
-              color={item.color}
-              index={index}
-            />
+            <SortableColor key={item.id} color={item} index={index} />
           ))}
           {palette.length < 5 && (
             <Button
@@ -70,14 +67,13 @@ export const SidebarColorPalette = ({}: Props) => {
 };
 
 type SortableColorProps = {
-  id: string;
-  color: string;
+  color: RgbHex;
   index: number;
 };
 
-const SortableColor = ({ id, color, index }: SortableColorProps) => {
+const SortableColor = ({ color, index }: SortableColorProps) => {
   const { palette, setPalette } = useMeshStore();
-  const sortable = useSortable({ id, index });
+  const sortable = useSortable({ id: color.id, index });
 
   const style = {
     opacity: sortable.isDragging ? 0.5 : 1,
@@ -87,15 +83,15 @@ const SortableColor = ({ id, color, index }: SortableColorProps) => {
   return (
     <div
       ref={sortable.ref}
-      style={style}
-      className="flex items-center gap-1 relative group transition-opacity duration-200 cursor-grab active:cursor-grabbing touch-none"
+      //style={style}
+      className="flex items-center gap-1 relative group transition-opacity duration-200 cursor-grab active:cursor-grabbing "
     >
       <SidebarColorPicker
-        value={color}
+        value={color.color}
         onChange={(c) => {
           const value = c.toString("hex");
           const next = [...palette];
-          next[index] = { id, color: value } as RgbHex;
+          next[index] = { id: color.id, color: value } as RgbHex;
           setPalette(next as any);
         }}
         onRemove={() =>

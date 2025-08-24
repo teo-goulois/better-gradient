@@ -6,10 +6,11 @@ type UseMeshFrameArgs = {
   initialSize: { width: number; height: number }
   uiSize: { width?: number; height?: number }
   onCommitSize?: (size: { width: number; height: number }) => void
+  lockAspect?: { locked: boolean; aspectRatio: number }
 }
 
 // Encapsulates positioning, zoom, dragging and resizing of the preview frame.
-export function useMeshFrame({ initialSize, uiSize, onCommitSize }: UseMeshFrameArgs) {
+export function useMeshFrame({ initialSize, uiSize, onCommitSize, lockAspect }: UseMeshFrameArgs) {
   
   const containerRef = useRef<HTMLDivElement>(null)
   const outerRef = useRef<HTMLDivElement>(null)
@@ -18,6 +19,11 @@ export function useMeshFrame({ initialSize, uiSize, onCommitSize }: UseMeshFrame
   useEffect(() => {
     onCommitSizeRef.current = onCommitSize
   }, [onCommitSize])
+
+  const lockRef = useRef<UseMeshFrameArgs['lockAspect'] | undefined>(undefined)
+  useEffect(() => {
+    lockRef.current = lockAspect
+  }, [lockAspect])
 
   const [frame, setFrame] = useState<FrameRect>(() => ({ x: 0, y: 0, width: uiSize.width ?? initialSize.width, height: uiSize.height ?? initialSize.height }))
   const frameRef = useRef(frame)
@@ -250,7 +256,10 @@ export function useMeshFrame({ initialSize, uiSize, onCommitSize }: UseMeshFrame
       startX = e.clientX
       startY = e.clientY
       const curr = frameRef.current
-      start = { x: curr.x, y: curr.y, w: curr.width, h: curr.height, ar: Math.max(0.01, curr.width / curr.height) }
+      const locked = lockRef.current?.locked
+      const providedAr = lockRef.current?.aspectRatio
+      const ar = locked && providedAr ? providedAr : Math.max(0.01, curr.width / curr.height)
+      start = { x: curr.x, y: curr.y, w: curr.width, h: curr.height, ar }
       const crect = c.getBoundingClientRect()
       console.log('[useMeshFrame] resize start', {
         handle,
@@ -287,8 +296,8 @@ export function useMeshFrame({ initialSize, uiSize, onCommitSize }: UseMeshFrame
           y = start.y + (start.h - nh)
           h = nh
         }
-        if (e.shiftKey) {
-          const ar = start.ar
+        if (e.shiftKey || lockRef.current?.locked) {
+          const ar = lockRef.current?.aspectRatio ?? start.ar
           if ((isE || isW) && !(isN || isS)) {
             h = w / ar
             y = start.y + (start.h - h) / 2
@@ -335,7 +344,6 @@ export function useMeshFrame({ initialSize, uiSize, onCommitSize }: UseMeshFrame
     const onUpCommit = () => {
       const curr = frameRef.current
       onCommitSizeRef.current?.({ width: curr.width, height: curr.height })
-      console.log('[useMeshFrame] resize end', curr)
     }
       el.addEventListener('mousedown', onDown)
       window.addEventListener('mousemove', onMove)

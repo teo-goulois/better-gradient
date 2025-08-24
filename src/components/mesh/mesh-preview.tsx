@@ -20,7 +20,7 @@ export const MeshPreview = ({}: MeshPreviewProps) => {
   const filters = useMeshStore((s) => s.filters);
   const canvas = useMeshStore((s) => s.canvas);
   const ui = useMeshStore((s) => s.ui);
-  const setUi = useMeshStore((s) => s.setUi);
+  const setUiFrameSize = useMeshStore((s) => s.setUiFrameSize);
   const updateShape = useMeshStore((s) => s.updateShape);
   const setSelectedShape = useMeshStore((s) => s.setSelectedShape);
   const setShapes = useMeshStore((s) => s.setShapes);
@@ -35,7 +35,15 @@ export const MeshPreview = ({}: MeshPreviewProps) => {
     initialSize: { width: canvas.width, height: canvas.height },
     uiSize: { width: ui.frameWidth, height: ui.frameHeight },
     onCommitSize: (size) =>
-      setUi({ frameWidth: size.width, frameHeight: size.height }),
+      setUiFrameSize({ width: size.width, height: size.height }),
+    lockAspect: {
+      locked: ui.maintainAspectRatio,
+      aspectRatio:
+        ui.aspectRatio ??
+        (ui.frameWidth && ui.frameHeight
+          ? ui.frameWidth / ui.frameHeight
+          : canvas.width / canvas.height),
+    },
   });
 
   // Draw SVG URL into Canvas; avoid resizing canvas unless dims changed to prevent flicker

@@ -40,6 +40,8 @@ export type MeshState = {
     showVertices: boolean
     frameWidth?: number
     frameHeight?: number
+    maintainAspectRatio: boolean
+    aspectRatio?: number
   }
 
   // History
@@ -55,6 +57,8 @@ export type MeshState = {
   shuffleColors: () => void
   setSelectedShape: (id?: string) => void
   setUi: (ui: Partial<MeshState['ui']>) => void
+  setUiFrameSize: (size: { width?: number; height?: number }) => void
+  toggleAspectLock: (locked: boolean) => void
   updateShape: (id: string, updater: (s: BlobShape) => BlobShape) => void
   undo: () => void
   redo: () => void
@@ -90,6 +94,8 @@ type MeshStoreActions = Pick<
   | 'redo'
   | 'toShareString'
   | 'fromShareString'
+  | 'setUiFrameSize'
+  | 'toggleAspectLock'
 >
 
 const DEFAULT_CANVAS: CanvasSettings = {
@@ -99,9 +105,9 @@ const DEFAULT_CANVAS: CanvasSettings = {
 }
 
 export const DEFAULT_FILTERS: Filters = {
-  blur: 96,
+  blur: 75,
   grainEnabled: true,
-  grain: 0.15,
+  grain: 0.65,
 }
 
 // Generation configuration (tweak here later)
@@ -251,7 +257,7 @@ const initialStateBase = {
   seed: INITIAL_SEED,
   shapes: INITIAL_SHAPES,
   selectedShapeId: undefined as string | undefined,
-  ui: { showCenters: true, showVertices: false, frameWidth: undefined, frameHeight: undefined },
+  ui: { showCenters: true, showVertices: false, frameWidth: undefined, frameHeight: undefined, maintainAspectRatio: false, aspectRatio: undefined },
   _past: [] as string[],
   _future: [] as string[],
 }
@@ -318,6 +324,37 @@ export const useMeshStore = create<MeshState>()(
         },
         setSelectedShape: (id) => set({ selectedShapeId: id }),
         setUi: (ui) => set((s) => ({ ui: { ...s.ui, ...ui } })),
+        setUiFrameSize: (size) =>
+          set((s) => {
+            const curr = s as MeshState
+            const next: Partial<MeshState['ui']> = {}
+            const min = 50
+            const max = 6000
+            const w = size.width ?? curr.ui.frameWidth ?? curr.canvas.width
+            const h = size.height ?? curr.ui.frameHeight ?? curr.canvas.height
+            const locked = curr.ui.maintainAspectRatio
+            const ar = curr.ui.aspectRatio ?? (curr.ui.frameWidth && curr.ui.frameHeight ? curr.ui.frameWidth / curr.ui.frameHeight : curr.canvas.width / curr.canvas.height)
+            let nextW = clamp(w, min, max)
+            let nextH = clamp(h, min, max)
+            if (locked) {
+              if (size.width !== undefined && size.height === undefined) {
+                nextH = Math.round(nextW / Math.max(0.01, ar))
+              } else if (size.height !== undefined && size.width === undefined) {
+                nextW = Math.round(nextH * Math.max(0.01, ar))
+              }
+            }
+            next.frameWidth = nextW
+            next.frameHeight = nextH
+            return { ui: { ...curr.ui, ...next } }
+          }),
+        toggleAspectLock: (locked: boolean) =>
+          set((s) => {
+            const curr = s as MeshState
+            const w = curr.ui.frameWidth ?? curr.canvas.width
+            const h = curr.ui.frameHeight ?? curr.canvas.height
+            const ar = Math.max(0.01, w / h)
+            return { ui: { ...curr.ui, maintainAspectRatio: locked, aspectRatio: locked ? ar : curr.ui.aspectRatio } }
+          }),
         updateShape: (id, updater) => {
           const curr = get()
           const shapes = curr.shapes.map((s) => (s.id === id ? updater(s) : s))
