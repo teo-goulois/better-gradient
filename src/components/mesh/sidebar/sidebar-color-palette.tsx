@@ -89,9 +89,10 @@ const SortableColor = ({ color, index }: SortableColorProps) => {
           next[index] = { id: color.id, color: value } as RgbHex;
           setPalette(next as any);
         }}
-        onRemove={() =>
-          setPalette(palette.filter((_, idx) => idx !== index) as any)
-        }
+        onRemove={() => {
+          if (palette.length === 1) return;
+          setPalette(palette.filter((_, idx) => idx !== index) as any);
+        }}
       />
     </div>
   );

@@ -18,6 +18,7 @@ import {
   PopoverContent,
   type PopoverContentProps,
 } from "@/components/ui/popover";
+import { useMeshStore } from "@/store/store-mesh";
 
 interface SidebarColorPickerProps
   extends ColorPickerPrimitiveProps,
@@ -47,15 +48,12 @@ const SidebarColorPicker = ({
 
   ...props
 }: SidebarColorPickerProps) => {
+  const { palette } = useMeshStore();
+
   return (
     <div className={twMerge("flex flex-col items-start gap-y-1", className)}>
       <ColorPickerPrimitive {...props}>
         <Popover>
-          {/* <Popover.Trigger
-            onPress={(e) => {
-              e.continuePropagation();
-            }}
-          > */}
           <div className="relative group">
             <Button
               isDisabled={isDisabled}
@@ -71,19 +69,21 @@ const SidebarColorPicker = ({
               <ColorSwatch className="rounded-full" />
               {label && label}
             </Button>
-            <Button
-              isCircle
-              size="sq-xxs"
-              intent="secondary"
-              className={twJoin(
-                "size-4",
-                "rounded-full",
-                "absolute -top-1 -right-1 opacity-0 group-hover:opacity-100 transition-opacity"
-              )}
-              onPress={onRemove}
-            >
-              <IconX className="size-2" />
-            </Button>
+            {palette.length > 1 && (
+              <Button
+                isCircle
+                size="sq-xxs"
+                intent="secondary"
+                className={twJoin(
+                  "size-4",
+                  "rounded-full",
+                  "absolute -top-1 -right-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                )}
+                onPress={onRemove}
+              >
+                <IconX className="size-2" />
+              </Button>
+            )}
           </div>
           {/* </Popover.Trigger> */}
           <PopoverContent
