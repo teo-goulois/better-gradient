@@ -10,11 +10,13 @@ import { useMeshSvg } from "./hooks/use-mesh-svg";
 import { useMeshFrame } from "./hooks/use-mesh-frame";
 import { VerticesOverlay } from "./overlays/VerticesOverlay";
 import { CentersOverlay } from "./overlays/CentersOverlay";
+import { MeshUndo } from "./mesh-undo";
 
 type MeshPreviewProps = {};
 
 export const MeshPreview = ({}: MeshPreviewProps) => {
   const isMounted = useIsMounted();
+
   const shapes = useMeshStore((s) => s.shapes);
   const palette = useMeshStore((s) => s.palette);
   const filters = useMeshStore((s) => s.filters);
@@ -24,6 +26,7 @@ export const MeshPreview = ({}: MeshPreviewProps) => {
   const updateShape = useMeshStore((s) => s.updateShape);
   const setSelectedShape = useMeshStore((s) => s.setSelectedShape);
   const setShapes = useMeshStore((s) => s.setShapes);
+  const setUi = useMeshStore((s) => s.setUi);
 
   const { svgUrl } = useMeshSvg({ canvas, shapes, palette, filters });
 
@@ -34,8 +37,12 @@ export const MeshPreview = ({}: MeshPreviewProps) => {
   const { containerRef, outerRef, frame } = useMeshFrame({
     initialSize: { width: canvas.width, height: canvas.height },
     uiSize: { width: ui.frameWidth, height: ui.frameHeight },
-    onCommitSize: (size) =>
-      setUiFrameSize({ width: size.width, height: size.height }),
+    onCommitSize: (size) => {
+      setUiFrameSize({
+        width: size.width,
+        height: size.height,
+      });
+    },
     lockAspect: {
       locked: ui.maintainAspectRatio,
       aspectRatio:
@@ -44,6 +51,11 @@ export const MeshPreview = ({}: MeshPreviewProps) => {
           ? ui.frameWidth / ui.frameHeight
           : canvas.width / canvas.height),
     },
+    contentAspect:
+      ui.aspectRatio ??
+      (ui.frameWidth && ui.frameHeight
+        ? ui.frameWidth / ui.frameHeight
+        : canvas.width / canvas.height),
   });
 
   // Draw SVG URL into Canvas; avoid resizing canvas unless dims changed to prevent flicker
@@ -89,18 +101,41 @@ export const MeshPreview = ({}: MeshPreviewProps) => {
     };
   }, [svgUrl, canvas.width, canvas.height, canvasRef.current]);
 
-  // Inner is 1:1; we map screen -> content using contentRef bounding rect
-  // Frame sizing and interactions handled by useMeshFrame
-
-  // Frame size reacts to UI via useMeshFrame
-
-  // Zoom handled by useMeshFrame
-
-  // Drag handled by useMeshFrame
-
-  // Resize handled by useMeshFrame
-
-  // Rotation disabled; effect removed
+  // update container size on resize
+  useEffect(() => {
+    let ro: ResizeObserver | undefined;
+    let rafId = 0;
+    const attach = () => {
+      const c = containerRef.current;
+      if (!c) {
+        if (!rafId)
+          console.log(
+            "[useMeshFrame] container resize observer waiting for container..."
+          );
+        rafId = requestAnimationFrame(attach);
+        return;
+      }
+      const onResize = () => {
+        const rect = c.getBoundingClientRect();
+        const w = rect.width;
+        const h = rect.height;
+        console.log("onResize", { w, h });
+        setUi({
+          containerWidth: w,
+          containerHeight: h,
+        });
+      };
+      ro = new ResizeObserver(onResize);
+      ro.observe(c);
+      // Fire once initially as well
+      onResize();
+    };
+    attach();
+    return () => {
+      if (rafId) cancelAnimationFrame(rafId);
+      ro?.disconnect();
+    };
+  }, [containerRef.current]);
 
   if (!isMounted)
     return (
@@ -114,6 +149,7 @@ export const MeshPreview = ({}: MeshPreviewProps) => {
       <div className="w-full h-full relative" ref={containerRef}>
         <MeshExports outerRef={outerRef} contentRef={contentRef} />
         <MeshActions />
+        <MeshUndo />
         <div
           id="mesh-preview-wrapper"
           ref={outerRef}

@@ -38,6 +38,8 @@ export type MeshState = {
   ui: {
     showCenters: boolean
     showVertices: boolean
+    containerWidth?: number
+    containerHeight?: number
     frameWidth?: number
     frameHeight?: number
     maintainAspectRatio: boolean

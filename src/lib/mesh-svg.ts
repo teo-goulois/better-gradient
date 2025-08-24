@@ -26,12 +26,17 @@ export function svgStringFromState(args: {
   vertexSizePx?: number
 }): string {
   const { canvas, shapes, palette, filters } = args
+
   const blur = Math.max(0, Math.min(filters.blur, 256))
+  console.log({ blur });
   const wCanvas = canvas.width
   const hCanvas = canvas.height
+  console.log({ wCanvas, hCanvas, outputSize: args.outputSize });
   const wOut = args.outputSize?.width ?? wCanvas
   const hOut = args.outputSize?.height ?? hCanvas
-  const pad = filterPaddingPx(blur)
+  console.log({ wOut, hOut });
+  const pad =  filterPaddingPx(blur)
+  console.log({ pad });
   const includeVertices = !!args.includeVertices
   const vertexSizePx = Math.max(2, Math.min(64, args.vertexSizePx ?? 16))
   const scaleX = wOut / wCanvas

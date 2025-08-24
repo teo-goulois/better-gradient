@@ -14,8 +14,6 @@ type Props = {};
 export const SidebarColorPalette = ({}: Props) => {
   const { palette, setPalette } = useMeshStore();
 
-  console.log({ palette });
-
   return (
     <div className="space-y-2">
       <div className="text-sm font-medium flex items-center gap-2">
@@ -34,9 +32,6 @@ export const SidebarColorPalette = ({}: Props) => {
         </Tooltip>
       </div>
       <DragDropProvider
-        onDragStart={({ operation }) => {
-          console.log("Started dragging", operation);
-        }}
         onDragEnd={(event) => {
           setPalette(move(palette, event));
         }}

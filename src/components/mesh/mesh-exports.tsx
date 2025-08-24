@@ -28,13 +28,15 @@ type Props = {
 export const MeshExports = ({ outerRef, contentRef }: Props) => {
   const { canvas, shapes, palette, filters, ui, toShareString } =
     useMeshStore();
-  
-  const [feedbackStates, setFeedbackStates] = useState<Record<string, boolean>>({});
-  
+
+  const [feedbackStates, setFeedbackStates] = useState<Record<string, boolean>>(
+    {}
+  );
+
   const showFeedback = (action: string) => {
-    setFeedbackStates(prev => ({ ...prev, [action]: true }));
+    setFeedbackStates((prev) => ({ ...prev, [action]: true }));
     setTimeout(() => {
-      setFeedbackStates(prev => ({ ...prev, [action]: false }));
+      setFeedbackStates((prev) => ({ ...prev, [action]: false }));
     }, 1500);
   };
 
@@ -58,10 +60,19 @@ export const MeshExports = ({ outerRef, contentRef }: Props) => {
   };
 
   const downloadPng = async () => {
+    console.log("downloadPng", {
+      clientWidth: contentRef?.current?.clientWidth,
+      clientHeight: contentRef?.current?.clientHeight,
+      frameWidth: ui.frameWidth,
+      frameHeight: ui.frameHeight,
+      canvasWidth: canvas.width,
+      canvasHeight: canvas.height,
+    });
+    const w = canvas.width;
+    const h = canvas.height;
     const outputSize = {
-      width: contentRef?.current?.clientWidth ?? ui.frameWidth ?? canvas.width,
-      height:
-        contentRef?.current?.clientHeight ?? ui.frameHeight ?? canvas.height,
+      width: w,
+      height: h,
     };
     const svg = svgStringFromState({
       canvas,
@@ -78,7 +89,7 @@ export const MeshExports = ({ outerRef, contentRef }: Props) => {
     a.href = url;
     a.download = "mesh.png";
     a.click();
-    showFeedback('png');
+    showFeedback("png");
   };
 
   const downloadSvg = () => {
@@ -100,7 +111,7 @@ export const MeshExports = ({ outerRef, contentRef }: Props) => {
     a.download = "mesh.svg";
     a.click();
     URL.revokeObjectURL(url);
-    showFeedback('svg');
+    showFeedback("svg");
   };
 
   const copyCss = async () => {
@@ -118,13 +129,13 @@ export const MeshExports = ({ outerRef, contentRef }: Props) => {
     const data = svgDataUrl(svg);
     const css = `background-image: url("${data}");\nbackground-size: 100% 100%;\nbackground-repeat: no-repeat;`;
     await navigator.clipboard.writeText(css);
-    showFeedback('css');
+    showFeedback("css");
   };
 
   const copyShareUrl = async () => {
     const share = toShareString();
     await navigator.clipboard.writeText(`${location.origin}/share/${share}`);
-    showFeedback('share');
+    showFeedback("share");
   };
 
   return (
@@ -150,12 +161,14 @@ export const MeshExports = ({ outerRef, contentRef }: Props) => {
                     feedbackStates.png && "bg-primary/20 scale-[0.98]"
                   )}
                 >
-                  <div className={twJoin(
-                    "rounded-full p-1.5 transition-all duration-200",
-                    feedbackStates.png 
-                      ? "bg-primary/30 text-primary" 
-                      : "bg-primary/20 text-primary"
-                  )}>
+                  <div
+                    className={twJoin(
+                      "rounded-full p-1.5 transition-all duration-200",
+                      feedbackStates.png
+                        ? "bg-primary/30 text-primary"
+                        : "bg-primary/20 text-primary"
+                    )}
+                  >
                     {feedbackStates.png ? (
                       <IconCheck className="size-6" />
                     ) : (
@@ -177,12 +190,14 @@ export const MeshExports = ({ outerRef, contentRef }: Props) => {
                     feedbackStates.svg && "bg-purple-500/20 scale-[0.98]"
                   )}
                 >
-                  <div className={twJoin(
-                    "rounded-full p-1.5 transition-all duration-200",
-                    feedbackStates.svg 
-                      ? "bg-purple-500/30 text-purple-500" 
-                      : "bg-purple-500/20 text-purple-500"
-                  )}>
+                  <div
+                    className={twJoin(
+                      "rounded-full p-1.5 transition-all duration-200",
+                      feedbackStates.svg
+                        ? "bg-purple-500/30 text-purple-500"
+                        : "bg-purple-500/20 text-purple-500"
+                    )}
+                  >
                     {feedbackStates.svg ? (
                       <IconCheck className="size-6" />
                     ) : (
@@ -209,12 +224,14 @@ export const MeshExports = ({ outerRef, contentRef }: Props) => {
                     feedbackStates.css && "bg-orange-500/20 scale-[0.98]"
                   )}
                 >
-                  <div className={twJoin(
-                    "rounded-full p-1.5 transition-all duration-200",
-                    feedbackStates.css 
-                      ? "bg-orange-500/30 text-orange-500" 
-                      : "bg-orange-500/20 text-orange-500"
-                  )}>
+                  <div
+                    className={twJoin(
+                      "rounded-full p-1.5 transition-all duration-200",
+                      feedbackStates.css
+                        ? "bg-orange-500/30 text-orange-500"
+                        : "bg-orange-500/20 text-orange-500"
+                    )}
+                  >
                     {feedbackStates.css ? (
                       <IconCheck className="size-6" />
                     ) : (
@@ -241,12 +258,14 @@ export const MeshExports = ({ outerRef, contentRef }: Props) => {
                     feedbackStates.share && "bg-green-500/20 scale-[0.98]"
                   )}
                 >
-                  <div className={twJoin(
-                    "rounded-full p-1.5 transition-all duration-200",
-                    feedbackStates.share 
-                      ? "bg-green-500/30 text-green-500" 
-                      : "bg-green-500/20 text-green-500"
-                  )}>
+                  <div
+                    className={twJoin(
+                      "rounded-full p-1.5 transition-all duration-200",
+                      feedbackStates.share
+                        ? "bg-green-500/30 text-green-500"
+                        : "bg-green-500/20 text-green-500"
+                    )}
+                  >
                     {feedbackStates.share ? (
                       <IconCheck className="size-6" />
                     ) : (

@@ -5,12 +5,15 @@ export type FrameRect = { x: number; y: number; width: number; height: number }
 type UseMeshFrameArgs = {
   initialSize: { width: number; height: number }
   uiSize: { width?: number; height?: number }
-  onCommitSize?: (size: { width: number; height: number }) => void
+  onCommitSize?: (size: { width: number; height: number, containerWidth: number, containerHeight: number }) => void
   lockAspect?: { locked: boolean; aspectRatio: number }
+  contentAspect?: number
 }
 
 // Encapsulates positioning, zoom, dragging and resizing of the preview frame.
-export function useMeshFrame({ initialSize, uiSize, onCommitSize, lockAspect }: UseMeshFrameArgs) {
+export function useMeshFrame({ initialSize, uiSize, onCommitSize, lockAspect, contentAspect }: UseMeshFrameArgs) {
+
+
   
   const containerRef = useRef<HTMLDivElement>(null)
   const outerRef = useRef<HTMLDivElement>(null)
@@ -26,29 +29,78 @@ export function useMeshFrame({ initialSize, uiSize, onCommitSize, lockAspect }: 
   }, [lockAspect])
 
   const [frame, setFrame] = useState<FrameRect>(() => ({ x: 0, y: 0, width: uiSize.width ?? initialSize.width, height: uiSize.height ?? initialSize.height }))
+  const [container, setContainer] = useState<{ width: number; height: number }>({ width: 0, height: 0 })  
+  console.log({ container })
   const frameRef = useRef(frame)
 
   useEffect(() => {
     frameRef.current = frame
   }, [frame])
 
-  // Center frame on mount and apply initial UI size if provided
+  // Helper: compute fitted size inside container based on aspect ratio and rule
+  function fitToContainer(rect: DOMRect, aspect: number) {
+    const ar = Math.max(0.01, aspect || 1)
+    let w = 0
+    let h = 0
+    // Rule: if w > h keep width, else keep height
+    if (ar >= 1) {
+      // keep width = container width, derive height
+      w = Math.floor(rect.width)
+      h = Math.round(w / ar)
+      if (h > rect.height) {
+        // fallback: clamp to height
+        h = Math.floor(rect.height)
+        w = Math.round(h * ar)
+      }
+    } else {
+      // keep height = container height, derive width
+      h = Math.floor(rect.height)
+      w = Math.round(h * ar)
+      if (w > rect.width) {
+        // fallback: clamp to width
+        w = Math.floor(rect.width)
+        h = Math.round(w / ar)
+      }
+    }
+    // Ensure minimums
+    w = Math.max(50, w)
+    h = Math.max(50, h)
+    return { w, h }
+  }
+
+  // Center frame on mount and apply initial UI size if provided; otherwise fit by aspect
   useEffect(() => {
     const c = containerRef.current
     if (!c) return
     const rect = c.getBoundingClientRect()
-    setFrame((f) => ({ width: f.width, height: f.height, x: Math.max(0, Math.round((rect.width - f.width) / 2)), y: Math.max(0, Math.round((rect.height - f.height) / 2)) }))
     if (uiSize.width || uiSize.height) {
-      setFrame((f) => ({ ...f, width: uiSize.width ?? f.width, height: uiSize.height ?? f.height }))
+      setFrame((f) => {
+        const w = uiSize.width ?? f.width
+        const h = uiSize.height ?? f.height
+        return { x: Math.max(0, Math.round((rect.width - w) / 2)), y: Math.max(0, Math.round((rect.height - h) / 2)), width: w, height: h }
+      })
+      setContainer({ width: rect.width, height: rect.height })
+    } else {
+      const ar = contentAspect ?? (initialSize.width / Math.max(1, initialSize.height))
+      const fit = fitToContainer(rect, ar)
+      setFrame({ x: Math.max(0, Math.round((rect.width - fit.w) / 2)), y: Math.max(0, Math.round((rect.height - fit.h) / 2)), width: fit.w, height: fit.h })
+      setContainer({ width: rect.width, height: rect.height })
     }
   }, [])
 
-  // React to external uiSize changes (sidebar sliders). Keep centered and clamped.
+  // React to external uiSize changes (preview manual resize). If none provided, auto-fit by aspect.
   useEffect(() => {
     const c = containerRef.current
     if (!c) return
     const rect = c.getBoundingClientRect()
     setFrame((f) => {
+      if (!(uiSize.width || uiSize.height)) {
+        const ar = contentAspect ?? (f.width / Math.max(1, f.height))
+        const fit = fitToContainer(rect, ar)
+        const x = Math.max(0, Math.round((rect.width - fit.w) / 2))
+        const y = Math.max(0, Math.round((rect.height - fit.h) / 2))
+        return { x, y, width: fit.w, height: fit.h }
+      }
       const nextW = uiSize.width ?? f.width
       const nextH = uiSize.height ?? f.height
       if (nextW === f.width && nextH === f.height) return f
@@ -60,6 +112,7 @@ export function useMeshFrame({ initialSize, uiSize, onCommitSize, lockAspect }: 
       y = Math.max(0, Math.min(Math.round(f.y + (f.height - h) / 2), Math.floor(rect.height - h)))
       return { x, y, width: w, height: h }
     })
+    setContainer({ width: rect.width, height: rect.height })
   }, [uiSize.width, uiSize.height])
 
   // Adapt frame to container resize (keep inside and clamp size to container)
@@ -76,6 +129,13 @@ export function useMeshFrame({ initialSize, uiSize, onCommitSize, lockAspect }: 
       const onResize = () => {
         const rect = c.getBoundingClientRect()
         setFrame((f) => {
+          if (!(uiSize.width || uiSize.height)) {
+            const ar = contentAspect ?? (f.width / Math.max(1, f.height))
+            const fit = fitToContainer(rect, ar)
+            const x = Math.max(0, Math.round((rect.width - fit.w) / 2))
+            const y = Math.max(0, Math.round((rect.height - fit.h) / 2))
+            return { x, y, width: fit.w, height: fit.h }
+          }
           const w = Math.min(f.width, Math.floor(rect.width))
           const h = Math.min(f.height, Math.floor(rect.height))
           const maxX = Math.floor(rect.width - w)
@@ -84,6 +144,7 @@ export function useMeshFrame({ initialSize, uiSize, onCommitSize, lockAspect }: 
           const y = Math.min(Math.max(f.y, 0), Math.max(0, maxY))
           return { x, y, width: w, height: h }
         })
+        setContainer({ width: rect.width, height: rect.height })
       }
       ro = new ResizeObserver(onResize)
       ro.observe(c)
@@ -96,6 +157,17 @@ export function useMeshFrame({ initialSize, uiSize, onCommitSize, lockAspect }: 
       ro?.disconnect()
     }
   }, [])
+
+  // React to content aspect changes by refitting when no explicit ui size provided
+  useEffect(() => {
+    const c = containerRef.current
+    if (!c) return
+    if (uiSize.width || uiSize.height) return
+    const rect = c.getBoundingClientRect()
+    const fit = fitToContainer(rect, contentAspect ?? (frameRef.current.width / Math.max(1, frameRef.current.height)))
+    setFrame(() => ({ x: Math.max(0, Math.round((rect.width - fit.w) / 2)), y: Math.max(0, Math.round((rect.height - fit.h) / 2)), width: fit.w, height: fit.h }))
+    setContainer({ width: rect.width, height: rect.height })
+  }, [contentAspect])
 
   // Zoom with wheel over container (anchor at cursor)
   useEffect(() => {
@@ -118,21 +190,21 @@ export function useMeshFrame({ initialSize, uiSize, onCommitSize, lockAspect }: 
         const ax = e.clientX - crect.left // absolute x
         const ay = e.clientY - crect.top // absolute y
 
-        setFrame((f) => {
-          const rx = f.width > 0 ? (ax - f.x) / f.width : 0.5 // relative x
-          const ry = f.height > 0 ? (ay - f.y) / f.height : 0.5 // relative y
+        setFrame((fr) => {
+          const rx = fr.width > 0 ? (ax - fr.x) / fr.width : 0.5 // relative x
+          const ry = fr.height > 0 ? (ay - fr.y) / fr.height : 0.5 // relative y
          
           const minW = 200
           const minH = 100
-          const sMin = Math.max(minW / f.width, minH / f.height)
+          const sMin = Math.max(minW / fr.width, minH / fr.height)
           const maxW = cw //Math.max(minW, crect.width * 6)
           const maxH = ch //Math.max(minH, crect.height * 6)
-          const sMax = Math.min(maxW / f.width, maxH / f.height)
+          const sMax = Math.min(maxW / fr.width, maxH / fr.height)
           const sCandidate = factor
           const s = Math.max(sMin, Math.min(sMax, sCandidate))
-          if (Math.abs(s - 1) < 1e-3) return f
-          const newW = f.width * s
-          const newH = f.height * s
+          if (Math.abs(s - 1) < 1e-3) return fr
+          const newW = fr.width * s
+          const newH = fr.height * s
           let nx = Math.round(ax - rx * newW)
           let ny = Math.round(ay - ry * newH)
           const minX = 0
@@ -148,6 +220,7 @@ export function useMeshFrame({ initialSize, uiSize, onCommitSize, lockAspect }: 
           //console.log('[useMeshFrame] zoom', { factor, s, from: f, to: { x: nx, y: ny, width: newW, height: newH } })
           return { x: nx, y: ny, width: Math.round(newW), height: Math.round(newH) }
         })
+        setContainer({ width: crect.width, height: crect.height })
       }
       c.addEventListener('wheel', onWheel, { passive: false })
       cleanup = () => {
@@ -174,7 +247,6 @@ export function useMeshFrame({ initialSize, uiSize, onCommitSize, lockAspect }: 
         rafId = requestAnimationFrame(attach)
         return
       }
-      console.log('[useMeshFrame] drag listeners attached')
     let dragging = false
     let lastX = 0
     let lastY = 0
@@ -185,7 +257,6 @@ export function useMeshFrame({ initialSize, uiSize, onCommitSize, lockAspect }: 
       dragging = true
       lastX = e.clientX
       lastY = e.clientY
-      console.log('[useMeshFrame] drag start', { x: lastX, y: lastY })
     }
     const onMove = (e: MouseEvent) => {
       if (!dragging) return
@@ -204,6 +275,7 @@ export function useMeshFrame({ initialSize, uiSize, onCommitSize, lockAspect }: 
         console.log('[useMeshFrame] drag move', { dx, dy, next: { x: nx, y: ny } })
         return { ...f, x: nx, y: ny }
       })
+      setContainer({ width: crect.width, height: crect.height })
       lastX = e.clientX
       lastY = e.clientY
     }
@@ -237,7 +309,6 @@ export function useMeshFrame({ initialSize, uiSize, onCommitSize, lockAspect }: 
         rafId = requestAnimationFrame(attach)
         return
       }
-      console.log('[useMeshFrame] resize listeners attached')
     let resizing = false
     let handle: string | null = null
     let startX = 0
@@ -261,13 +332,7 @@ export function useMeshFrame({ initialSize, uiSize, onCommitSize, lockAspect }: 
       const ar = locked && providedAr ? providedAr : Math.max(0.01, curr.width / curr.height)
       start = { x: curr.x, y: curr.y, w: curr.width, h: curr.height, ar }
       const crect = c.getBoundingClientRect()
-      console.log('[useMeshFrame] resize start', {
-        handle,
-        startX,
-        startY,
-        start,
-        container: { w: crect.width, h: crect.height },
-      })
+     
     }
     const onMove = (e: MouseEvent) => {
       const currentHandle = handle
@@ -325,17 +390,10 @@ export function useMeshFrame({ initialSize, uiSize, onCommitSize, lockAspect }: 
         h = Math.max(minH, Math.min(maxH, h))
         x = Math.min(Math.max(x, 0), Math.floor(crect.width - w))
         y = Math.min(Math.max(y, 0), Math.floor(crect.height - h))
-        console.log('[useMeshFrame] resize move', {
-          handle: currentHandle,
-          dx,
-          dy,
-          shift: e.shiftKey,
-          unclamped,
-          next: { x, y, w, h },
-          container: { w: crect.width, h: crect.height },
-        })
+    
         return { x: Math.round(x), y: Math.round(y), width: Math.round(w), height: Math.round(h) }
       })
+      setContainer({ width: crect.width, height: crect.height })
     }
     const onUp = () => {
       resizing = false
@@ -343,14 +401,13 @@ export function useMeshFrame({ initialSize, uiSize, onCommitSize, lockAspect }: 
     }
     const onUpCommit = () => {
       const curr = frameRef.current
-      onCommitSizeRef.current?.({ width: curr.width, height: curr.height })
+      onCommitSizeRef.current?.({ width: curr.width, height: curr.height, containerWidth: container.width, containerHeight: container.height })
     }
       el.addEventListener('mousedown', onDown)
       window.addEventListener('mousemove', onMove)
       window.addEventListener('mouseup', onUp)
       window.addEventListener('mouseup', onUpCommit)
       cleanup = () => {
-        console.log('[useMeshFrame] resize listeners detached')
         el.removeEventListener('mousedown', onDown)
         window.removeEventListener('mousemove', onMove)
         window.removeEventListener('mouseup', onUp)
