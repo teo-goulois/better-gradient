@@ -23,10 +23,13 @@ export const SidebarFilter = ({}: Props) => {
         <DisclosurePanel>
           <Slider
             label="Blur"
-            value={filters.blur ?? 0}
+            value={
+              filters.blur ? Math.round(((filters.blur - 35) / 65) * 100) : 0
+            }
             onChange={(v) => {
               const value = typeof v === "number" ? v : v[0];
-              setFilters({ blur: value });
+              const mappedValue = value === 0 ? 35 : 35 + (value / 100) * 65;
+              setFilters({ blur: mappedValue });
             }}
           />
           <Slider

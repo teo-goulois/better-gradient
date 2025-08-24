@@ -102,7 +102,7 @@ export const MeshPreview = ({}: MeshPreviewProps) => {
     );
 
   return (
-    <div className="w-full h-screen p-6 relative">
+    <div className="w-full h-screen px-6 py-4 relative">
       <div className="w-full h-full relative" ref={containerRef}>
         <MeshExports outerRef={outerRef} contentRef={contentRef} />
         <MeshActions />
