@@ -3,7 +3,10 @@ import { persist, createJSONStorage } from 'zustand/middleware'
 import seedrandom from 'seedrandom'
 
 // Types
-export type RgbHex = `#${string}`
+export type RgbHex = {
+  id: string
+  color: `#${string}`
+}
 
 export type Point = { x: number; y: number }
 
@@ -92,7 +95,7 @@ type MeshStoreActions = Pick<
 const DEFAULT_CANVAS: CanvasSettings = {
   width: 1024,
   height: 768,
-  background: '#6d1d82',
+  background: { id: crypto.randomUUID(), color: '#6d1d82' },
 }
 
 export const DEFAULT_FILTERS: Filters = {
@@ -231,12 +234,22 @@ function generateShapes(args: {
   return shapes
 }
 
+// Default initial content so the preview renders immediately on first load
+const INITIAL_PALETTE = [{ id: crypto.randomUUID(), color: '#6d1d82'}, { id: crypto.randomUUID(), color: '#ef4444'}, { id: crypto.randomUUID(), color: '#ffffff'}] as RgbHex[]
+const INITIAL_SEED = 'seed-1'
+const INITIAL_SHAPES: BlobShape[] = generateShapes({
+  seed: INITIAL_SEED,
+  count: 6,
+  canvas: DEFAULT_CANVAS,
+  palette: INITIAL_PALETTE,
+})
+
 const initialStateBase = {
-  palette: ['#6d1d82', '#ef4444', '#ffffff'] as RgbHex[],
+  palette: INITIAL_PALETTE,
   filters: DEFAULT_FILTERS,
   canvas: DEFAULT_CANVAS,
-  seed: 'seed-1',
-  shapes: [] as BlobShape[],
+  seed: INITIAL_SEED,
+  shapes: INITIAL_SHAPES,
   selectedShapeId: undefined as string | undefined,
   ui: { showCenters: true, showVertices: false, frameWidth: undefined, frameHeight: undefined },
   _past: [] as string[],
@@ -295,7 +308,9 @@ export const useMeshStore = create<MeshState>()(
         setShapes: (shapes) => commit({ shapes }),
         shuffleColors: () => {
           const curr = get()
-          const r = prng(curr.seed + '-shuffle')
+          // Include changing entropy so repeated shuffles produce different results
+          const entropy = `${curr._past.length}-${Date.now()}`
+          const r = prng(`${curr.seed}-shuffle-${entropy}`)
           // Shapes index into full palette; range is [0, palette.length - 1]
           const maxIndex = Math.max(0, curr.palette.length - 1)
           const shapes = curr.shapes.map((s) => ({ ...s, fillIndex: r.int(0, maxIndex) }))

@@ -85,7 +85,7 @@ export const CentersOverlay = memo(function CentersOverlay({
               style={{
                 width: 18,
                 height: 18,
-                background: color,
+                background: color.color,
                 cursor: "move",
                 pointerEvents: "auto",
               }}
@@ -131,14 +131,14 @@ export const CentersOverlay = memo(function CentersOverlay({
                       key={i}
                       className="size-5 rounded-full border"
                       style={{
-                        background: c as string,
+                        background: c.color,
                         borderColor: "rgba(0,0,0,0.2)",
                       }}
                       onClick={() => {
                         onSetShapeFillIndex(id, i);
                         setMenuFor(null);
                       }}
-                      title={c}
+                      title={c.color}
                     />
                   ))}
                 </div>

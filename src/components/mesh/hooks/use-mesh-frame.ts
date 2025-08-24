@@ -69,7 +69,6 @@ export function useMeshFrame({ initialSize, uiSize, onCommitSize }: UseMeshFrame
       }
       const onResize = () => {
         const rect = c.getBoundingClientRect()
-        console.log('[useMeshFrame] container resize', rect)
         setFrame((f) => {
           const w = Math.min(f.width, Math.floor(rect.width))
           const h = Math.min(f.height, Math.floor(rect.height))
@@ -104,9 +103,7 @@ export function useMeshFrame({ initialSize, uiSize, onCommitSize }: UseMeshFrame
         return
       }
 
-      console.log('[useMeshFrame] zoom listener attached', c, c?.getBoundingClientRect())
       const onWheel = (e: WheelEvent) => {
-        console.log('[useMeshFrame] zoom wheel', c, c?.getBoundingClientRect())
         e.preventDefault()
         const factor = e.deltaY > 0 ? 0.975 : 1.025
         const crect = c.getBoundingClientRect()
@@ -118,12 +115,7 @@ export function useMeshFrame({ initialSize, uiSize, onCommitSize }: UseMeshFrame
         setFrame((f) => {
           const rx = f.width > 0 ? (ax - f.x) / f.width : 0.5 // relative x
           const ry = f.height > 0 ? (ay - f.y) / f.height : 0.5 // relative y
-          console.log({
-            ch, cw,
-            ax, ay,
-            
-            rx, ry,
-          })
+         
           const minW = 200
           const minH = 100
           const sMin = Math.max(minW / f.width, minH / f.height)
@@ -147,10 +139,6 @@ export function useMeshFrame({ initialSize, uiSize, onCommitSize }: UseMeshFrame
           const clampYMax = Math.max(minY, maxY)
           nx = Math.min(Math.max(nx, clampXMin), clampXMax)
           ny = Math.min(Math.max(ny, clampYMin), clampYMax)
-
-          console.log({
-            rx, ry,
-          })
           //console.log('[useMeshFrame] zoom', { factor, s, from: f, to: { x: nx, y: ny, width: newW, height: newH } })
           return { x: nx, y: ny, width: Math.round(newW), height: Math.round(newH) }
         })

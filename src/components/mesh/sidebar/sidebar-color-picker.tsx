@@ -30,6 +30,7 @@ interface SidebarColorPickerProps
   description?: string;
   eyeDropper?: boolean;
   onRemove?: () => void;
+  divProps?: React.HTMLAttributes<HTMLDivElement>;
 }
 
 const SidebarColorPicker = ({
@@ -42,41 +43,44 @@ const SidebarColorPicker = ({
   eyeDropper,
   className,
   onRemove,
+  divProps,
   ...props
 }: SidebarColorPickerProps) => {
   return (
     <div className={twMerge("flex flex-col items-start gap-y-1", className)}>
       <ColorPickerPrimitive {...props}>
         <Popover>
-          <div className="relative group">
-            <Button
-              isDisabled={isDisabled}
-              size={label ? "md" : "sq-sm"}
-              intent="outline"
-              isCircle
-              className={twJoin(
-                "w-auto *:data-[slot=color-swatch]:size-9",
-                !label && "size-fit",
-                "p-0"
-              )}
-            >
-              <ColorSwatch className="rounded-full" />
-              {label && label}
-            </Button>
-            <Button
-              isCircle
-              size="sq-xxs"
-              intent="secondary"
-              className={twJoin(
-                "size-4",
-                "rounded-full",
-                "absolute -top-1 -right-1 opacity-0 group-hover:opacity-100 transition-opacity"
-              )}
-              onPress={onRemove}
-            >
-              <IconX className="size-2" />
-            </Button>
-          </div>
+          <Popover.Trigger>
+            <div className="relative group">
+              <Button
+                isDisabled={isDisabled}
+                size={label ? "md" : "sq-sm"}
+                intent="outline"
+                isCircle
+                className={twJoin(
+                  "w-auto *:data-[slot=color-swatch]:size-9",
+                  !label && "size-fit",
+                  "p-0"
+                )}
+              >
+                <ColorSwatch className="rounded-full" />
+                {label && label}
+              </Button>
+              <Button
+                isCircle
+                size="sq-xxs"
+                intent="secondary"
+                className={twJoin(
+                  "size-4",
+                  "rounded-full",
+                  "absolute -top-1 -right-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                )}
+                onPress={onRemove}
+              >
+                <IconX className="size-2" />
+              </Button>
+            </div>
+          </Popover.Trigger>
           <PopoverContent
             className="overflow-auto **:data-[slot=color-area]:w-full **:data-[slot=color-slider]:w-full sm:min-w-min sm:max-w-56 sm:**:data-[slot=color-area]:size-56 *:[[role=dialog]]:p-4 sm:*:[[role=dialog]]:p-3"
             showArrow={showArrow}

@@ -41,13 +41,19 @@ export const MeshPreview = ({}: MeshPreviewProps) => {
   // Draw SVG URL into Canvas; avoid resizing canvas unless dims changed to prevent flicker
   useEffect(() => {
     const canvasEl = canvasRef.current;
-    if (!canvasEl) return;
+    if (!canvasEl) {
+      console.log("no canvasEl");
+      return;
+    }
     if (canvasEl.width !== canvas.width || canvasEl.height !== canvas.height) {
       canvasEl.width = canvas.width;
       canvasEl.height = canvas.height;
     }
     const ctx = canvasEl.getContext("2d");
-    if (!ctx) return;
+    if (!ctx) {
+      console.log("no ctx");
+      return;
+    }
     let cancelled = false;
     const img = new Image();
     img.decoding = "async" as any;
@@ -73,7 +79,7 @@ export const MeshPreview = ({}: MeshPreviewProps) => {
     return () => {
       cancelled = true;
     };
-  }, [svgUrl, canvas.width, canvas.height]);
+  }, [svgUrl, canvas.width, canvas.height, canvasRef.current]);
 
   // Inner is 1:1; we map screen -> content using contentRef bounding rect
   // Frame sizing and interactions handled by useMeshFrame

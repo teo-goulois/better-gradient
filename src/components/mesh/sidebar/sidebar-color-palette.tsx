@@ -1,9 +1,13 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { useMeshStore } from "@/store/store-mesh";
+import { RgbHex, useMeshStore } from "@/store/store-mesh";
 import { SidebarColorPicker } from "./sidebar-color-picker";
-import { IconPlus } from "@intentui/icons";
+import { IconCircleQuestionmark, IconPlus } from "@intentui/icons";
+import { DragDropProvider } from "@dnd-kit/react";
+import { useSortable } from "@dnd-kit/react/sortable";
+import { move } from "@dnd-kit/helpers";
+import { Tooltip } from "@/components/ui/tooltip";
 
 type Props = {};
 
@@ -12,37 +16,86 @@ export const SidebarColorPalette = ({}: Props) => {
 
   return (
     <div className="space-y-2">
-      <div className="text-sm font-medium">Palette</div>
-      <div className="flex gap-2 flex-wrap">
-        {palette.map((c, i) => (
-          <Color key={i} color={c} index={i} />
-        ))}
-        {palette.length < 5 && (
-          <Button
-            intent="outline"
-            isCircle
-            size="sq-sm"
-            onPress={() => setPalette([...palette, "#ffffff"] as any)}
-          >
-            <IconPlus className="size-4" />
-          </Button>
-        )}
+      <div className="text-sm font-medium flex items-center gap-2">
+        <p className="">Palette</p>
+        <Tooltip>
+          <Tooltip.Trigger>
+            <IconCircleQuestionmark className="size-4" />
+          </Tooltip.Trigger>
+          <Tooltip.Content>
+            <p>
+              <p>tips</p>
+              <p>1. you can drag and drop to reorder the palette</p>
+              <p>2. the first color is the background color</p>
+            </p>
+          </Tooltip.Content>
+        </Tooltip>
       </div>
+      <DragDropProvider
+        onDragStart={() => {
+          console.log("Drag started!");
+        }}
+        onDragEnd={(event) => {
+          setPalette(move(palette, event));
+        }}
+      >
+        <div className="flex gap-2 flex-wrap">
+          {palette.map((item, index) => (
+            <SortableColor
+              key={item.id}
+              id={item.id}
+              color={item.color}
+              index={index}
+            />
+          ))}
+          {palette.length < 5 && (
+            <Button
+              intent="outline"
+              isCircle
+              size="sq-sm"
+              onPress={() =>
+                setPalette([
+                  ...palette,
+                  { id: crypto.randomUUID(), color: "#ffffff" },
+                ] as any)
+              }
+            >
+              <IconPlus className="size-4" />
+            </Button>
+          )}
+        </div>
+      </DragDropProvider>
     </div>
   );
 };
 
-const Color = ({ color, index }: { color: string; index: number }) => {
+type SortableColorProps = {
+  id: string;
+  color: string;
+  index: number;
+};
+
+const SortableColor = ({ id, color, index }: SortableColorProps) => {
   const { palette, setPalette } = useMeshStore();
+  const sortable = useSortable({ id, index });
+
+  const style = {
+    opacity: sortable.isDragging ? 0.5 : 1,
+    zIndex: sortable.isDragging ? 50 : 1,
+  };
 
   return (
-    <div className="flex items-center gap-1 relative group">
+    <div
+      ref={sortable.ref}
+      style={style}
+      className="flex items-center gap-1 relative group transition-opacity duration-200 cursor-grab active:cursor-grabbing touch-none"
+    >
       <SidebarColorPicker
         value={color}
         onChange={(c) => {
           const value = c.toString("hex");
           const next = [...palette];
-          next[index] = value as any;
+          next[index] = { id, color: value } as RgbHex;
           setPalette(next as any);
         }}
         onRemove={() =>

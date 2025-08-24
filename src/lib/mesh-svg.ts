@@ -75,13 +75,13 @@ export function svgStringFromState(args: {
   svgParts.push('</defs>')
 
   // Background rect to ensure coverage after blur
-  svgParts.push(`<rect width="${wCanvas}" height="${hCanvas}" fill="${canvas.background}"/>`)
+  svgParts.push(`<rect width="${wCanvas}" height="${hCanvas}" fill="${canvas.background.color}"/>`)
 
   // Shapes under blur
   svgParts.push(`<g filter="url(#blur)">`)
   for (const s of shapes) {
     // Shapes can use any entry of the palette, including background at index 0
-    const color = palette[s.fillIndex] ?? palette[0] ?? '#000000'
+    const color = palette[s.fillIndex].color ?? palette[0].color ?? '#000000'
     svgParts.push(`<path d="${pathDataFromPoints(s.points)}" fill="${color}"/>`)
   }
   svgParts.push('</g>')
