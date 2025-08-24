@@ -11,6 +11,7 @@
 import { createServerRootRoute } from '@tanstack/react-start/server'
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as TestRouteImport } from './routes/test'
 import { Route as EditorRouteImport } from './routes/editor'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ShareStateRouteImport } from './routes/share.$state'
@@ -22,6 +23,11 @@ import { ServerRoute as ApiDemoNamesServerRouteImport } from './routes/api.demo-
 
 const rootServerRouteImport = createServerRootRoute()
 
+const TestRoute = TestRouteImport.update({
+  id: '/test',
+  path: '/test',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const EditorRoute = EditorRouteImport.update({
   id: '/editor',
   path: '/editor',
@@ -66,6 +72,7 @@ const ApiDemoNamesServerRoute = ApiDemoNamesServerRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/editor': typeof EditorRoute
+  '/test': typeof TestRoute
   '/demo/tanstack-query': typeof DemoTanstackQueryRoute
   '/share/$state': typeof ShareStateRoute
   '/demo/start/api-request': typeof DemoStartApiRequestRoute
@@ -74,6 +81,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/editor': typeof EditorRoute
+  '/test': typeof TestRoute
   '/demo/tanstack-query': typeof DemoTanstackQueryRoute
   '/share/$state': typeof ShareStateRoute
   '/demo/start/api-request': typeof DemoStartApiRequestRoute
@@ -83,6 +91,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/editor': typeof EditorRoute
+  '/test': typeof TestRoute
   '/demo/tanstack-query': typeof DemoTanstackQueryRoute
   '/share/$state': typeof ShareStateRoute
   '/demo/start/api-request': typeof DemoStartApiRequestRoute
@@ -93,6 +102,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/editor'
+    | '/test'
     | '/demo/tanstack-query'
     | '/share/$state'
     | '/demo/start/api-request'
@@ -101,6 +111,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/editor'
+    | '/test'
     | '/demo/tanstack-query'
     | '/share/$state'
     | '/demo/start/api-request'
@@ -109,6 +120,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/editor'
+    | '/test'
     | '/demo/tanstack-query'
     | '/share/$state'
     | '/demo/start/api-request'
@@ -118,6 +130,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   EditorRoute: typeof EditorRoute
+  TestRoute: typeof TestRoute
   DemoTanstackQueryRoute: typeof DemoTanstackQueryRoute
   ShareStateRoute: typeof ShareStateRoute
   DemoStartApiRequestRoute: typeof DemoStartApiRequestRoute
@@ -151,6 +164,13 @@ export interface RootServerRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/test': {
+      id: '/test'
+      path: '/test'
+      fullPath: '/test'
+      preLoaderRoute: typeof TestRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/editor': {
       id: '/editor'
       path: '/editor'
@@ -217,6 +237,7 @@ declare module '@tanstack/react-start/server' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   EditorRoute: EditorRoute,
+  TestRoute: TestRoute,
   DemoTanstackQueryRoute: DemoTanstackQueryRoute,
   ShareStateRoute: ShareStateRoute,
   DemoStartApiRequestRoute: DemoStartApiRequestRoute,

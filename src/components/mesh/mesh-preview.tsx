@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef } from "react";
+import { useEffect, useRef } from "react";
 import { useMeshStore } from "@/store/store-mesh";
 import { useIsMounted } from "@/hooks/use-is-mounted";
 import { Loader } from "../ui/loader";
@@ -11,9 +11,9 @@ import { useMeshFrame } from "./hooks/use-mesh-frame";
 import { VerticesOverlay } from "./overlays/VerticesOverlay";
 import { CentersOverlay } from "./overlays/CentersOverlay";
 
-type Props = {};
+type MeshPreviewProps = {};
 
-export const MeshPreview = ({}: Props) => {
+export const MeshPreview = ({}: MeshPreviewProps) => {
   const isMounted = useIsMounted();
   const shapes = useMeshStore((s) => s.shapes);
   const palette = useMeshStore((s) => s.palette);
@@ -23,12 +23,13 @@ export const MeshPreview = ({}: Props) => {
   const setUi = useMeshStore((s) => s.setUi);
   const updateShape = useMeshStore((s) => s.updateShape);
   const setSelectedShape = useMeshStore((s) => s.setSelectedShape);
+  const setShapes = useMeshStore((s) => s.setShapes);
 
   const { svgUrl } = useMeshSvg({ canvas, shapes, palette, filters });
 
-  // Container/outer frame refs managed by hook
-  const svgRef = useRef<SVGSVGElement>(null);
-  const contentGroupRef = useRef<SVGGElement>(null);
+  // Canvas + content refs
+  const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const contentRef = useRef<HTMLDivElement | null>(null);
 
   const { containerRef, outerRef, frame } = useMeshFrame({
     initialSize: { width: canvas.width, height: canvas.height },
@@ -37,7 +38,44 @@ export const MeshPreview = ({}: Props) => {
       setUi({ frameWidth: size.width, frameHeight: size.height }),
   });
 
-  // Inner is 1:1; we map screen -> SVG using getScreenCTM
+  // Draw SVG URL into Canvas; avoid resizing canvas unless dims changed to prevent flicker
+  useEffect(() => {
+    const canvasEl = canvasRef.current;
+    if (!canvasEl) return;
+    if (canvasEl.width !== canvas.width || canvasEl.height !== canvas.height) {
+      canvasEl.width = canvas.width;
+      canvasEl.height = canvas.height;
+    }
+    const ctx = canvasEl.getContext("2d");
+    if (!ctx) return;
+    let cancelled = false;
+    const img = new Image();
+    img.decoding = "async" as any;
+    img.onload = () => {
+      const draw = () => {
+        if (cancelled) return;
+        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+      };
+      if ("decode" in img && typeof (img as any).decode === "function") {
+        (img as any)
+          .decode()
+          .then(() => {
+            if (!cancelled) draw();
+          })
+          .catch(() => {
+            if (!cancelled) draw();
+          });
+      } else {
+        draw();
+      }
+    };
+    img.src = svgUrl;
+    return () => {
+      cancelled = true;
+    };
+  }, [svgUrl, canvas.width, canvas.height]);
+
+  // Inner is 1:1; we map screen -> content using contentRef bounding rect
   // Frame sizing and interactions handled by useMeshFrame
 
   // Frame size reacts to UI via useMeshFrame
@@ -60,12 +98,12 @@ export const MeshPreview = ({}: Props) => {
   return (
     <div className="w-full h-screen p-6 relative">
       <div className="w-full h-full relative" ref={containerRef}>
-        <MeshExports />
+        <MeshExports outerRef={outerRef} contentRef={contentRef} />
         <MeshActions />
         <div
           id="mesh-preview-wrapper"
           ref={outerRef}
-          className="rounded-2xl shadow-xl border overflow-visible bg-white flex items-center justify-center select-none"
+          className="rounded-2xl shadow-xl p-1 overflow-visible bg-white flex items-center justify-center select-none"
           style={{
             position: "absolute",
             top: frame.y,
@@ -74,106 +112,110 @@ export const MeshPreview = ({}: Props) => {
             height: frame.height,
           }}
         >
-          {/* Resize handles */}
+          {/* Content clip to apply border radius only to the preview content */}
           <div
-            data-resize="n"
-            className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 w-2.5 h-2.5 rounded bg-black/60 cursor-n-resize"
-          />
-          <div
-            data-resize="s"
-            className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-1/2 w-2.5 h-2.5 rounded bg-black/60 cursor-s-resize"
-          />
-          <div
-            data-resize="e"
-            className="absolute right-0 top-1/2 translate-x-1/2 -translate-y-1/2 w-2.5 h-2.5 rounded bg-black/60 cursor-e-resize"
-          />
-          <div
-            data-resize="w"
-            className="absolute left-0 top-1/2 -translate-x-1/2 -translate-y-1/2 w-2.5 h-2.5 rounded bg-black/60 cursor-w-resize"
-          />
-          <div
-            data-resize="ne"
-            className="absolute right-0 top-0 translate-x-1/2 -translate-y-1/2 w-2.5 h-2.5 rounded bg-black/60 cursor-ne-resize"
-          />
-          <div
-            data-resize="nw"
-            className="absolute left-0 top-0 -translate-x-1/2 -translate-y-1/2 w-2.5 h-2.5 rounded bg-black/60 cursor-nw-resize"
-          />
-          <div
-            data-resize="se"
-            className="absolute right-0 bottom-0 translate-x-1/2 translate-y-1/2 w-2.5 h-2.5 rounded bg-black/60 cursor-se-resize"
-          />
-          <div
-            data-resize="sw"
-            className="absolute left-0 bottom-0 -translate-x-1/2 translate-y-1/2 w-2.5 h-2.5 rounded bg-black/60 cursor-sw-resize"
-          />
-          <svg
-            ref={svgRef}
-            width={frame.width}
-            height={frame.height}
-            viewBox={`0 0 ${canvas.width} ${canvas.height}`}
-            preserveAspectRatio="none"
-            style={{ overflow: "visible", width: "100%", height: "100%" }}
+            ref={contentRef}
+            id="content-clip"
+            className="absolute inset-0 p-1 rounded-2xl overflow-hidden"
           >
-            {/* Clip background content to the canvas rect so only handles can overflow */}
-            <defs>
-              <clipPath id="frameClip">
-                <rect x={0} y={0} width={canvas.width} height={canvas.height} />
-              </clipPath>
-            </defs>
-            <g ref={contentGroupRef}>
-              <g clipPath="url(#frameClip)">
-                <image
-                  href={svgUrl}
-                  x={0}
-                  y={0}
-                  width={canvas.width}
-                  height={canvas.height}
-                  preserveAspectRatio="none"
-                />
-              </g>
+            <canvas
+              className="rounded-xl"
+              ref={canvasRef}
+              style={{ width: "100%", height: "100%", display: "block" }}
+            />
+          </div>
 
-              {ui.showVertices && (
-                <VerticesOverlay
-                  shapes={shapes}
-                  scale={{
-                    x: frame.width / canvas.width,
-                    y: frame.height / canvas.height,
-                  }}
-                  onBeginDragVertex={(shapeId) => setSelectedShape(shapeId)}
-                  onUpdateVertex={(shapeId, vertexIndex, point) =>
-                    updateShape(shapeId, (old) => {
-                      const np = [...old.points];
-                      np[vertexIndex] = point;
-                      return { ...old, points: np };
-                    })
-                  }
-                />
-              )}
+          {/* Overlays render as absolutely positioned divs over the content */}
+          {ui.showVertices && (
+            <VerticesOverlay
+              shapes={shapes}
+              scale={{
+                x: frame.width / canvas.width,
+                y: frame.height / canvas.height,
+              }}
+              contentRef={contentRef}
+              onBeginDragVertex={(shapeId) => setSelectedShape(shapeId)}
+              onUpdateVertex={(shapeId, vertexIndex, point) =>
+                updateShape(shapeId, (old) => {
+                  const np = [...old.points];
+                  np[vertexIndex] = point;
+                  return { ...old, points: np };
+                })
+              }
+            />
+          )}
 
-              {/* Centers overlay: not clipped and constant on-screen size */}
-              {ui.showCenters && (
-                <CentersOverlay
-                  shapes={shapes}
-                  scale={{
-                    x: frame.width / canvas.width,
-                    y: frame.height / canvas.height,
-                  }}
-                  onDragShape={(shapeId, dx, dy) =>
-                    updateShape(shapeId, (old) => ({
-                      ...old,
-                      points: old.points.map((pt) => ({
-                        x: pt.x + dx,
-                        y: pt.y + dy,
-                      })),
-                    }))
-                  }
-                />
-              )}
-            </g>
-          </svg>
+          {/* Centers overlay: not clipped and constant on-screen size */}
+          {ui.showCenters && (
+            <CentersOverlay
+              shapes={shapes}
+              scale={{
+                x: frame.width / canvas.width,
+                y: frame.height / canvas.height,
+              }}
+              contentRef={contentRef}
+              palette={palette}
+              onSetShapeFillIndex={(shapeId, fillIndex) => {
+                setShapes(
+                  shapes.map((s) =>
+                    s.id === shapeId ? { ...s, fillIndex } : s
+                  )
+                );
+              }}
+              onDragShape={(shapeId, dx, dy) =>
+                updateShape(shapeId, (old) => ({
+                  ...old,
+                  points: old.points.map((pt) => ({
+                    x: pt.x + dx,
+                    y: pt.y + dy,
+                  })),
+                }))
+              }
+            />
+          )}
+          <ResizeHandles />
         </div>
       </div>
     </div>
+  );
+};
+
+const ResizeHandles = () => {
+  return (
+    <>
+      {/* Resize handles */}
+      <div
+        data-resize="n"
+        className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-2.5 cursor-n-resize"
+      />
+      <div
+        data-resize="s"
+        className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-1/2 w-full h-2.5 cursor-s-resize"
+      />
+      <div
+        data-resize="e"
+        className="absolute right-0 top-1/2 translate-x-1/2 -translate-y-1/2 w-2.5 h-full cursor-e-resize"
+      />
+      <div
+        data-resize="w"
+        className="absolute left-0 top-1/2 -translate-x-1/2 -translate-y-1/2 w-2.5 h-full cursor-w-resize"
+      />
+      <div
+        data-resize="ne"
+        className="absolute right-0 top-0 translate-x-1/2 -translate-y-1/2 size-4 cursor-ne-resize"
+      />
+      <div
+        data-resize="nw"
+        className="absolute left-0 top-0 -translate-x-1/2 -translate-y-1/2 size-4 cursor-nw-resize"
+      />
+      <div
+        data-resize="se"
+        className="absolute right-0 bottom-0 translate-x-1/2 translate-y-1/2 size-4 cursor-se-resize"
+      />
+      <div
+        data-resize="sw"
+        className="absolute left-0 bottom-0 -translate-x-1/2 translate-y-1/2 size-4 cursor-sw-resize"
+      />
+    </>
   );
 };

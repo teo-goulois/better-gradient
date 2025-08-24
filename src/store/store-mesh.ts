@@ -10,7 +10,7 @@ export type Point = { x: number; y: number }
 export type BlobShape = {
   id: string
   points: Point[]
-  fillIndex: number // index in palette
+  fillIndex: number // index in palette (includes background at index 0)
 }
 
 export type CanvasSettings = {
@@ -101,6 +101,15 @@ export const DEFAULT_FILTERS: Filters = {
   grain: 0.15,
 }
 
+// Generation configuration (tweak here later)
+const GEN_CONFIG = {
+  overscan: 0.4, // how far centers can spawn outside the canvas (fraction of size)
+  insideFraction: 4 / 6, // for 6 shapes => 4 inside, rest outside
+  insideRadius: { min: 0.30, max: 0.55 },
+  outsideRadius: { min: 0.34, max: 0.62 },
+  maxPlacementTries: 300,
+}
+
 function createId(prefix = 'id'): string {
   return `${prefix}_${Math.random().toString(36).slice(2, 10)}`
 }
@@ -117,17 +126,81 @@ function prng(seed: string) {
 function generatePolygon(
   rng: ReturnType<typeof prng>,
   bounds: { w: number; h: number },
+  center?: Point,
+  radiusScale?: { min: number; max: number },
 ): Point[] {
-  const center: Point = { x: rng.float(bounds.w * 0.2, bounds.w * 0.8), y: rng.float(bounds.h * 0.2, bounds.h * 0.8) }
+  const cx = center?.x ?? rng.float(bounds.w * 0.0, bounds.w * 1.0)
+  const cy = center?.y ?? rng.float(bounds.h * 0.0, bounds.h * 1.0)
   const points: Point[] = []
   const vertexCount = rng.int(6, 10)
-  const baseRadius = Math.min(bounds.w, bounds.h) * rng.float(0.25, 0.45)
+  const minScale = Math.max(0.05, radiusScale?.min ?? 0.30)
+  const maxScale = Math.max(minScale, radiusScale?.max ?? 0.55)
+  const baseRadius = Math.min(bounds.w, bounds.h) * rng.float(minScale, maxScale)
   for (let i = 0; i < vertexCount; i++) {
     const angle = (i / vertexCount) * Math.PI * 2
     const radius = baseRadius * rng.float(0.6, 1)
-    points.push({ x: center.x + Math.cos(angle) * radius, y: center.y + Math.sin(angle) * radius })
+    points.push({ x: cx + Math.cos(angle) * radius, y: cy + Math.sin(angle) * radius })
   }
   return points
+}
+
+function distanceSq(a: Point, b: Point): number {
+  const dx = a.x - b.x
+  const dy = a.y - b.y
+  return dx * dx + dy * dy
+}
+
+function sampleCentersWithMinDistance(
+  rng: ReturnType<typeof prng>,
+  count: number,
+  bounds: { w: number; h: number },
+  overscan = GEN_CONFIG.overscan,
+  region: 'any' | 'inside' | 'outside' = 'any',
+  existing: Point[] = [],
+): Point[] {
+  const centers: Point[] = [...existing]
+  const added: Point[] = []
+  const minSide = Math.min(bounds.w, bounds.h)
+  // Base spacing scales down with higher counts; empirically tuned
+  const base = minSide * 0.22
+  const scale = Math.sqrt(6 / Math.max(1, count + existing.length))
+  const minDist = Math.max(24, Math.min(minSide * 0.45, base * scale))
+  const minDistSq = minDist * minDist
+  const xMin = -overscan * bounds.w
+  const xMax = (1 + overscan) * bounds.w
+  const yMin = -overscan * bounds.h
+  const yMax = (1 + overscan) * bounds.h
+
+  const isInside = (p: Point) => p.x >= 0 && p.x <= bounds.w && p.y >= 0 && p.y <= bounds.h
+  const regionOk = (p: Point) =>
+    region === 'any' ? true : region === 'inside' ? isInside(p) : !isInside(p)
+
+  for (let i = 0; i < count; i++) {
+    let placed = false
+    for (let tries = 0; tries < GEN_CONFIG.maxPlacementTries && !placed; tries++) {
+      const candidate = { x: rng.float(xMin, xMax), y: rng.float(yMin, yMax) }
+      if (!regionOk(candidate)) continue
+      let ok = true
+      for (let j = 0; j < centers.length; j++) {
+        if (distanceSq(candidate, centers[j]) < minDistSq) {
+          ok = false
+          break
+        }
+      }
+      if (ok) {
+        centers.push(candidate)
+        added.push(candidate)
+        placed = true
+      }
+    }
+    if (!placed) {
+      // Fallback: place without region constraint
+      const candidate = { x: rng.float(xMin, xMax), y: rng.float(yMin, yMax) }
+      centers.push(candidate)
+      added.push(candidate)
+    }
+  }
+  return added
 }
 
 function generateShapes(args: {
@@ -139,11 +212,21 @@ function generateShapes(args: {
   const r = prng(args.seed)
   const shapes: BlobShape[] = []
   const { width: w, height: h } = args.canvas
+
+  // Compute inside/outside split (easily adjustable via GEN_CONFIG)
+  const insideCount = Math.max(0, Math.min(args.count, Math.round(args.count * GEN_CONFIG.insideFraction)))
+  const outsideCount = Math.max(0, args.count - insideCount)
+
+  const centersInside = sampleCentersWithMinDistance(r, insideCount, { w, h }, GEN_CONFIG.overscan, 'inside')
+  const centersOutside = sampleCentersWithMinDistance(r, outsideCount, { w, h }, GEN_CONFIG.overscan, 'outside', centersInside)
+  const centers = [...centersInside, ...centersOutside]
+
   for (let i = 0; i < args.count; i++) {
-    const pts = generatePolygon(r, { w, h })
-    // Use palette[0] as background; shape fills index into palette.slice(1)
-    const fillPaletteLength = Math.max(1, (args.palette?.length ?? 0) - 1)
-    shapes.push({ id: createId('blob'), points: pts, fillIndex: i % fillPaletteLength })
+    const c = centers[i]
+    const radiusCfg = i < insideCount ? GEN_CONFIG.insideRadius : GEN_CONFIG.outsideRadius
+    const pts = generatePolygon(r, { w, h }, c, radiusCfg)
+    const paletteLength = Math.max(1, (args.palette?.length ?? 0))
+    shapes.push({ id: createId('blob'), points: pts, fillIndex: i % paletteLength })
   }
   return shapes
 }
@@ -193,8 +276,8 @@ export const useMeshStore = create<MeshState>()(
           // clamp shape fill indices in case palette shrunk
           const clampedShapes = curr.shapes.map((s) => ({
             ...s,
-            // Shapes use palette.slice(1); max index is (palette.length - 2)
-            fillIndex: Math.max(0, Math.min(s.fillIndex, Math.max(0, palette.length - 2))),
+            // Shapes index directly into full palette [0..length-1]
+            fillIndex: Math.max(0, Math.min(s.fillIndex, Math.max(0, palette.length - 1))),
           }))
           commit({ palette, shapes: clampedShapes, canvas: { ...curr.canvas, background: palette[0] ?? curr.canvas.background } })
         },
@@ -213,8 +296,8 @@ export const useMeshStore = create<MeshState>()(
         shuffleColors: () => {
           const curr = get()
           const r = prng(curr.seed + '-shuffle')
-          // Shapes use palette.slice(1); range is [0, maxIndex]
-          const maxIndex = Math.max(0, curr.palette.length - 2)
+          // Shapes index into full palette; range is [0, palette.length - 1]
+          const maxIndex = Math.max(0, curr.palette.length - 1)
           const shapes = curr.shapes.map((s) => ({ ...s, fillIndex: r.int(0, maxIndex) }))
           commit({ shapes })
         },

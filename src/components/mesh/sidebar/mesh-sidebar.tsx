@@ -1,7 +1,6 @@
 "use client";
 
 import { SidebarColor } from "./sidebar-color";
-import { Logo } from "../../shared/logo";
 import { SidebarFilter } from "./sidebar-filter";
 import { SidebarSize } from "./sidebar-size";
 
@@ -10,9 +9,6 @@ type Props = {};
 export const MeshSidebar = ({}: Props) => {
   return (
     <div className="w-64 h-[calc(100vh-2rem)] fixed left-4 top-4 rounded-xl bg-white py-4  space-y-4">
-      <div className="px-4">
-        <Logo />
-      </div>
       <SidebarColor />
       <SidebarFilter />
       <SidebarSize />

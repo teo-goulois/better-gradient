@@ -56,6 +56,42 @@ export function useMeshFrame({ initialSize, uiSize, onCommitSize }: UseMeshFrame
     })
   }, [uiSize.width, uiSize.height])
 
+  // Adapt frame to container resize (keep inside and clamp size to container)
+  useEffect(() => {
+    let ro: ResizeObserver | undefined
+    let rafId = 0
+    const attach = () => {
+      const c = containerRef.current
+      if (!c) {
+        if (!rafId) console.log('[useMeshFrame] container resize observer waiting for container...')
+        rafId = requestAnimationFrame(attach)
+        return
+      }
+      const onResize = () => {
+        const rect = c.getBoundingClientRect()
+        console.log('[useMeshFrame] container resize', rect)
+        setFrame((f) => {
+          const w = Math.min(f.width, Math.floor(rect.width))
+          const h = Math.min(f.height, Math.floor(rect.height))
+          const maxX = Math.floor(rect.width - w)
+          const maxY = Math.floor(rect.height - h)
+          const x = Math.min(Math.max(f.x, 0), Math.max(0, maxX))
+          const y = Math.min(Math.max(f.y, 0), Math.max(0, maxY))
+          return { x, y, width: w, height: h }
+        })
+      }
+      ro = new ResizeObserver(onResize)
+      ro.observe(c)
+      // Fire once initially as well
+      onResize()
+    }
+    attach()
+    return () => {
+      if (rafId) cancelAnimationFrame(rafId)
+      ro?.disconnect()
+    }
+  }, [])
+
   // Zoom with wheel over container (anchor at cursor)
   useEffect(() => {
     let cleanup: (() => void) | undefined
@@ -67,21 +103,32 @@ export function useMeshFrame({ initialSize, uiSize, onCommitSize }: UseMeshFrame
         rafId = requestAnimationFrame(attach)
         return
       }
-      console.log('[useMeshFrame] zoom listener attached')
+
+      console.log('[useMeshFrame] zoom listener attached', c, c?.getBoundingClientRect())
       const onWheel = (e: WheelEvent) => {
+        console.log('[useMeshFrame] zoom wheel', c, c?.getBoundingClientRect())
         e.preventDefault()
-        const factor = e.deltaY > 0 ? 0.9 : 1.1
+        const factor = e.deltaY > 0 ? 0.975 : 1.025
         const crect = c.getBoundingClientRect()
-        const ax = e.clientX - crect.left
-        const ay = e.clientY - crect.top
+        const cw = crect.width
+        const ch = crect.height
+        const ax = e.clientX - crect.left // absolute x
+        const ay = e.clientY - crect.top // absolute y
+
         setFrame((f) => {
-          const rx = f.width > 0 ? (ax - f.x) / f.width : 0.5
-          const ry = f.height > 0 ? (ay - f.y) / f.height : 0.5
-          const minW = 100
-          const minH = 80
+          const rx = f.width > 0 ? (ax - f.x) / f.width : 0.5 // relative x
+          const ry = f.height > 0 ? (ay - f.y) / f.height : 0.5 // relative y
+          console.log({
+            ch, cw,
+            ax, ay,
+            
+            rx, ry,
+          })
+          const minW = 200
+          const minH = 100
           const sMin = Math.max(minW / f.width, minH / f.height)
-          const maxW = Math.max(minW, crect.width * 6)
-          const maxH = Math.max(minH, crect.height * 6)
+          const maxW = cw //Math.max(minW, crect.width * 6)
+          const maxH = ch //Math.max(minH, crect.height * 6)
           const sMax = Math.min(maxW / f.width, maxH / f.height)
           const sCandidate = factor
           const s = Math.max(sMin, Math.min(sMax, sCandidate))
@@ -100,7 +147,11 @@ export function useMeshFrame({ initialSize, uiSize, onCommitSize }: UseMeshFrame
           const clampYMax = Math.max(minY, maxY)
           nx = Math.min(Math.max(nx, clampXMin), clampXMax)
           ny = Math.min(Math.max(ny, clampYMin), clampYMax)
-          console.log('[useMeshFrame] zoom', { factor, s, from: f, to: { x: nx, y: ny, width: newW, height: newH } })
+
+          console.log({
+            rx, ry,
+          })
+          //console.log('[useMeshFrame] zoom', { factor, s, from: f, to: { x: nx, y: ny, width: newW, height: newH } })
           return { x: nx, y: ny, width: Math.round(newW), height: Math.round(newH) }
         })
       }

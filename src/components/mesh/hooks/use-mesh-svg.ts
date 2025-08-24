@@ -1,6 +1,6 @@
 import { useMemo } from 'react'
 import type { BlobShape, CanvasSettings, Filters, RgbHex } from '@/store/store-mesh'
-import { generateNoisePngDataUri, svgDataUrl, svgStringFromState } from '@/lib/mesh-svg'
+import { svgDataUrl, svgStringFromState } from '@/lib/mesh-svg'
 
 type UseMeshSvgArgs = {
   canvas: CanvasSettings
@@ -10,9 +10,6 @@ type UseMeshSvgArgs = {
 }
 
 export function useMeshSvg({ canvas, shapes, palette, filters }: UseMeshSvgArgs) {
-  // Generate once per mount. Small PNG used in pattern; OK to memo forever.
-  const noise = useMemo(() => generateNoisePngDataUri(64, 0.35), [])
-
   // Create the SVG string for current state; heavy work is string concat, keep memoized.
   const svg = useMemo(
     () =>
@@ -21,15 +18,14 @@ export function useMeshSvg({ canvas, shapes, palette, filters }: UseMeshSvgArgs)
         shapes,
         palette,
         filters,
-        noiseDataUri: noise,
       }),
-    [canvas, shapes, palette, filters, noise],
+    [canvas, shapes, palette, filters],
   )
 
   // Data URL derivative, memoized from svg
   const svgUrl = useMemo(() => svgDataUrl(svg), [svg])
 
-  return { svg, svgUrl, noise }
+  return { svg, svgUrl }
 }
 
 

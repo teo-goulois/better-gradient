@@ -15,13 +15,15 @@ export function filterPaddingPx(blurPx: number): number {
   return Math.max(blurPx * 2, 64)
 }
 
+// Generate an SVG string from the state
 export function svgStringFromState(args: {
   canvas: CanvasSettings
   shapes: BlobShape[]
   palette: RgbHex[]
   filters: Filters
-  noiseDataUri?: string | null
   outputSize?: { width: number; height: number }
+  includeVertices?: boolean
+  vertexSizePx?: number
 }): string {
   const { canvas, shapes, palette, filters } = args
   const blur = Math.max(0, Math.min(filters.blur, 256))
@@ -30,20 +32,44 @@ export function svgStringFromState(args: {
   const wOut = args.outputSize?.width ?? wCanvas
   const hOut = args.outputSize?.height ?? hCanvas
   const pad = filterPaddingPx(blur)
+  const includeVertices = !!args.includeVertices
+  const vertexSizePx = Math.max(2, Math.min(64, args.vertexSizePx ?? 16))
+  const scaleX = wOut / wCanvas
+  const scaleY = hOut / hCanvas
+  const avgScale = (scaleX + scaleY) / 2
 
   const svgParts: string[] = []
-  svgParts.push(`<svg xmlns="http://www.w3.org/2000/svg" width="${wOut}" height="${hOut}" viewBox="0 0 ${wCanvas} ${hCanvas}">`)
+  svgParts.push(`<svg xmlns="http://www.w3.org/2000/svg" width="${wOut}" height="${hOut}" viewBox="0 0 ${wCanvas} ${hCanvas}" preserveAspectRatio="none">`)
   // defs
   svgParts.push('<defs>')
+  // Expand blur region to include off-canvas shapes so their blur bleeds correctly into the viewport
+  let minX = 0
+  let minY = 0
+  let maxX = wCanvas
+  let maxY = hCanvas
+  if (shapes.length > 0) {
+    minX = Math.min(0, ...shapes.flatMap((s) => s.points.map((p) => p.x)))
+    minY = Math.min(0, ...shapes.flatMap((s) => s.points.map((p) => p.y)))
+    maxX = Math.max(wCanvas, ...shapes.flatMap((s) => s.points.map((p) => p.x)))
+    maxY = Math.max(hCanvas, ...shapes.flatMap((s) => s.points.map((p) => p.y)))
+  }
+  const filterX = Math.floor(Math.min(-pad, minX - pad))
+  const filterY = Math.floor(Math.min(-pad, minY - pad))
+  const filterW = Math.ceil(Math.max(wCanvas + pad * 2, maxX + pad) - filterX)
+  const filterH = Math.ceil(Math.max(hCanvas + pad * 2, maxY + pad) - filterY)
   svgParts.push(
-    `<filter id="blur" x="${-pad}" y="${-pad}" width="${wCanvas + pad * 2}" height="${hCanvas + pad * 2}" filterUnits="userSpaceOnUse"><feGaussianBlur stdDeviation="${blur}"/></filter>`,
+    `<filter id="blur" x="${filterX}" y="${filterY}" width="${filterW}" height="${filterH}" filterUnits="userSpaceOnUse"><feGaussianBlur stdDeviation="${blur}"/></filter>`,
   )
 
-  if (args.noiseDataUri && filters.grainEnabled) {
+  if (filters.grainEnabled) {
+    // Procedural grain filter using turbulence + specular lighting
     svgParts.push(
-      `<pattern id="noise" patternUnits="userSpaceOnUse" width="64" height="64">` +
-        `<image href="${args.noiseDataUri}" x="0" y="0" width="64" height="64" />` +
-      `</pattern>`,
+      `<filter id="grain" x="${filterX}" y="${filterY}" width="${filterW}" height="${filterH}" filterUnits="userSpaceOnUse" primitiveUnits="userSpaceOnUse" color-interpolation-filters="linearRGB">` +
+        `<feTurbulence type="fractalNoise" baseFrequency=".2" numOctaves="4" seed="15" stitchTiles="no-stitch" x="0" y="0" width="${wCanvas}" height="${hCanvas}" result="turbulence"/>` +
+        `<feSpecularLighting surfaceScale="10" specularConstant="1.21" specularExponent="20" lighting-color="#fff" x="0" y="0" width="${wCanvas}" height="${hCanvas}" in="turbulence" result="specularLighting">` +
+          `<feDistantLight azimuth="3" elevation="100"/>` +
+        `</feSpecularLighting>` +
+      `</filter>`,
     )
   }
   svgParts.push('</defs>')
@@ -53,17 +79,29 @@ export function svgStringFromState(args: {
 
   // Shapes under blur
   svgParts.push(`<g filter="url(#blur)">`)
-  // Use palette[0] as background; shape colors start from palette[1]
-  const fillPalette = palette.slice(1)
   for (const s of shapes) {
-    const color = fillPalette[s.fillIndex] ?? fillPalette[0] ?? palette[0] ?? '#000000'
+    // Shapes can use any entry of the palette, including background at index 0
+    const color = palette[s.fillIndex] ?? palette[0] ?? '#000000'
     svgParts.push(`<path d="${pathDataFromPoints(s.points)}" fill="${color}"/>`)
   }
   svgParts.push('</g>')
 
-  if (args.noiseDataUri && filters.grainEnabled) {
+  // Optional vertices overlay (drawn on top)
+  if (includeVertices) {
+    const r = (vertexSizePx / 2) / avgScale
+    for (const s of shapes) {
+      for (const p of s.points) {
+        const cx = p.x
+        const cy = p.y
+        // white filled circle with black stroke to match overlay style
+        svgParts.push(`<circle cx="${cx}" cy="${cy}" r="${r}" fill="#FFFFFF" stroke="#000000" stroke-width="2"/>`)
+      }
+    }
+  }
+
+  if (filters.grainEnabled) {
     const opacity = Math.max(0, Math.min(filters.grain, 1))
-    svgParts.push(`<rect width="${wCanvas}" height="${hCanvas}" fill="url(#noise)" opacity="${opacity}"/>`)
+    svgParts.push(`<rect width="${wCanvas}" height="${hCanvas}" fill="#FFFFFF" filter="url(#grain)" opacity="${opacity}"/>`)
   }
 
   svgParts.push('</svg>')
@@ -86,27 +124,7 @@ export function cssBackgroundFromState(args: {
 }
 
 // Generate a tiny noise PNG data URI (synchronous)
-export function generateNoisePngDataUri(size = 64, alpha = 0.6): string {
-  if (typeof document === 'undefined') {
-    return ''
-  }
-  const s = Math.max(4, Math.min(256, size))
-  const canvas = document.createElement('canvas')
-  canvas.width = s
-  canvas.height = s
-  const ctx = canvas.getContext('2d')!
-  const imageData = ctx.createImageData(s, s)
-  const data = imageData.data
-  for (let i = 0; i < data.length; i += 4) {
-    const v = Math.floor(Math.random() * 256)
-    data[i] = v
-    data[i + 1] = v
-    data[i + 2] = v
-    data[i + 3] = Math.floor(255 * alpha)
-  }
-  ctx.putImageData(imageData, 0, 0)
-  return canvas.toDataURL('image/png')
-}
+// Removed PNG noise in favor of SVG procedural grain filter
 
 export async function svgToPngDataUrl(svg: string, scaleOrSize: number | { width: number; height: number; scale?: number } = 1): Promise<string> {
   const img = new Image()
