@@ -1,5 +1,12 @@
 import { memo, useMemo, useRef, useState, useEffect } from "react";
 import type { BlobShape, RgbHex } from "@/store/store-mesh";
+import {
+  IconArrowDownFill,
+  IconArrowUp,
+  IconArrowUpFill,
+} from "@intentui/icons";
+import { Button } from "@/components/ui/button";
+import { Separator } from "@/components/ui/separator";
 
 type Props = {
   shapes: BlobShape[];
@@ -8,6 +15,8 @@ type Props = {
   onDragShape: (shapeId: string, dx: number, dy: number) => void;
   palette: RgbHex[];
   onSetShapeFillIndex: (shapeId: string, fillIndex: number) => void;
+  onMoveShapeUp: (shapeId: string) => void;
+  onMoveShapeDown: (shapeId: string) => void;
 };
 
 export const CentersOverlay = memo(function CentersOverlay({
@@ -17,6 +26,8 @@ export const CentersOverlay = memo(function CentersOverlay({
   onDragShape,
   palette,
   onSetShapeFillIndex,
+  onMoveShapeUp,
+  onMoveShapeDown,
 }: Props) {
   const overlayRef = useRef<HTMLDivElement>(null);
   const [menuFor, setMenuFor] = useState<string | null>(null);
@@ -122,9 +133,10 @@ export const CentersOverlay = memo(function CentersOverlay({
             />
             {menuFor === id && (
               <div
-                className="absolute left-3 top-3 p-1 rounded-md shadow-md bg-white border pointer-events-auto"
+                className="absolute left-3 top-3 p-2 z-50 rounded-md shadow-md min-h-0 bg-white border pointer-events-auto flex gap-1 items-center"
                 onClick={(e) => e.stopPropagation()}
               >
+                {/* Color palette */}
                 <div className="flex gap-1">
                   {palette.map((c: RgbHex, i: number) => (
                     <button
@@ -141,6 +153,37 @@ export const CentersOverlay = memo(function CentersOverlay({
                       title={c.color}
                     />
                   ))}
+                </div>
+                <Separator orientation="vertical" />
+                {/* Layer controls */}
+                <div className="flex gap-1 border-l  pl-2">
+                  <Button
+                    size="sq-xs"
+                    intent="plain"
+                    onPress={() => {
+                      onMoveShapeDown(id);
+                    }}
+                    aria-label="Move layer up"
+                  >
+                    <IconArrowUpFill />
+                  </Button>
+
+                  <Button
+                    size="sq-xs"
+                    intent="plain"
+                    onPress={() => {
+                      onMoveShapeUp(id);
+                    }}
+                    aria-label="Move layer down"
+                  >
+                    <IconArrowDownFill />
+                  </Button>
+                  <div className="h-7 px-2 flex items-center justify-center ">
+                    {/* TODO: Add layer index */}
+                    <span className="text-xs text-muted-fg font-semibold">
+                      {centers.findIndex((c) => c.id === id) + 1}
+                    </span>
+                  </div>
                 </div>
               </div>
             )}

@@ -29,13 +29,124 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
         content: "width=device-width, initial-scale=1",
       },
       {
-        title: "TanStack Start Starter",
+        title: "Better Gradient - Blurred-Shape Mesh Gradient Generator",
+      },
+      {
+        name: "description",
+        content:
+          "Create stunning blurred mesh gradients with our intuitive editor. Design beautiful backgrounds, export in high quality, and bring your creative vision to life.",
+      },
+      {
+        name: "keywords",
+        content:
+          "mesh gradient, blur gradient, background generator, design tool, gradient editor, css gradients, visual design",
+      },
+      {
+        name: "author",
+        content: "Better Gradient",
+      },
+      {
+        name: "robots",
+        content: "index, follow",
+      },
+      // Open Graph meta tags
+      {
+        property: "og:title",
+        content: "Better Gradient - Blurred-Shape Mesh Gradient Generator",
+      },
+      {
+        property: "og:description",
+        content:
+          "Create stunning blurred mesh gradients with our intuitive editor. Design beautiful backgrounds, export in high quality, and bring your creative vision to life.",
+      },
+      {
+        property: "og:type",
+        content: "website",
+      },
+      {
+        property: "og:url",
+        content: "https://better-gradient.com",
+      },
+      {
+        property: "og:image",
+        content: "https://better-gradient.com/og-image.png",
+      },
+      {
+        property: "og:site_name",
+        content: "Better Gradient",
+      },
+      // Twitter Card meta tags
+      {
+        name: "twitter:card",
+        content: "summary_large_image",
+      },
+      {
+        name: "twitter:title",
+        content: "Better Gradient - Blurred-Shape Mesh Gradient Generator",
+      },
+      {
+        name: "twitter:description",
+        content:
+          "Create stunning blurred mesh gradients with our intuitive editor. Design beautiful backgrounds, export in high quality, and bring your creative vision to life.",
+      },
+      {
+        name: "twitter:image",
+        content: "https://better-gradient.com/og-image.png",
+      },
+      // Additional SEO meta tags
+      {
+        name: "theme-color",
+        content: "#000000",
+      },
+      {
+        name: "apple-mobile-web-app-capable",
+        content: "yes",
+      },
+      {
+        name: "apple-mobile-web-app-status-bar-style",
+        content: "black-translucent",
       },
     ],
     links: [
       {
         rel: "stylesheet",
         href: appCss,
+      },
+      {
+        rel: "icon",
+        type: "image/x-icon",
+        href: "/favicon.ico",
+      },
+      {
+        rel: "icon",
+        type: "image/png",
+        sizes: "16x16",
+        href: "/favicon-16x16.png",
+      },
+      {
+        rel: "icon",
+        type: "image/png",
+        sizes: "32x32",
+        href: "/favicon-32x32.png",
+      },
+      {
+        rel: "apple-touch-icon",
+        sizes: "180x180",
+        href: "/apple-touch-icon.png",
+      },
+      {
+        rel: "manifest",
+        href: "/manifest.json",
+      },
+      {
+        rel: "canonical",
+        href: "https://better-gradient.com",
+      },
+    ],
+    scripts: [
+      {
+        src: "https://tally.so/widgets/embed.js",
+        async: true,
       },
     ],
   }),
@@ -53,6 +164,7 @@ function RootDocument({ children }: { children: React.ReactNode }) {
         {children}
         <TanstackDevtools
           config={{
+            hideUntilHover: true,
             position: "bottom-left",
           }}
           plugins={[

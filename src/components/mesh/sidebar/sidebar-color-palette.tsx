@@ -40,7 +40,7 @@ export const SidebarColorPalette = ({}: Props) => {
           {palette.map((item, index) => (
             <SortableColor key={item.id} color={item} index={index} />
           ))}
-          {palette.length < 5 && (
+          {palette.length < 10 && (
             <Button
               intent="outline"
               isCircle

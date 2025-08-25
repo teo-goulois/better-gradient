@@ -56,6 +56,8 @@ export type MeshState = {
   setFilters: (filters: Partial<Filters>) => void
   setCanvas: (canvas: Partial<CanvasSettings>) => void
   setShapes: (shapes: BlobShape[]) => void
+  moveShapeUp: (shapeId: string) => void
+  moveShapeDown: (shapeId: string) => void
   shuffleColors: () => void
   setSelectedShape: (id?: string) => void
   setUi: (ui: Partial<MeshState['ui']>) => void
@@ -88,6 +90,8 @@ type MeshStoreActions = Pick<
   | 'setFilters'
   | 'setCanvas'
   | 'setShapes'
+  | 'moveShapeUp'
+  | 'moveShapeDown'
   | 'shuffleColors'
   | 'setSelectedShape'
   | 'setUi'
@@ -314,6 +318,26 @@ export const useMeshStore = create<MeshState>()(
           commit({ canvas: { ...curr.canvas, ...canvas, width, height } })
         },
         setShapes: (shapes) => commit({ shapes }),
+        moveShapeUp: (shapeId) => {
+          const curr = get()
+          const index = curr.shapes.findIndex(s => s.id === shapeId)
+          if (index > 0) {
+            const shapes = [...curr.shapes]
+            const [shape] = shapes.splice(index, 1)
+            shapes.splice(index - 1, 0, shape)
+            commit({ shapes })
+          }
+        },
+        moveShapeDown: (shapeId) => {
+          const curr = get()
+          const index = curr.shapes.findIndex(s => s.id === shapeId)
+          if (index < curr.shapes.length - 1) {
+            const shapes = [...curr.shapes]
+            const [shape] = shapes.splice(index, 1)
+            shapes.splice(index + 1, 0, shape)
+            commit({ shapes })
+          }
+        },
         shuffleColors: () => {
           const curr = get()
           // Include changing entropy so repeated shuffles produce different results

@@ -21,6 +21,7 @@ code {
 @theme inline {
   --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
   --font-mono: "Geist Mono", 'ui-monospace', 'SFMono-Regular', 'Menlo', 'Monaco', 'Consolas', '"Liberation Mono"', '"Courier New"', 'monospace';
+  --font-nohemi: "Nohemi", ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
   --color-border: var(--border);
   --color-input: var(--input);
   --color-ring: var(--ring);
@@ -168,3 +169,119 @@ code {
   }
 }
 
+
+/* Nohemi Thin */
+@font-face {
+  font-family: "Nohemi";
+  src:
+    local("Nohemi Thin"),
+    url("/Nohemi/Nohemi-Thin-BF6438cc577ef3b.otf") format("opentype"),
+    url("/Nohemi/Nohemi-Thin-BF6438cc57e2011.woff") format("woff"),
+    url("/Nohemi/Nohemi-Thin-BF6438cc5896c67.ttf") format("truetype");
+  font-weight: 100;
+  font-style: normal;
+}
+
+/* Nohemi Extra Light */
+@font-face {
+  font-family: "Nohemi";
+  src:
+    local("Nohemi ExtraLight"),
+    url("/Nohemi/Nohemi-ExtraLight-BF6438cc57e06d5.otf") format("opentype"),
+    url("/Nohemi/Nohemi-ExtraLight-BF6438cc581502c.woff") format("woff"),
+    url("/Nohemi/Nohemi-ExtraLight-BF6438cc58a2634.ttf") format("truetype");
+  font-weight: 200;
+  font-style: normal;
+}
+
+/* Nohemi Light */
+@font-face {
+  font-family: "Nohemi";
+  src:
+    local("Nohemi Light"),
+    url("/Nohemi/Nohemi-Light-BF6438cc583f70b.otf") format("opentype"),
+    url("/Nohemi/Nohemi-Light-BF6438cc5702321.woff") format("woff"),
+    url("/Nohemi/Nohemi-Light-BF6438cc5899919.ttf") format("truetype");
+  font-weight: 300;
+  font-style: normal;
+}
+
+/* Nohemi Regular */
+@font-face {
+  font-family: "Nohemi";
+  src:
+    local("Nohemi"),
+    url("/Nohemi/Nohemi-Regular-BF6438cc58b98fc.otf") format("opentype"),
+    url("/Nohemi/Nohemi-Regular-BF6438cc579d934.woff") format("woff"),
+    url("/Nohemi/Nohemi-Regular-BF6438cc4d0e493.ttf") format("truetype");
+  font-weight: 400;
+  font-style: normal;
+}
+
+/* Nohemi Medium */
+@font-face {
+  font-family: "Nohemi";
+  src:
+    local("Nohemi Medium"),
+    url("/Nohemi/Nohemi-Medium-BF6438cc581a509.otf") format("opentype"),
+    url("/Nohemi/Nohemi-Medium-BF6438cc57ddecd.woff") format("woff"),
+    url("/Nohemi/Nohemi-Medium-BF6438cc5883899.ttf") format("truetype");
+  font-weight: 500;
+  font-style: normal;
+}
+
+/* Nohemi Semi Bold */
+@font-face {
+  font-family: "Nohemi";
+  src:
+    local("Nohemi SemiBold"),
+    url("/Nohemi/Nohemi-SemiBold-BF6438cc588b5e5.otf") format("opentype"),
+    url("/Nohemi/Nohemi-SemiBold-BF6438cc57db2ff.woff") format("woff"),
+    url("/Nohemi/Nohemi-SemiBold-BF6438cc588a48a.ttf") format("truetype");
+  font-weight: 600;
+  font-style: normal;
+}
+
+/* Nohemi Bold */
+@font-face {
+  font-family: "Nohemi";
+  src:
+    local("Nohemi Bold"),
+    url("/Nohemi/Nohemi-Bold-BF6438cc5812315.otf") format("opentype"),
+    url("/Nohemi/Nohemi-Bold-BF6438cc577b524.woff") format("woff"),
+    url("/Nohemi/Nohemi-Bold-BF6438cc587b5b5.ttf") format("truetype");
+  font-weight: 700;
+  font-style: normal;
+}
+
+/* Nohemi Extra Bold */
+@font-face {
+  font-family: "Nohemi";
+  src:
+    local("Nohemi ExtraBold"),
+    url("/Nohemi/Nohemi-ExtraBold-BF6438cc58a4c3c.otf") format("opentype"),
+    url("/Nohemi/Nohemi-ExtraBold-BF6438cc5761ae2.woff") format("woff"),
+    url("/Nohemi/Nohemi-ExtraBold-BF6438cc5881baf.ttf") format("truetype");
+  font-weight: 800;
+  font-style: normal;
+}
+
+/* Nohemi Black */
+@font-face {
+  font-family: "Nohemi";
+  src:
+    local("Nohemi Black"),
+    url("/Nohemi/Nohemi-Black-BF6438cc5874bd2.otf") format("opentype"),
+    url("/Nohemi/Nohemi-Black-BF6438cc565e67b.woff") format("woff"),
+    url("/Nohemi/Nohemi-Black-BF6438cc58744d4.ttf") format("truetype");
+  font-weight: 900;
+  font-style: normal;
+}
+
+/* Nohemi Variable Font */
+@font-face {
+  font-family: "Nohemi VF";
+  src: url("/Nohemi/Nohemi-VF-BF6438cc58ad63d.ttf") format("truetype-variations");
+  font-weight: 100 900;
+  font-style: normal;
+}

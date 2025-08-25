@@ -11,6 +11,7 @@ import { useMeshFrame } from "./hooks/use-mesh-frame";
 import { VerticesOverlay } from "./overlays/VerticesOverlay";
 import { CentersOverlay } from "./overlays/CentersOverlay";
 import { MeshUndo } from "./mesh-undo";
+import { SharedFeedback } from "../shared/shared-feedback";
 
 type MeshPreviewProps = {};
 
@@ -27,6 +28,8 @@ export const MeshPreview = ({}: MeshPreviewProps) => {
   const setSelectedShape = useMeshStore((s) => s.setSelectedShape);
   const setShapes = useMeshStore((s) => s.setShapes);
   const setUi = useMeshStore((s) => s.setUi);
+  const moveShapeUp = useMeshStore((s) => s.moveShapeUp);
+  const moveShapeDown = useMeshStore((s) => s.moveShapeDown);
 
   const { svgUrl } = useMeshSvg({ canvas, shapes, palette, filters });
 
@@ -150,6 +153,8 @@ export const MeshPreview = ({}: MeshPreviewProps) => {
         <MeshExports outerRef={outerRef} contentRef={contentRef} />
         <MeshActions />
         <MeshUndo />
+        <SharedFeedback />
+
         <div
           id="mesh-preview-wrapper"
           ref={outerRef}
@@ -184,6 +189,7 @@ export const MeshPreview = ({}: MeshPreviewProps) => {
                 y: frame.height / canvas.height,
               }}
               contentRef={contentRef}
+              palette={palette}
               onBeginDragVertex={(shapeId) => setSelectedShape(shapeId)}
               onUpdateVertex={(shapeId, vertexIndex, point) =>
                 updateShape(shapeId, (old) => {
@@ -221,6 +227,8 @@ export const MeshPreview = ({}: MeshPreviewProps) => {
                   })),
                 }))
               }
+              onMoveShapeUp={moveShapeUp}
+              onMoveShapeDown={moveShapeDown}
             />
           )}
           <ResizeHandles />
