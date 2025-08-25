@@ -109,6 +109,39 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
     ],
     links: [
       {
+        rel: "preload",
+        href: "/logo.png",
+        as: "image",
+        type: "image/png",
+      },
+      {
+        rel: "preload",
+        href: "/gradients/gradient-1.webp",
+        as: "image",
+        type: "image/webp",
+      },
+      {
+        rel: "preload",
+        href: "/Nohemi/Nohemi-Regular-BF6438cc579d934.woff",
+        as: "font",
+        type: "font/woff",
+        crossOrigin: "anonymous",
+      },
+      {
+        rel: "preload",
+        href: "/Nohemi/Nohemi-Bold-BF6438cc577b524.woff",
+        as: "font",
+        type: "font/woff",
+        crossOrigin: "anonymous",
+      },
+      {
+        rel: "preload",
+        href: "/Nohemi/Nohemi-VF-BF6438cc58ad63d.ttf",
+        as: "font",
+        type: "font/ttf",
+        crossOrigin: "anonymous",
+      },
+      {
         rel: "stylesheet",
         href: appCss,
       },

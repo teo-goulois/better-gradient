@@ -180,6 +180,7 @@ code {
     url("/Nohemi/Nohemi-Thin-BF6438cc5896c67.ttf") format("truetype");
   font-weight: 100;
   font-style: normal;
+  font-display: swap;
 }
 
 /* Nohemi Extra Light */
@@ -192,6 +193,7 @@ code {
     url("/Nohemi/Nohemi-ExtraLight-BF6438cc58a2634.ttf") format("truetype");
   font-weight: 200;
   font-style: normal;
+  font-display: swap;
 }
 
 /* Nohemi Light */
@@ -204,6 +206,7 @@ code {
     url("/Nohemi/Nohemi-Light-BF6438cc5899919.ttf") format("truetype");
   font-weight: 300;
   font-style: normal;
+  font-display: swap;
 }
 
 /* Nohemi Regular */
@@ -216,6 +219,7 @@ code {
     url("/Nohemi/Nohemi-Regular-BF6438cc4d0e493.ttf") format("truetype");
   font-weight: 400;
   font-style: normal;
+  font-display: swap;
 }
 
 /* Nohemi Medium */
@@ -228,6 +232,7 @@ code {
     url("/Nohemi/Nohemi-Medium-BF6438cc5883899.ttf") format("truetype");
   font-weight: 500;
   font-style: normal;
+  font-display: swap;
 }
 
 /* Nohemi Semi Bold */
@@ -240,6 +245,7 @@ code {
     url("/Nohemi/Nohemi-SemiBold-BF6438cc588a48a.ttf") format("truetype");
   font-weight: 600;
   font-style: normal;
+  font-display: swap;
 }
 
 /* Nohemi Bold */
@@ -252,6 +258,7 @@ code {
     url("/Nohemi/Nohemi-Bold-BF6438cc587b5b5.ttf") format("truetype");
   font-weight: 700;
   font-style: normal;
+  font-display: swap;
 }
 
 /* Nohemi Extra Bold */
@@ -264,6 +271,7 @@ code {
     url("/Nohemi/Nohemi-ExtraBold-BF6438cc5881baf.ttf") format("truetype");
   font-weight: 800;
   font-style: normal;
+  font-display: swap;
 }
 
 /* Nohemi Black */
@@ -276,6 +284,7 @@ code {
     url("/Nohemi/Nohemi-Black-BF6438cc58744d4.ttf") format("truetype");
   font-weight: 900;
   font-style: normal;
+  font-display: swap;
 }
 
 /* Nohemi Variable Font */
@@ -284,4 +293,5 @@ code {
   src: url("/Nohemi/Nohemi-VF-BF6438cc58ad63d.ttf") format("truetype-variations");
   font-weight: 100 900;
   font-style: normal;
+  font-display: swap;
 }
