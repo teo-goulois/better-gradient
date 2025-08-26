@@ -2,15 +2,15 @@
   "rewrites": [
     {
       "source": "/umami/script.js",
-      "destination": "https://teo-umami.q1xahd.easypanel.host/script.js"
+      "destination": "https://analytics.teogoulois.com/script.js"
     },
     {
       "source": "/api/send",
-      "destination": "https://teo-umami.q1xahd.easypanel.host/api/send"
+      "destination": "https://analytics.teogoulois.com/script.js/api/send"
     },
     {
       "source": "/api/collect",
-      "destination": "https://teo-umami.q1xahd.easypanel.host/api/collect"
+      "destination": "https://analytics.teogoulois.com/script.js/api/collect"
     }
   ],
   "headers": [
