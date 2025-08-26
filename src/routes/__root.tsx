@@ -181,6 +181,19 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
         src: "https://tally.so/widgets/embed.js",
         async: true,
       },
+      ...(import.meta.env.NODE_ENV === "production"
+        ? [
+            {
+              src: "/umami/script.js",
+              async: true,
+              defer: true,
+              "data-website-id": "662a5822-5471-4b96-a504-eea1913d0221",
+              // Optional but explicit: where the tracker should send events
+              "data-host-url": "https://better-gradient.com",
+              "data-cache": "true",
+            },
+          ]
+        : []),
     ],
   }),
 
