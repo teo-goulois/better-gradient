@@ -182,7 +182,7 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
         async: true,
       },
       {
-        src: "/umami/script.js",
+        src: "https://analytics.teogoulois.com/script.js",
         async: true,
         defer: true,
         "data-website-id": "662a5822-5471-4b96-a504-eea1913d0221",
