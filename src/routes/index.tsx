@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { Link } from "@tanstack/react-router";
+import { trackEvent } from "@/lib/tracking";
 
 const structuredData = {
   "@context": "https://schema.org",
@@ -39,6 +40,7 @@ function App() {
     <>
       <script
         type="application/ld+json"
+        // biome-ignore lint/security/noDangerouslySetInnerHtml: <explanation>
         dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
       />
       <div className="flex-1 w-full min-h-screen bg-bg relative overflow-hidden">
@@ -55,6 +57,7 @@ function App() {
             <div className="mt-10  ">
               <Link
                 to={"/editor"}
+                onClick={() => trackEvent("Navigate to Editor")}
                 className="inline-flex items-center gap-3 relative overflow-hidden rounded-full  text-white px-8 py-4 text-lg font-medium transition-colors duration-200 group"
               >
                 <img

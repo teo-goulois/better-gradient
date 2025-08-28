@@ -2,12 +2,18 @@ import { createFileRoute } from "@tanstack/react-router";
 import { MeshSidebar } from "@/components/mesh/sidebar/mesh-sidebar";
 import { MeshPreview } from "@/components/mesh/mesh-preview";
 import { twJoin } from "tailwind-merge";
+import { trackEvent } from "@/lib/tracking";
+import { useEffect } from "react";
 
 export const Route = createFileRoute("/editor")({
   component: Editor,
 });
 
 function Editor() {
+  useEffect(() => {
+    trackEvent("Editor Loaded");
+  }, []);
+
   return (
     <div
       className={twJoin(

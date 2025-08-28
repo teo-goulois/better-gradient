@@ -1,17 +1,16 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { RgbHex, useMeshStore } from "@/store/store-mesh";
-import { SidebarColorPicker } from "./sidebar-color-picker";
-import { IconCircleQuestionmark, IconPlus } from "@intentui/icons";
-import { DragDropProvider, PointerSensor } from "@dnd-kit/react";
-import { useSortable } from "@dnd-kit/react/sortable";
-import { move } from "@dnd-kit/helpers";
 import { Tooltip } from "@/components/ui/tooltip";
+import { trackEvent } from "@/lib/tracking";
+import { type RgbHex, useMeshStore } from "@/store/store-mesh";
+import { move } from "@dnd-kit/helpers";
+import { DragDropProvider } from "@dnd-kit/react";
+import { useSortable } from "@dnd-kit/react/sortable";
+import { IconCircleQuestionmark, IconPlus } from "@intentui/icons";
+import { SidebarColorPicker } from "./sidebar-color-picker";
 
-type Props = {};
-
-export const SidebarColorPalette = ({}: Props) => {
+export const SidebarColorPalette = () => {
   const { palette, setPalette } = useMeshStore();
 
   return (
@@ -45,12 +44,15 @@ export const SidebarColorPalette = ({}: Props) => {
               intent="outline"
               isCircle
               size="sq-sm"
-              onPress={() =>
+              onPress={() => {
                 setPalette([
                   ...palette,
                   { id: crypto.randomUUID(), color: "#ffffff" },
-                ] as any)
-              }
+                ] as RgbHex[]);
+                trackEvent("Add Color", {
+                  colors_count: palette.length + 1,
+                });
+              }}
             >
               <IconPlus className="size-4" />
             </Button>
@@ -87,11 +89,20 @@ const SortableColor = ({ color, index }: SortableColorProps) => {
           const value = c.toString("hex");
           const next = [...palette];
           next[index] = { id: color.id, color: value } as RgbHex;
-          setPalette(next as any);
+          setPalette(next as RgbHex[]);
+          trackEvent("Change Color", {
+            color_index: index,
+            new_color: value,
+            colors_count: palette.length,
+          });
         }}
         onRemove={() => {
           if (palette.length === 1) return;
-          setPalette(palette.filter((_, idx) => idx !== index) as any);
+          setPalette(palette.filter((_, idx) => idx !== index) as RgbHex[]);
+          trackEvent("Remove Color", {
+            color_index: index,
+            colors_count: palette.length - 1,
+          });
         }}
       />
     </div>

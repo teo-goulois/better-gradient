@@ -1,17 +1,33 @@
 "use client";
 
-import { Button } from "../ui/button";
+import { trackEvent } from "@/lib/tracking";
 import { useMeshStore } from "@/store/store-mesh";
+import { Button } from "../ui/button";
 
-type Props = {};
+export const MeshActions = () => {
+  const { randomize, shuffleColors, shapes, palette } = useMeshStore();
 
-export const MeshActions = ({}: Props) => {
-  const { randomize, shuffleColors } = useMeshStore();
+  const handleRandomize = () => {
+    randomize();
+    trackEvent("Randomize Gradient", {
+      shapes_count: shapes.length,
+      colors_count: palette.length,
+    });
+  };
+
+  const handleShuffleColors = () => {
+    shuffleColors();
+    trackEvent("Shuffle Colors", {
+      shapes_count: shapes.length,
+      colors_count: palette.length,
+    });
+  };
+
   return (
     <div className="absolute bottom-0 right-1/2 left-1/2 p-1 w-fit -translate-x-1/2 rounded-lg bg-bg z-50 shadow">
       <div className="flex gap-2">
-        <Button onPress={() => randomize()}>Randomize</Button>
-        <Button onPress={() => shuffleColors()} intent="outline">
+        <Button onPress={handleRandomize}>Randomize</Button>
+        <Button onPress={handleShuffleColors} intent="outline">
           Shuffle
         </Button>
       </div>

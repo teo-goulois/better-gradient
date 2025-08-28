@@ -17,8 +17,9 @@ import {
 import { toPng } from "html-to-image";
 import { Separator } from "../ui/separator";
 import { twJoin } from "tailwind-merge";
-import { SVGProps } from "react";
+import type { SVGProps } from "react";
 import { useState } from "react";
+import { trackEvent } from "@/lib/tracking";
 
 type Props = {
   outerRef: { current: HTMLDivElement | null };
@@ -90,6 +91,12 @@ export const MeshExports = ({ outerRef, contentRef }: Props) => {
     a.download = "mesh.png";
     a.click();
     showFeedback("png");
+    trackEvent("Export PNG", {
+      width: w,
+      height: h,
+      shapes_count: shapes.length,
+      colors_count: palette.length,
+    });
   };
 
   const downloadSvg = () => {
@@ -112,6 +119,12 @@ export const MeshExports = ({ outerRef, contentRef }: Props) => {
     a.click();
     URL.revokeObjectURL(url);
     showFeedback("svg");
+    trackEvent("Export SVG", {
+      width,
+      height,
+      shapes_count: shapes.length,
+      colors_count: palette.length,
+    });
   };
 
   const copyCss = async () => {
@@ -130,12 +143,22 @@ export const MeshExports = ({ outerRef, contentRef }: Props) => {
     const css = `background-image: url("${data}");\nbackground-size: 100% 100%;\nbackground-repeat: no-repeat;`;
     await navigator.clipboard.writeText(css);
     showFeedback("css");
+    trackEvent("Copy CSS", {
+      width,
+      height,
+      shapes_count: shapes.length,
+      colors_count: palette.length,
+    });
   };
 
   const copyShareUrl = async () => {
     const share = toShareString();
     await navigator.clipboard.writeText(`${location.origin}/share/${share}`);
     showFeedback("share");
+    trackEvent("Copy Share URL", {
+      shapes_count: shapes.length,
+      colors_count: palette.length,
+    });
   };
 
   return (
@@ -297,6 +320,7 @@ export function HugeiconsSvg01(props: SVGProps<SVGSVGElement>) {
       viewBox="0 0 24 24"
       {...props}
     >
+      <title>Huge Icons</title>
       {/* Icon from Huge Icons by Hugeicons - undefined */}
       <g
         fill="none"
