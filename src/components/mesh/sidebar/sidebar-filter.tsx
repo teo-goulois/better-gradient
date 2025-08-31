@@ -4,14 +4,13 @@ import {
   DisclosurePanel,
   DisclosureTrigger,
 } from "@/components/mesh/sidebar/sidebar-disclosure";
-import { IconEyeDropper, IconRefresh } from "@intentui/icons";
-import { DEFAULT_FILTERS, useMeshStore } from "@/store/store-mesh";
-import { Slider } from "@/components/ui/slider";
 import { Button } from "@/components/ui/button";
+import { Slider } from "@/components/ui/slider";
+import { DEFAULT_FILTERS } from "@/lib/config/config.mesh";
+import { useMeshStore } from "@/store/store-mesh";
+import { IconEyeDropper, IconRefresh } from "@intentui/icons";
 
-type Props = {};
-
-export const SidebarFilter = ({}: Props) => {
+export const SidebarFilter = () => {
   const { filters, setFilters } = useMeshStore();
 
   return (

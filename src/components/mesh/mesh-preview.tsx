@@ -1,21 +1,20 @@
 "use client";
 
-import { useEffect, useRef } from "react";
-import { useMeshStore } from "@/store/store-mesh";
+import { useContainerResize } from "@/hooks/use-container-resize";
 import { useIsMounted } from "@/hooks/use-is-mounted";
-import { Loader } from "../ui/loader";
-import { MeshExports } from "./mesh-exports";
-import { MeshActions } from "./mesh-actions";
-import { useMeshSvg } from "./hooks/use-mesh-svg";
-import { useMeshFrame } from "./hooks/use-mesh-frame";
-import { VerticesOverlay } from "./overlays/VerticesOverlay";
-import { CentersOverlay } from "./overlays/CentersOverlay";
-import { MeshUndo } from "./mesh-undo";
+import { useMeshStore } from "@/store/store-mesh";
+import { useEffect, useRef } from "react";
 import { SharedFeedback } from "../shared/shared-feedback";
+import { Loader } from "../ui/loader";
+import { useMeshFrame } from "./hooks/use-mesh-frame";
+import { useMeshSvg } from "./hooks/use-mesh-svg";
+import { MeshActions } from "./mesh-actions";
+import { MeshExports } from "./mesh-exports";
+import { MeshUndo } from "./mesh-undo";
+import { CentersOverlay } from "./overlays/CentersOverlay";
+import { VerticesOverlay } from "./overlays/VerticesOverlay";
 
-type MeshPreviewProps = {};
-
-export const MeshPreview = ({}: MeshPreviewProps) => {
+export const MeshPreview = () => {
   const isMounted = useIsMounted();
 
   const shapes = useMeshStore((s) => s.shapes);
@@ -60,6 +59,7 @@ export const MeshPreview = ({}: MeshPreviewProps) => {
         ? ui.frameWidth / ui.frameHeight
         : canvas.width / canvas.height),
   });
+  useContainerResize(containerRef);
 
   // Draw SVG URL into Canvas; avoid resizing canvas unless dims changed to prevent flicker
   useEffect(() => {
@@ -103,42 +103,6 @@ export const MeshPreview = ({}: MeshPreviewProps) => {
       cancelled = true;
     };
   }, [svgUrl, canvas.width, canvas.height, canvasRef.current]);
-
-  // update container size on resize
-  useEffect(() => {
-    let ro: ResizeObserver | undefined;
-    let rafId = 0;
-    const attach = () => {
-      const c = containerRef.current;
-      if (!c) {
-        if (!rafId)
-          console.log(
-            "[useMeshFrame] container resize observer waiting for container..."
-          );
-        rafId = requestAnimationFrame(attach);
-        return;
-      }
-      const onResize = () => {
-        const rect = c.getBoundingClientRect();
-        const w = rect.width;
-        const h = rect.height;
-        console.log("onResize", { w, h });
-        setUi({
-          containerWidth: w,
-          containerHeight: h,
-        });
-      };
-      ro = new ResizeObserver(onResize);
-      ro.observe(c);
-      // Fire once initially as well
-      onResize();
-    };
-    attach();
-    return () => {
-      if (rafId) cancelAnimationFrame(rafId);
-      ro?.disconnect();
-    };
-  }, [containerRef.current]);
 
   if (!isMounted)
     return (

@@ -97,7 +97,7 @@ async function trackEvent(
 	event: string,
 	data?: Record<string, unknown>,
 ): Promise<void> {
-	if (env.SERVER_URL !== "http://localhost:3000") {
+	if (env.VITE_SERVER_URL !== "http://localhost:3000") {
 		await Promise.allSettled([
 			sendDiscordNotification(event, data),
 			trackUmamiEvent(event, data),

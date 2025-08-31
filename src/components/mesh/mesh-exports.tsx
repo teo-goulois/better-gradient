@@ -1,25 +1,25 @@
 "use client";
 import {
-  IconDownload,
-  IconFile,
-  IconGallery,
-  IconGalleryFill,
-  IconCheck,
-} from "@intentui/icons";
-import { Button, ButtonPrimitive } from "../ui/button";
-import { Popover } from "../ui/popover";
-import { useMeshStore } from "@/store/store-mesh";
-import {
   svgDataUrl,
   svgStringFromState,
   svgToPngDataUrl,
 } from "@/lib/mesh-svg";
+import { trackEvent } from "@/lib/tracking";
+import { useMeshStore } from "@/store/store-mesh";
+import {
+  IconCheck,
+  IconDownload,
+  IconFile,
+  IconGallery,
+  IconGalleryFill,
+} from "@intentui/icons";
 import { toPng } from "html-to-image";
-import { Separator } from "../ui/separator";
-import { twJoin } from "tailwind-merge";
 import type { SVGProps } from "react";
 import { useState } from "react";
-import { trackEvent } from "@/lib/tracking";
+import { twJoin } from "tailwind-merge";
+import { Button, ButtonPrimitive } from "../ui/button";
+import { Popover } from "../ui/popover";
+import { Separator } from "../ui/separator";
 
 type Props = {
   outerRef: { current: HTMLDivElement | null };
@@ -61,14 +61,6 @@ export const MeshExports = ({ outerRef, contentRef }: Props) => {
   };
 
   const downloadPng = async () => {
-    console.log("downloadPng", {
-      clientWidth: contentRef?.current?.clientWidth,
-      clientHeight: contentRef?.current?.clientHeight,
-      frameWidth: ui.frameWidth,
-      frameHeight: ui.frameHeight,
-      canvasWidth: canvas.width,
-      canvasHeight: canvas.height,
-    });
     const w = canvas.width;
     const h = canvas.height;
     const outputSize = {
