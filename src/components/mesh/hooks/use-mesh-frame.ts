@@ -1,7 +1,7 @@
-import { ContainerSize } from "@/types/types.mesh";
-import { useEffect, useRef, useState } from "react";
-import { useFrameOnMount } from "./use-frame-on-mount";
 import { useMeshStore } from "@/store/store-mesh";
+import { ContainerSize } from "@/types/types.mesh";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { useFrameOnMount } from "./use-frame-on-mount";
 
 export type FrameRect = { x: number; y: number; width: number; height: number };
 
@@ -29,8 +29,15 @@ export function useMeshFrame({
 	contentAspect,
 }: UseMeshFrameArgs) {
 	const ui = useMeshStore((s) => s.ui);
-	const containerRef = useRef<HTMLDivElement>(null);
-	const outerRef = useRef<HTMLDivElement>(null);
+
+	const containerRef = useRef<HTMLDivElement | null>(null);
+	const outerRef = useRef<HTMLDivElement | null>(null);
+	const setContainerNode = useCallback((node: HTMLDivElement | null) => {
+		containerRef.current = node;
+	}, []);
+	const setOuterNode = useCallback((node: HTMLDivElement | null) => {
+		outerRef.current = node;
+	}, []);
 
 	const onCommitSizeRef = useRef<UseMeshFrameArgs["onCommitSize"] | undefined>(
 		undefined,
@@ -484,7 +491,7 @@ export function useMeshFrame({
 		};
 	}, []);
 
-	return { containerRef, outerRef, frame };
+	return { containerRef, outerRef, frame, setOuterNode, setContainerNode };
 }
 
 // Helper: compute fitted size inside container based on aspect ratio and rule
