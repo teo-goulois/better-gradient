@@ -29,5 +29,7 @@ export type FrameRect = {
 	y: number;
 	width: number;
 	height: number;
-	aspectRatio: number;
+	aspectRatio?: number;
 };
+
+export type ContainerSize = { width: number; height: number };

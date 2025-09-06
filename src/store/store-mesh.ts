@@ -25,13 +25,15 @@ export type MeshState = {
 	seed: string;
 	selectedShapeId?: string;
 	ui: {
-		frame: FrameRect;
+		frame?: FrameRect;
 		showCenters: boolean;
 		showVertices: boolean;
 		containerWidth?: number;
 		containerHeight?: number;
 		frameWidth?: number;
 		frameHeight?: number;
+		frameX?: number;
+		frameY?: number;
 		maintainAspectRatio: boolean;
 		aspectRatio?: number;
 	};
@@ -52,6 +54,7 @@ export type MeshState = {
 	setSelectedShape: (id?: string) => void;
 	setUi: (ui: Partial<MeshState["ui"]>) => void;
 	setUiFrameSize: (size: { width?: number; height?: number }) => void;
+	setUiFramePosition: (position: { x?: number; y?: number }) => void;
 	toggleAspectLock: (locked: boolean) => void;
 	updateShape: (id: string, updater: (s: BlobShape) => BlobShape) => void;
 	undo: () => void;
@@ -78,6 +81,7 @@ export type MeshStoreActions = Pick<
 	| "toShareString"
 	| "fromShareString"
 	| "setUiFrameSize"
+	| "setUiFramePosition"
 	| "toggleAspectLock"
 >;
 
@@ -104,17 +108,13 @@ const initialStateBase: Omit<MeshState, keyof MeshStoreActions> = {
 	shapes: INITIAL_SHAPES,
 	selectedShapeId: undefined as string | undefined,
 	ui: {
-		frame: {
-			x: 0,
-			y: 0,
-			width: DEFAULT_CANVAS.width,
-			height: DEFAULT_CANVAS.height,
-			aspectRatio: DEFAULT_CANVAS.width / DEFAULT_CANVAS.height,
-		},
+		frame: undefined,
 		showCenters: false,
 		showVertices: false,
 		frameWidth: undefined,
 		frameHeight: undefined,
+		frameX: undefined,
+		frameY: undefined,
 		maintainAspectRatio: true,
 		aspectRatio: DEFAULT_CANVAS.width / DEFAULT_CANVAS.height,
 	},
@@ -263,6 +263,15 @@ export const useMeshStore = create<MeshState>()(
 						next.frameHeight = nextH;
 						return { ui: { ...curr.ui, ...next } };
 					}),
+				setUiFramePosition: (position) =>
+					set((s) => {
+						const curr = s as MeshState;
+						const next: Partial<MeshState["ui"]> = {};
+						if (position.x !== undefined) next.frameX = position.x;
+						if (position.y !== undefined) next.frameY = position.y;
+						console.log("Storing frame position in store:", next.frameX, next.frameY);
+						return { ui: { ...curr.ui, ...next } };
+					}),
 				toggleAspectLock: (locked: boolean) =>
 					set((s) => {
 						const curr = s as MeshState;
@@ -385,6 +394,14 @@ export const useMeshStore = create<MeshState>()(
 						state.shapes = shapes;
 					}
 				}
+				/* if (s && (!s.ui || !s.ui.frame)) {
+					s.ui.frame = {
+						x: 0,
+						y: 0,
+						width: s.canvas?.width ?? DEFAULT_CANVAS.width,
+						height: s.canvas?.height ?? DEFAULT_CANVAS.height,
+					};
+				} */
 			},
 		},
 	),

@@ -1,4 +1,7 @@
+import { ContainerSize } from "@/types/types.mesh";
 import { useEffect, useRef, useState } from "react";
+import { useFrameOnMount } from "./use-frame-on-mount";
+import { useMeshStore } from "@/store/store-mesh";
 
 export type FrameRect = { x: number; y: number; width: number; height: number };
 
@@ -11,6 +14,7 @@ type UseMeshFrameArgs = {
 		containerWidth: number;
 		containerHeight: number;
 	}) => void;
+	onCommitPosition?: (position: { x: number; y: number }) => void;
 	lockAspect?: { locked: boolean; aspectRatio: number };
 	contentAspect?: number;
 };
@@ -20,9 +24,11 @@ export function useMeshFrame({
 	initialSize,
 	uiSize,
 	onCommitSize,
+	onCommitPosition,
 	lockAspect,
 	contentAspect,
 }: UseMeshFrameArgs) {
+	const ui = useMeshStore((s) => s.ui);
 	const containerRef = useRef<HTMLDivElement>(null);
 	const outerRef = useRef<HTMLDivElement>(null);
 
@@ -32,6 +38,13 @@ export function useMeshFrame({
 	useEffect(() => {
 		onCommitSizeRef.current = onCommitSize;
 	}, [onCommitSize]);
+
+	const onCommitPositionRef = useRef<
+		UseMeshFrameArgs["onCommitPosition"] | undefined
+	>(undefined);
+	useEffect(() => {
+		onCommitPositionRef.current = onCommitPosition;
+	}, [onCommitPosition]);
 
 	const lockRef = useRef<UseMeshFrameArgs["lockAspect"] | undefined>(undefined);
 	useEffect(() => {
@@ -44,77 +57,24 @@ export function useMeshFrame({
 		width: uiSize.width ?? initialSize.width,
 		height: uiSize.height ?? initialSize.height,
 	}));
-	const [container, setContainer] = useState<{ width: number; height: number }>(
-		{ width: 0, height: 0 },
-	);
-	console.log({ container });
-	const frameRef = useRef(frame);
 
+	const [container, setContainer] = useState<ContainerSize>({
+		width: 0,
+		height: 0,
+	});
+
+	// reactively update frame ref
+	const frameRef = useRef(frame);
 	useEffect(() => {
 		frameRef.current = frame;
 	}, [frame]);
 
-	// Helper: compute fitted size inside container based on aspect ratio and rule
-	function fitToContainer(rect: DOMRect, aspect: number) {
-		const ar = Math.max(0.01, aspect || 1);
-		let w = 0;
-		let h = 0;
-		// Rule: if w > h keep width, else keep height
-		if (ar >= 1) {
-			// keep width = container width, derive height
-			w = Math.floor(rect.width);
-			h = Math.round(w / ar);
-			if (h > rect.height) {
-				// fallback: clamp to height
-				h = Math.floor(rect.height);
-				w = Math.round(h * ar);
-			}
-		} else {
-			// keep height = container height, derive width
-			h = Math.floor(rect.height);
-			w = Math.round(h * ar);
-			if (w > rect.width) {
-				// fallback: clamp to width
-				w = Math.floor(rect.width);
-				h = Math.round(w / ar);
-			}
-		}
-		// Ensure minimums
-		w = Math.max(50, w);
-		h = Math.max(50, h);
-		return { w, h };
-	}
-
-	// Center frame on mount and apply initial UI size if provided; otherwise fit by aspect
-	useEffect(() => {
-		const c = containerRef.current;
-		if (!c) return;
-		const rect = c.getBoundingClientRect();
-		if (uiSize.width || uiSize.height) {
-			setFrame((f) => {
-				const w = uiSize.width ?? f.width;
-				const h = uiSize.height ?? f.height;
-				return {
-					x: Math.max(0, Math.round((rect.width - w) / 2)),
-					y: Math.max(0, Math.round((rect.height - h) / 2)),
-					width: w,
-					height: h,
-				};
-			});
-			setContainer({ width: rect.width, height: rect.height });
-		} else {
-			const ar =
-				contentAspect ?? initialSize.width / Math.max(1, initialSize.height);
-			const fit = fitToContainer(rect, ar);
-			setFrame({
-				x: Math.max(0, Math.round((rect.width - fit.w) / 2)),
-				y: Math.max(0, Math.round((rect.height - fit.h) / 2)),
-				width: fit.w,
-				height: fit.h,
-			});
-			setContainer({ width: rect.width, height: rect.height });
-		}
-	}, []);
+	// center frame on mount and apply initial UI size if provided; otherwise fit by aspect
+	useFrameOnMount({
+		containerRef,
+		setFrame,
+		setContainer,
+	});
 
 	// React to external uiSize changes (preview manual resize). If none provided, auto-fit by aspect.
 	useEffect(() => {
@@ -175,8 +135,21 @@ export function useMeshFrame({
 					if (!(uiSize.width || uiSize.height)) {
 						const ar = contentAspect ?? f.width / Math.max(1, f.height);
 						const fit = fitToContainer(rect, ar);
-						const x = Math.max(0, Math.round((rect.width - fit.w) / 2));
-						const y = Math.max(0, Math.round((rect.height - fit.h) / 2));
+						// Use saved position if available, otherwise center
+						const x =
+							ui.frameX !== undefined
+								? Math.max(
+										0,
+										Math.min(ui.frameX, Math.max(0, rect.width - fit.w)),
+									)
+								: Math.max(0, Math.round((rect.width - fit.w) / 2));
+						const y =
+							ui.frameY !== undefined
+								? Math.max(
+										0,
+										Math.min(ui.frameY, Math.max(0, rect.height - fit.h)),
+									)
+								: Math.max(0, Math.round((rect.height - fit.h) / 2));
 						return { x, y, width: fit.w, height: fit.h };
 					}
 					const w = Math.min(f.width, Math.floor(rect.width));
@@ -213,8 +186,14 @@ export function useMeshFrame({
 				frameRef.current.width / Math.max(1, frameRef.current.height),
 		);
 		setFrame(() => ({
-			x: Math.max(0, Math.round((rect.width - fit.w) / 2)),
-			y: Math.max(0, Math.round((rect.height - fit.h) / 2)),
+			x:
+				ui.frameX !== undefined
+					? Math.max(0, Math.min(ui.frameX, Math.max(0, rect.width - fit.w)))
+					: Math.max(0, Math.round((rect.width - fit.w) / 2)),
+			y:
+				ui.frameY !== undefined
+					? Math.max(0, Math.min(ui.frameY, Math.max(0, rect.height - fit.h)))
+					: Math.max(0, Math.round((rect.height - fit.h) / 2)),
 			width: fit.w,
 			height: fit.h,
 		}));
@@ -270,7 +249,6 @@ export function useMeshFrame({
 					const clampYMax = Math.max(minY, maxY);
 					nx = Math.min(Math.max(nx, clampXMin), clampXMax);
 					ny = Math.min(Math.max(ny, clampYMin), clampYMax);
-					//console.log('[useMeshFrame] zoom', { factor, s, from: f, to: { x: nx, y: ny, width: newW, height: newH } })
 					return {
 						x: nx,
 						y: ny,
@@ -335,18 +313,25 @@ export function useMeshFrame({
 					const maxY = Math.max(0, Math.floor(crect.height - f.height));
 					nx = Math.min(Math.max(nx, minX), maxX);
 					ny = Math.min(Math.max(ny, minY), maxY);
-					console.log("[useMeshFrame] drag move", {
-						dx,
-						dy,
-						next: { x: nx, y: ny },
-					});
+
 					return { ...f, x: nx, y: ny };
 				});
 				setContainer({ width: crect.width, height: crect.height });
 				lastX = e.clientX;
 				lastY = e.clientY;
 			};
-			const onUp = () => (dragging = false);
+			const onUp = () => {
+				if (dragging) {
+					// Save position when drag ends
+					const curr = frameRef.current;
+					console.log("Saving frame position:", curr.x, curr.y);
+					onCommitPositionRef.current?.({
+						x: curr.x,
+						y: curr.y,
+					});
+				}
+				dragging = false;
+			};
 			el.addEventListener("mousedown", onDown);
 			window.addEventListener("mousemove", onMove);
 			window.addEventListener("mouseup", onUp);
@@ -402,7 +387,6 @@ export function useMeshFrame({
 						? providedAr
 						: Math.max(0.01, curr.width / curr.height);
 				start = { x: curr.x, y: curr.y, w: curr.width, h: curr.height, ar };
-				const crect = c.getBoundingClientRect();
 			};
 			const onMove = (e: MouseEvent) => {
 				const currentHandle = handle;
@@ -455,7 +439,6 @@ export function useMeshFrame({
 					const minH = 50;
 					const maxW = Math.floor(crect.width);
 					const maxH = Math.floor(crect.height);
-					const unclamped = { x, y, w, h };
 					w = Math.max(minW, Math.min(maxW, w));
 					h = Math.max(minH, Math.min(maxH, h));
 					x = Math.min(Math.max(x, 0), Math.floor(crect.width - w));
@@ -502,4 +485,35 @@ export function useMeshFrame({
 	}, []);
 
 	return { containerRef, outerRef, frame };
+}
+
+// Helper: compute fitted size inside container based on aspect ratio and rule
+export function fitToContainer(rect: DOMRect, aspect: number) {
+	const ar = Math.max(0.01, aspect || 1);
+	let w = 0;
+	let h = 0;
+	// Rule: if w > h keep width, else keep height
+	if (ar >= 1) {
+		// keep width = container width, derive height
+		w = Math.floor(rect.width);
+		h = Math.round(w / ar);
+		if (h > rect.height) {
+			// fallback: clamp to height
+			h = Math.floor(rect.height);
+			w = Math.round(h * ar);
+		}
+	} else {
+		// keep height = container height, derive width
+		h = Math.floor(rect.height);
+		w = Math.round(h * ar);
+		if (w > rect.width) {
+			// fallback: clamp to width
+			w = Math.floor(rect.width);
+			h = Math.round(w / ar);
+		}
+	}
+	// Ensure minimums
+	w = Math.max(50, w);
+	h = Math.max(50, h);
+	return { w, h };
 }
