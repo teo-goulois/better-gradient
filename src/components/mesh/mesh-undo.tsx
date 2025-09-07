@@ -1,10 +1,10 @@
 "use client";
 
+import { trackEvent } from "@/lib/tracking";
+import { useMeshStore } from "@/store/store-mesh";
 import { IconRedo, IconUndo } from "@intentui/icons";
 import { Button } from "../ui/button";
-import { useMeshStore } from "@/store/store-mesh";
 import { Tooltip } from "../ui/tooltip";
-import { trackEvent } from "@/lib/tracking";
 
 export const MeshUndo = () => {
   const undo = useMeshStore((s) => s.undo);

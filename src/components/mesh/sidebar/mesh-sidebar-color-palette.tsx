@@ -3,14 +3,15 @@
 import { Button } from "@/components/ui/button";
 import { Tooltip } from "@/components/ui/tooltip";
 import { trackEvent } from "@/lib/tracking";
-import { type RgbHex, useMeshStore } from "@/store/store-mesh";
+import { useMeshStore } from "@/store/store-mesh";
+import type { RgbHex } from "@/types/types.mesh";
 import { move } from "@dnd-kit/helpers";
 import { DragDropProvider } from "@dnd-kit/react";
 import { useSortable } from "@dnd-kit/react/sortable";
 import { IconCircleQuestionmark, IconPlus } from "@intentui/icons";
-import { SidebarColorPicker } from "./sidebar-color-picker";
+import { MeshSidebarColorPicker } from "./mesh-sidebar-color-picker";
 
-export const SidebarColorPalette = () => {
+export const MeshSidebarColorPalette = () => {
   const { palette, setPalette } = useMeshStore();
 
   return (
@@ -83,7 +84,7 @@ const SortableColor = ({ color, index }: SortableColorProps) => {
       //style={style}
       className="flex items-center gap-1 relative group transition-opacity duration-200 cursor-grab active:cursor-grabbing "
     >
-      <SidebarColorPicker
+      <MeshSidebarColorPicker
         value={color.color}
         onChange={(c) => {
           const value = c.toString("hex");

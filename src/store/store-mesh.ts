@@ -9,6 +9,7 @@ import {
 import type {
 	BlobShape,
 	CanvasSettings,
+	ContainerSize,
 	Filters,
 	FrameRect,
 	Point,
@@ -24,18 +25,16 @@ export type MeshState = {
 	canvas: CanvasSettings;
 	seed: string;
 	selectedShapeId?: string;
+	frame?: FrameRect;
 	ui: {
-		frame?: FrameRect;
+		container?: ContainerSize;
+		// vertices
 		showCenters: boolean;
 		showVertices: boolean;
-		containerWidth?: number;
-		containerHeight?: number;
-		frameWidth?: number;
-		frameHeight?: number;
-		frameX?: number;
-		frameY?: number;
+		// settings
 		maintainAspectRatio: boolean;
-		aspectRatio?: number;
+		// drag state
+		isDragging: boolean;
 	};
 
 	// History
@@ -52,11 +51,36 @@ export type MeshState = {
 	moveShapeDown: (shapeId: string) => void;
 	shuffleColors: () => void;
 	setSelectedShape: (id?: string) => void;
-	setUi: (ui: Partial<MeshState["ui"]>) => void;
-	setUiFrameSize: (size: { width?: number; height?: number }) => void;
-	setUiFramePosition: (position: { x?: number; y?: number }) => void;
+	setUi: (
+		ui: Partial<MeshState["ui"]>,
+		opts?: { history?: "push" | "replace" | "skip" },
+	) => void;
+	// UI - frame
+	setUiFrameSize: (
+		size: { width?: number; height?: number },
+		opts?: { history?: "push" | "replace" | "skip" },
+	) => void;
+	setUiFrame: (
+		size: Partial<FrameRect>,
+		opts?: { history?: "push" | "replace" | "skip" },
+	) => void;
+	setUiFramePosition: (
+		position: { x?: number; y?: number },
+		opts?: { history?: "push" | "replace" | "skip" },
+	) => void;
+	setUiFrameTransform: (
+		transform: { x?: number; y?: number; width?: number; height?: number },
+		opts?: { history?: "push" | "replace" | "skip" },
+	) => void;
+	// Ui - contaier
+	setUiContainerSize: (size: ContainerSize) => void;
+	// shapes
 	toggleAspectLock: (locked: boolean) => void;
-	updateShape: (id: string, updater: (s: BlobShape) => BlobShape) => void;
+	updateShape: (
+		id: string,
+		updater: (s: BlobShape) => BlobShape,
+		opts?: { history?: "push" | "replace" | "skip" },
+	) => void;
 	undo: () => void;
 	redo: () => void;
 	toShareString: () => string;
@@ -81,8 +105,11 @@ export type MeshStoreActions = Pick<
 	| "toShareString"
 	| "fromShareString"
 	| "setUiFrameSize"
+	| "setUiFrame"
 	| "setUiFramePosition"
+	| "setUiFrameTransform"
 	| "toggleAspectLock"
+	| "setUiContainerSize"
 >;
 
 // Default initial content so the preview renders immediately on first load
@@ -107,25 +134,24 @@ const initialStateBase: Omit<MeshState, keyof MeshStoreActions> = {
 	seed: INITIAL_SEED,
 	shapes: INITIAL_SHAPES,
 	selectedShapeId: undefined as string | undefined,
+	frame: undefined,
 	ui: {
-		frame: undefined,
+		container: undefined,
 		showCenters: false,
 		showVertices: false,
-		frameWidth: undefined,
-		frameHeight: undefined,
-		frameX: undefined,
-		frameY: undefined,
 		maintainAspectRatio: true,
-		aspectRatio: DEFAULT_CANVAS.width / DEFAULT_CANVAS.height,
+		isDragging: false,
 	},
 	_past: [] as string[],
 	_future: [] as string[],
 };
 
+type HistoryMode = "push" | "replace";
+
 export const useMeshStore = create<MeshState>()(
 	persist(
 		(set, get) => {
-			const commit = (next: Partial<MeshState>) => {
+			const commit = (next: Partial<MeshState>, mode: HistoryMode = "push") => {
 				const curr = get();
 				const snapshot = serialize({
 					palette: curr.palette,
@@ -134,11 +160,18 @@ export const useMeshStore = create<MeshState>()(
 					canvas: curr.canvas,
 					seed: curr.seed,
 					selectedShapeId: curr.selectedShapeId,
+					frame: curr.frame,
 					ui: curr.ui,
 					_past: [],
 					_future: [],
 				});
-				set({ _past: [...curr._past, snapshot], _future: [] });
+				if (mode === "replace" && curr._past.length > 0) {
+					const past = [...curr._past];
+					past[past.length - 1] = snapshot;
+					set({ _past: past, _future: [] });
+				} else {
+					set({ _past: [...curr._past, snapshot], _future: [] });
+				}
 				set(next);
 			};
 
@@ -232,67 +265,165 @@ export const useMeshStore = create<MeshState>()(
 					commit({ shapes });
 				},
 				setSelectedShape: (id) => set({ selectedShapeId: id }),
-				setUi: (ui) => set((s) => ({ ui: { ...s.ui, ...ui } })),
-				setUiFrameSize: (size) =>
-					set((s) => {
-						const curr = s as MeshState;
-						const next: Partial<MeshState["ui"]> = {};
-						const min = 50;
-						const max = 6000;
-						const w = size.width ?? curr.ui.frameWidth ?? curr.canvas.width;
-						const h = size.height ?? curr.ui.frameHeight ?? curr.canvas.height;
-						const locked = curr.ui.maintainAspectRatio;
-						const ar =
-							curr.ui.aspectRatio ??
-							(curr.ui.frameWidth && curr.ui.frameHeight
-								? curr.ui.frameWidth / curr.ui.frameHeight
-								: curr.canvas.width / curr.canvas.height);
-						let nextW = clamp(w, min, max);
-						let nextH = clamp(h, min, max);
-						if (locked) {
-							if (size.width !== undefined && size.height === undefined) {
-								nextH = Math.round(nextW / Math.max(0.01, ar));
-							} else if (
-								size.height !== undefined &&
-								size.width === undefined
-							) {
-								nextW = Math.round(nextH * Math.max(0.01, ar));
-							}
+				setUi: (ui, opts = { history: "skip" }) => {
+					const curr = get();
+					const history = opts?.history ?? "push";
+
+					if (history === "skip") {
+						set({ ui: { ...curr.ui, ...ui } });
+					} else {
+						commit(
+							{ ui: { ...curr.ui, ...ui } },
+							history === "replace" ? "replace" : "push",
+						);
+					}
+				},
+				// UI - frame
+				setUiFrame: (frame) => {
+					set((state) => {
+						if (!state.frame) return state;
+						return {
+							...state,
+							frame: { ...state.frame, ...frame },
+						};
+					});
+				},
+				setUiFrameSize: (size, opts = { history: "push" }) => {
+					const curr = get();
+					const min = 50;
+					const max = 6000;
+					const w = size.width ?? curr.frame?.width ?? curr.canvas.width;
+					const h = size.height ?? curr.frame?.height ?? curr.canvas.height;
+					const locked = curr.ui.maintainAspectRatio;
+					const ar =
+						curr.frame?.aspectRatio ??
+						(curr.frame?.width && curr.frame?.height
+							? curr.frame?.width / curr.frame?.height
+							: curr.canvas.width / curr.canvas.height);
+					let nextW = clamp(w, min, max);
+					let nextH = clamp(h, min, max);
+					if (locked) {
+						if (size.width !== undefined && size.height === undefined) {
+							nextH = Math.round(nextW / Math.max(0.01, ar));
+						} else if (size.height !== undefined && size.width === undefined) {
+							nextW = Math.round(nextH * Math.max(0.01, ar));
 						}
-						next.frameWidth = nextW;
-						next.frameHeight = nextH;
-						return { ui: { ...curr.ui, ...next } };
-					}),
-				setUiFramePosition: (position) =>
-					set((s) => {
-						const curr = s as MeshState;
-						const next: Partial<MeshState["ui"]> = {};
-						if (position.x !== undefined) next.frameX = position.x;
-						if (position.y !== undefined) next.frameY = position.y;
-						console.log("Storing frame position in store:", next.frameX, next.frameY);
-						return { ui: { ...curr.ui, ...next } };
-					}),
+					}
+
+					// Actually create the frame object with the new size
+					const nextFrame = curr.frame
+						? {
+								...curr.frame,
+								width: nextW,
+								height: nextH,
+							}
+						: {
+								x: 0,
+								y: 0,
+								width: nextW,
+								height: nextH,
+								aspectRatio: ar,
+							};
+
+					const history = opts?.history ?? "push";
+					if (history === "skip") {
+						set({ frame: nextFrame });
+					} else {
+						commit(
+							{ frame: nextFrame },
+							history === "replace" ? "replace" : "push",
+						);
+					}
+				},
+				setUiFramePosition: (position, opts) => {
+					const history = opts?.history ?? "push";
+					if (history === "skip") {
+						// Optimize for drag operations - use functional update to avoid get()
+						set((state) => {
+							if (!state.frame) return state;
+							return {
+								...state,
+								frame: {
+									...state.frame,
+									...position,
+								},
+							};
+						});
+					} else {
+						const curr = get();
+						if (!curr.frame) return;
+						commit(
+							{ frame: { ...curr.frame, ...position } },
+							history === "replace" ? "replace" : "push",
+						);
+					}
+				},
+				setUiFrameTransform: (transform, opts) => {
+					const history = opts?.history ?? "push";
+					if (history === "skip") {
+						// Optimize for zoom operations - use functional update to avoid get()
+						set((state) => {
+							if (!state.frame) return state;
+							return {
+								...state,
+								frame: {
+									...state.frame,
+									...transform,
+								},
+							};
+						});
+					} else {
+						const curr = get();
+						if (!curr.frame) return;
+						commit(
+							{ frame: { ...curr.frame, ...transform } },
+							history === "replace" ? "replace" : "push",
+						);
+					}
+				},
+				// UI - container
+				setUiContainerSize: (size) => {
+					set((state) => ({
+						ui: {
+							...state.ui,
+							container: size,
+						},
+					}));
+				},
+				// shapes
 				toggleAspectLock: (locked: boolean) =>
-					set((s) => {
-						const curr = s as MeshState;
-						const w = curr.ui.frameWidth ?? curr.canvas.width;
-						const h = curr.ui.frameHeight ?? curr.canvas.height;
+					set((state) => {
+						const curr = state as MeshState;
+						const w = curr.frame?.width ?? curr.canvas.width;
+						const h = curr.frame?.height ?? curr.canvas.height;
 						const ar = Math.max(0.01, w / h);
 						return {
+							...state,
 							ui: {
 								...curr.ui,
 								maintainAspectRatio: locked,
-								aspectRatio: locked ? ar : curr.ui.aspectRatio,
 							},
+							frame: curr.frame
+								? {
+										...curr.frame,
+										aspectRatio: locked ? ar : curr.frame.aspectRatio,
+									}
+								: curr.frame,
 						};
 					}),
-				updateShape: (id, updater) => {
+				updateShape: (id, updater, opts) => {
 					const curr = get();
 					const shapes = curr.shapes.map((s) => (s.id === id ? updater(s) : s));
-					commit({ shapes });
+					const history = opts?.history ?? "push";
+					if (history === "skip") {
+						set({ shapes });
+					} else {
+						commit({ shapes }, history === "replace" ? "replace" : "push");
+					}
 				},
 				undo: () => {
 					const curr = get();
+
 					const prev = curr._past.at(-1);
 					if (!prev) return;
 					const rest = curr._past.slice(0, -1);
@@ -303,6 +434,7 @@ export const useMeshStore = create<MeshState>()(
 						canvas: curr.canvas,
 						seed: curr.seed,
 						selectedShapeId: curr.selectedShapeId,
+						frame: curr.frame,
 						ui: curr.ui,
 						_past: [],
 						_future: [],
@@ -326,6 +458,7 @@ export const useMeshStore = create<MeshState>()(
 						canvas: curr.canvas,
 						seed: curr.seed,
 						selectedShapeId: curr.selectedShapeId,
+						frame: curr.frame,
 						ui: curr.ui,
 						_past: [],
 						_future: [],
@@ -346,6 +479,7 @@ export const useMeshStore = create<MeshState>()(
 						canvas: curr.canvas,
 						seed: curr.seed,
 						selectedShapeId: undefined,
+						frame: curr.frame,
 						ui: curr.ui,
 						_past: [],
 						_future: [],
@@ -378,6 +512,7 @@ export const useMeshStore = create<MeshState>()(
 				filters: state.filters,
 				canvas: state.canvas,
 				seed: state.seed,
+				frame: state.frame,
 				ui: state.ui,
 			}),
 			onRehydrateStorage: () => (state) => {

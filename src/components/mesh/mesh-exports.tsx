@@ -6,13 +6,7 @@ import {
 } from "@/lib/mesh-svg";
 import { trackEvent } from "@/lib/tracking";
 import { useMeshStore } from "@/store/store-mesh";
-import {
-  IconCheck,
-  IconDownload,
-  IconFile,
-  IconGallery,
-  IconGalleryFill,
-} from "@intentui/icons";
+import { IconCheck, IconDownload, IconGalleryFill } from "@intentui/icons";
 import { toPng } from "html-to-image";
 import type { SVGProps } from "react";
 import { useState } from "react";
@@ -20,6 +14,7 @@ import { twJoin } from "tailwind-merge";
 import { Button, ButtonPrimitive } from "../ui/button";
 import { Popover } from "../ui/popover";
 import { Separator } from "../ui/separator";
+import { useFrameContext } from "./frame/frame-context";
 
 type Props = {
   outerRef: { current: HTMLDivElement | null };
@@ -29,6 +24,7 @@ type Props = {
 export const MeshExports = ({ outerRef, contentRef }: Props) => {
   const { canvas, shapes, palette, filters, ui, toShareString } =
     useMeshStore();
+  const { frame } = useFrameContext();
 
   const [feedbackStates, setFeedbackStates] = useState<Record<string, boolean>>(
     {}
@@ -92,10 +88,8 @@ export const MeshExports = ({ outerRef, contentRef }: Props) => {
   };
 
   const downloadSvg = () => {
-    const width =
-      contentRef?.current?.clientWidth ?? ui.frameWidth ?? canvas.width;
-    const height =
-      contentRef?.current?.clientHeight ?? ui.frameHeight ?? canvas.height;
+    const width = contentRef?.current?.clientWidth ?? canvas.width;
+    const height = contentRef?.current?.clientHeight ?? canvas.height;
     const svg = svgStringFromState({
       canvas,
       shapes,
@@ -120,10 +114,8 @@ export const MeshExports = ({ outerRef, contentRef }: Props) => {
   };
 
   const copyCss = async () => {
-    const width =
-      contentRef?.current?.clientWidth ?? ui.frameWidth ?? canvas.width;
-    const height =
-      contentRef?.current?.clientHeight ?? ui.frameHeight ?? canvas.height;
+    const width = contentRef?.current?.clientWidth ?? canvas.width;
+    const height = contentRef?.current?.clientHeight ?? canvas.height;
     const svg = svgStringFromState({
       canvas,
       shapes,

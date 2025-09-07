@@ -1,14 +1,18 @@
 "use client";
 
-import { useContainerResize } from "@/hooks/use-container-resize";
+import { useContainerSize } from "@/hooks/mesh/use-container-size";
+import { useFrameOnMount } from "@/hooks/mesh/use-frame-on-mount";
+import { useMeshDrawing } from "@/hooks/mesh/use-mesh-drawing";
+import { useMeshFrame } from "@/hooks/mesh/use-mesh-frame";
+import { useMeshSvg } from "@/hooks/mesh/use-mesh-svg";
 import { useIsMounted } from "@/hooks/use-is-mounted";
 import { useMeshStore } from "@/store/store-mesh";
-import { useEffect, useRef } from "react";
+import { useCallback, useRef } from "react";
 import { SharedFeedback } from "../shared/shared-feedback";
 import { Loader } from "../ui/loader";
-import { useMeshFrame } from "./hooks/use-mesh-frame";
-import { useMeshSvg } from "./hooks/use-mesh-svg";
+import { useFrameContext } from "./frame/frame-context";
 import { MeshActions } from "./mesh-actions";
+import { MeshDevtools } from "./mesh-devtools";
 import { MeshExports } from "./mesh-exports";
 import { MeshUndo } from "./mesh-undo";
 import { CentersOverlay } from "./overlays/CentersOverlay";
@@ -16,127 +20,51 @@ import { VerticesOverlay } from "./overlays/VerticesOverlay";
 
 export const MeshPreview = () => {
   const isMounted = useIsMounted();
-
+  const ui = useMeshStore((s) => s.ui);
   const shapes = useMeshStore((s) => s.shapes);
   const palette = useMeshStore((s) => s.palette);
-  const filters = useMeshStore((s) => s.filters);
-  const canvas = useMeshStore((s) => s.canvas);
-  const ui = useMeshStore((s) => s.ui);
-  const setUiFrameSize = useMeshStore((s) => s.setUiFrameSize);
-  const setUiFramePosition = useMeshStore((s) => s.setUiFramePosition);
   const updateShape = useMeshStore((s) => s.updateShape);
   const setSelectedShape = useMeshStore((s) => s.setSelectedShape);
   const setShapes = useMeshStore((s) => s.setShapes);
   const moveShapeUp = useMeshStore((s) => s.moveShapeUp);
   const moveShapeDown = useMeshStore((s) => s.moveShapeDown);
 
-  const { svgUrl } = useMeshSvg({ canvas, shapes, palette, filters });
+  const { frame } = useFrameContext();
 
-  // Canvas + content refs
-  const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const containerRef = useRef<HTMLDivElement | null>(null);
+  const outerRef = useRef<HTMLDivElement>(null);
   const contentRef = useRef<HTMLDivElement | null>(null);
+  const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
-  const { containerRef, outerRef, frame, setOuterNode, setContainerNode } =
-    useMeshFrame({
-      initialSize: { width: canvas.width, height: canvas.height },
-      uiSize: { width: ui.frameWidth, height: ui.frameHeight },
-      onCommitSize: (size) => {
-        setUiFrameSize({
-          width: size.width,
-          height: size.height,
-        });
-      },
-      onCommitPosition: (position) => {
-        setUiFramePosition({
-          x: position.x,
-          y: position.y,
-        });
-      },
-      lockAspect: {
-        locked: ui.maintainAspectRatio,
-        aspectRatio:
-          ui.aspectRatio ??
-          (ui.frameWidth && ui.frameHeight
-            ? ui.frameWidth / ui.frameHeight
-            : canvas.width / canvas.height),
-      },
-      contentAspect:
-        ui.aspectRatio ??
-        (ui.frameWidth && ui.frameHeight
-          ? ui.frameWidth / ui.frameHeight
-          : canvas.width / canvas.height),
-    });
+  const setContainerRef = useCallback((node: HTMLDivElement | null) => {
+    containerRef.current = node;
+  }, []);
 
-  useContainerResize(containerRef);
-
-  // Draw SVG URL into Canvas; avoid resizing canvas unless dims changed to prevent flicker
-  useEffect(() => {
-    const canvasEl = canvasRef.current;
-    if (!canvasEl) {
-      console.log("no canvasEl");
-      return;
-    }
-    if (canvasEl.width !== canvas.width || canvasEl.height !== canvas.height) {
-      canvasEl.width = canvas.width;
-      canvasEl.height = canvas.height;
-    }
-    const ctx = canvasEl.getContext("2d");
-    if (!ctx) {
-      console.log("no ctx");
-      return;
-    }
-    let cancelled = false;
-    const img = new Image();
-    img.decoding = "async" as any;
-    img.onload = () => {
-      const draw = () => {
-        if (cancelled) return;
-        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-      };
-      if ("decode" in img && typeof (img as any).decode === "function") {
-        (img as any)
-          .decode()
-          .then(() => {
-            if (!cancelled) draw();
-          })
-          .catch(() => {
-            if (!cancelled) draw();
-          });
-      } else {
-        draw();
-      }
-    };
-    img.src = svgUrl;
-    return () => {
-      cancelled = true;
-    };
-  }, [svgUrl, canvas.width, canvas.height, canvasRef.current]);
-
-  if (!isMounted)
-    return (
-      <div className="w-full h-screen flex justify-center items-center">
-        <Loader size="lg" />
-      </div>
-    );
+  useContainerSize(containerRef);
+  useFrameOnMount();
+  useMeshFrame({ outerRef, containerRef });
+  const { canvas } = useMeshDrawing({ canvasRef });
 
   return (
     <div className="w-full h-screen px-6 py-4 relative">
-      <div className="w-full h-full relative" ref={setContainerNode}>
+      {!isMounted && <MeshPreviewLoader />}
+      <MeshDevtools />
+      <div className="w-full h-full relative" ref={setContainerRef}>
         <MeshExports outerRef={outerRef} contentRef={contentRef} />
         <MeshActions />
-        <MeshUndo />
         <SharedFeedback />
+        <MeshUndo />
 
         <div
           id="mesh-preview-wrapper"
-          ref={setOuterNode}
+          ref={outerRef}
           className="rounded-2xl shadow-xl p-1 overflow-visible bg-white flex items-center justify-center select-none"
           style={{
             position: "absolute",
-            top: frame.y,
-            left: frame.x,
-            width: frame.width,
-            height: frame.height,
+            top: frame?.y,
+            left: frame?.x,
+            width: frame?.width,
+            height: frame?.height,
           }}
         >
           {/* Content clip to apply border radius only to the preview content */}
@@ -152,8 +80,7 @@ export const MeshPreview = () => {
             />
           </div>
 
-          {/* Overlays render as absolutely positioned divs over the content */}
-          {ui.showVertices && (
+          {ui.showVertices && frame?.width && frame?.height && (
             <VerticesOverlay
               shapes={shapes}
               scale={{
@@ -173,8 +100,7 @@ export const MeshPreview = () => {
             />
           )}
 
-          {/* Centers overlay: not clipped and constant on-screen size */}
-          {ui.showCenters && (
+          {ui.showCenters && frame?.width && frame?.height && (
             <CentersOverlay
               shapes={shapes}
               scale={{
@@ -203,9 +129,17 @@ export const MeshPreview = () => {
               onMoveShapeDown={moveShapeDown}
             />
           )}
-          <ResizeHandles />
+          {/* <ResizeHandles /> */}
         </div>
       </div>
+    </div>
+  );
+};
+
+const MeshPreviewLoader = () => {
+  return (
+    <div className="w-full h-screen flex justify-center items-center absolute inset-0 bg-transparent">
+      <Loader size="lg" />
     </div>
   );
 };

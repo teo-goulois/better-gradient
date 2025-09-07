@@ -4,15 +4,13 @@ import {
   Disclosure,
   DisclosurePanel,
   DisclosureTrigger,
-} from "@/components/mesh/sidebar/sidebar-disclosure";
-import { SidebarColorPalette } from "./sidebar-color-palette";
-import { IconColorSwatch } from "@intentui/icons";
-import { useMeshStore } from "@/store/store-mesh";
+} from "@/components/mesh/sidebar/mesh-sidebar-disclosure";
 import { Switch } from "@/components/ui/switch";
+import { useMeshStore } from "@/store/store-mesh";
+import { IconColorSwatch } from "@intentui/icons";
+import { MeshSidebarColorPalette } from "./mesh-sidebar-color-palette";
 
-type Props = {};
-
-export const SidebarColor = ({}: Props) => {
+export const MeshSidebarColor = () => {
   const { ui, setUi } = useMeshStore();
   return (
     <div>
@@ -21,7 +19,7 @@ export const SidebarColor = ({}: Props) => {
           <IconColorSwatch /> Colors
         </DisclosureTrigger>
         <DisclosurePanel>
-          <SidebarColorPalette />
+          <MeshSidebarColorPalette />
           <div className="flex flex-col gap-2">
             <Switch
               className="font-semibold text-sm"
