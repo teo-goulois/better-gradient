@@ -160,6 +160,25 @@ export function generateShapes(args: {
 	);
 	const centers = [...centersInside, ...centersOutside];
 
+	// Helper: pick a palette index with reduced probability for index 0
+	const pickWeightedPaletteIndex = (
+		rng: ReturnType<typeof prng>,
+		length: number,
+	) => {
+		const len = Math.max(1, length);
+		if (len === 1) return 0;
+		const weights: number[] = new Array(len).fill(1);
+		weights[0] = 0.5; // downweight background/first color
+		const sum = weights.reduce((acc, v) => acc + v, 0);
+		const target = rng.float(0, sum);
+		let acc = 0;
+		for (let idx = 0; idx < len; idx++) {
+			acc += weights[idx];
+			if (target <= acc) return idx;
+		}
+		return len - 1;
+	};
+
 	for (let i = 0; i < args.count; i++) {
 		const c = centers[i];
 		const radiusCfg =
@@ -169,7 +188,7 @@ export function generateShapes(args: {
 		shapes.push({
 			id: createId("blob"),
 			points: pts,
-			fillIndex: i % paletteLength,
+			fillIndex: pickWeightedPaletteIndex(r, paletteLength),
 		});
 	}
 	return shapes;

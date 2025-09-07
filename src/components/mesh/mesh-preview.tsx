@@ -48,7 +48,7 @@ export const MeshPreview = () => {
   return (
     <div className="w-full h-screen px-6 py-4 relative">
       {!isMounted && <MeshPreviewLoader />}
-      <MeshDevtools />
+      {/* <MeshDevtools /> */}
       <div className="w-full h-full relative" ref={setContainerRef}>
         <MeshExports outerRef={outerRef} contentRef={contentRef} />
         <MeshActions />

@@ -38,8 +38,6 @@ export const CentersOverlay = memo(function CentersOverlay({
     return () => window.removeEventListener("click", close);
   }, [menuFor, isDragging]);
 
-  console.log("shapes", shapes);
-
   const centers = useMemo(() => {
     return shapes.map((s) => ({
       id: s.id,
@@ -48,8 +46,6 @@ export const CentersOverlay = memo(function CentersOverlay({
       fillIndex: s.fillIndex,
     }));
   }, [shapes]);
-
-  console.log("centers", centers);
 
   return (
     <div

@@ -54,7 +54,7 @@ export const MeshSidebarColorPicker = ({
     <div className={twMerge("flex flex-col items-start gap-y-1", className)}>
       <ColorPickerPrimitive {...props}>
         <Popover>
-          <div className="relative group">
+          <Popover.Trigger className="relative group">
             <Button
               isDisabled={isDisabled}
               size={label ? "md" : "sq-sm"}
@@ -84,14 +84,14 @@ export const MeshSidebarColorPicker = ({
                 <IconX className="size-2" />
               </Button>
             )}
-          </div>
+          </Popover.Trigger>
           {/* </Popover.Trigger> */}
           <PopoverContent
             className="overflow-auto **:data-[slot=color-area]:w-full **:data-[slot=color-slider]:w-full sm:min-w-min sm:max-w-56 sm:**:data-[slot=color-area]:size-56 *:[[role=dialog]]:p-4 sm:*:[[role=dialog]]:p-3"
             showArrow={showArrow}
             placement={placement}
           >
-            <div className="flex flex-col gap-y-1.5">
+            <div className="flex flex-col gap-y-1.5 p-4">
               {children || (
                 <>
                   <ColorArea
@@ -106,7 +106,15 @@ export const MeshSidebarColorPicker = ({
                   />
                   <div className="flex items-center gap-1.5">
                     {eyeDropper && <EyeDropper />}
-                    <ColorField className="h-9" aria-label="Hex" />
+                    <ColorField
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") {
+                          e.currentTarget.blur();
+                        }
+                      }}
+                      className="h-9"
+                      aria-label="Hex"
+                    />
                   </div>
                 </>
               )}
