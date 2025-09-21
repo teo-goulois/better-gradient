@@ -1,4 +1,5 @@
 import { DEFAULT_CANVAS, DEFAULT_FILTERS } from "@/lib/config/config.mesh";
+import { configPreset } from "@/lib/config/config.preset";
 import {
 	clamp,
 	deserialize,
@@ -113,19 +114,10 @@ export type MeshStoreActions = Pick<
 >;
 
 // Default initial content so the preview renders immediately on first load
-const INITIAL_PALETTE = [
-	{ id: crypto.randomUUID(), color: "#6d1d82" },
-	{ id: crypto.randomUUID(), color: "#ef4444" },
-	{ id: crypto.randomUUID(), color: "#ffffff" },
-] as RgbHex[];
+const INITIAL_PALETTE = configPreset[0].config.palette;
 
 const INITIAL_SEED = "seed-1";
-const INITIAL_SHAPES: BlobShape[] = generateShapes({
-	seed: INITIAL_SEED,
-	count: 6,
-	canvas: DEFAULT_CANVAS,
-	palette: INITIAL_PALETTE,
-});
+const INITIAL_SHAPES: BlobShape[] = configPreset[0].config.shapes;
 
 const initialStateBase: Omit<MeshState, keyof MeshStoreActions> = {
 	palette: INITIAL_PALETTE,
