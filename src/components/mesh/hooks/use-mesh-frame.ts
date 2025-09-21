@@ -1,5 +1,5 @@
 import { useMeshStore } from "@/store/store-mesh";
-import { ContainerSize } from "@/types/types.mesh";
+import type { ContainerSize } from "@/types/types.mesh";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useFrameOnMount } from "./use-frame-on-mount";
 

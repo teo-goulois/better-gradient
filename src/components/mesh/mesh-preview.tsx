@@ -87,14 +87,14 @@ export const MeshPreview = () => {
     }
     let cancelled = false;
     const img = new Image();
-    img.decoding = "async" as any;
+    img.decoding = "async";
     img.onload = () => {
       const draw = () => {
         if (cancelled) return;
         ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
       };
-      if ("decode" in img && typeof (img as any).decode === "function") {
-        (img as any)
+      if ("decode" in img && typeof img.decode === "function") {
+        img
           .decode()
           .then(() => {
             if (!cancelled) draw();
