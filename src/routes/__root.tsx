@@ -29,17 +29,17 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
         content: "width=device-width, initial-scale=1",
       },
       {
-        title: "Better Gradient - Blurred-Shape Mesh Gradient Generator",
+        title: "Create Beautiful Gradients",
       },
       {
         name: "description",
         content:
-          "Create stunning blurred mesh gradients with our intuitive editor. Design beautiful backgrounds, export in high quality, and bring your creative vision to life.",
+          "Create stunning gradients with our intuitive editor. Design beautiful backgrounds, export in high quality, and bring your creative vision to life.",
       },
       {
         name: "keywords",
         content:
-          "mesh gradient, blur gradient, background generator, design tool, gradient editor, css gradients, visual design",
+          "gradient, background generator, design tool, gradient editor, css gradients, visual design",
       },
       {
         name: "author",
@@ -52,12 +52,12 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
       // Open Graph meta tags
       {
         property: "og:title",
-        content: "Better Gradient - Blurred-Shape Mesh Gradient Generator",
+        content: "Better Gradient - Beautiful Gradient Generator",
       },
       {
         property: "og:description",
         content:
-          "Create stunning blurred mesh gradients with our intuitive editor. Design beautiful backgrounds, export in high quality, and bring your creative vision to life.",
+          "Create stunning  gradients with our intuitive editor. Design beautiful backgrounds, export in high quality, and bring your creative vision to life.",
       },
       {
         property: "og:type",
@@ -82,7 +82,7 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
       },
       {
         name: "twitter:title",
-        content: "Better Gradient - Blurred-Shape Mesh Gradient Generator",
+        content: "Better Gradient - Beautiful Gradient Generator",
       },
       {
         name: "twitter:description",

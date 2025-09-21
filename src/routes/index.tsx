@@ -5,9 +5,9 @@ import { Link } from "@tanstack/react-router";
 const structuredData = {
   "@context": "https://schema.org",
   "@type": "WebApplication",
-  name: "Better Gradient - Mesh Gradient Generator",
+  name: "Better Gradient - Beautiful Gradient Generator",
   description:
-    "Create stunning blurred mesh gradients with our intuitive editor. Design beautiful backgrounds, export in high quality, and bring your creative vision to life.",
+    "Create stunning gradients with our intuitive editor. Design beautiful backgrounds, export in high quality, and bring your creative vision to life.",
   url: "https://better-gradient.com",
   applicationCategory: "DesignApplication",
   operatingSystem: "Web Browser",
@@ -25,7 +25,6 @@ const structuredData = {
     "Real-time preview",
     "High quality export",
     "Multiple export formats",
-    "Drag and drop interface",
     "Color customization",
     "Undo/redo functionality",
   ],
