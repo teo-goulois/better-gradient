@@ -102,10 +102,14 @@ export const MeshSidebarPresetSelector = () => {
     setPalette(preset.config.palette as RgbHex[]);
     setShapes(preset.config.shapes);
 
-    trackEvent("Apply Preset", {
-      preset_name: preset.title,
-      is_user_preset: "isUserPreset" in preset ? preset.isUserPreset : false,
-    });
+    trackEvent(
+      "Apply Preset",
+      {
+        preset_name: preset.title,
+        is_user_preset: "isUserPreset" in preset ? preset.isUserPreset : false,
+      },
+      true
+    );
   };
 
   const findSelectedPreset = (): Key | null => {
@@ -175,9 +179,13 @@ export const MeshSidebarPresetSelector = () => {
     // Reset form
     setPresetName("");
 
-    trackEvent("Save Custom Preset", {
-      preset_name: newPreset.title,
-    });
+    trackEvent(
+      "Save Custom Preset",
+      {
+        preset_name: newPreset.title,
+      },
+      true
+    );
   };
 
   const selectedPresetKey = findSelectedPreset();

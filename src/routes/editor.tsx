@@ -14,7 +14,7 @@ export const Route = createFileRoute("/editor")({
 
 function Editor() {
   useEffect(() => {
-    trackEvent("Editor Loaded");
+    trackEvent("Editor Loaded", undefined, true);
   }, []);
 
   return (

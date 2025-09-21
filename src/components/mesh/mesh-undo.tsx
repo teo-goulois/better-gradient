@@ -14,12 +14,12 @@ export const MeshUndo = () => {
 
   const handleUndo = () => {
     undo();
-    trackEvent("Undo Action");
+    trackEvent("Undo Action", undefined, true);
   };
 
   const handleRedo = () => {
     redo();
-    trackEvent("Redo Action");
+    trackEvent("Redo Action", undefined, true);
   };
 
   return (

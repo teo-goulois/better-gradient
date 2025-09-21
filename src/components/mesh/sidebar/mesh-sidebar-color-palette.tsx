@@ -50,9 +50,13 @@ export const MeshSidebarColorPalette = () => {
                   ...palette,
                   { id: crypto.randomUUID(), color: "#ffffff" },
                 ] as RgbHex[]);
-                trackEvent("Add Color", {
-                  colors_count: palette.length + 1,
-                });
+                trackEvent(
+                  "Add Color",
+                  {
+                    colors_count: palette.length + 1,
+                  },
+                  true
+                );
               }}
             >
               <IconPlus className="size-4" />
@@ -91,19 +95,27 @@ const SortableColor = ({ color, index }: SortableColorProps) => {
           const next = [...palette];
           next[index] = { id: color.id, color: value } as RgbHex;
           setPalette(next as RgbHex[]);
-          trackEvent("Change Color", {
-            color_index: index,
-            new_color: value,
-            colors_count: palette.length,
-          });
+          trackEvent(
+            "Change Color",
+            {
+              color_index: index,
+              new_color: value,
+              colors_count: palette.length,
+            },
+            true
+          );
         }}
         onRemove={() => {
           if (palette.length === 1) return;
           setPalette(palette.filter((_, idx) => idx !== index) as RgbHex[]);
-          trackEvent("Remove Color", {
-            color_index: index,
-            colors_count: palette.length - 1,
-          });
+          trackEvent(
+            "Remove Color",
+            {
+              color_index: index,
+              colors_count: palette.length - 1,
+            },
+            true
+          );
         }}
       />
     </div>
