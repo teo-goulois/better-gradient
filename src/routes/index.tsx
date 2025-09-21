@@ -81,7 +81,7 @@ function App() {
               <Link
                 to={"/editor"}
                 onClick={() => trackEvent("Navigate to Editor")}
-                className="inline-flex items-center gap-3 relative overflow-hidden rounded-full  text-white px-8 py-4 text-lg font-medium transition-colors duration-200 group"
+                className="inline-flex items-center gap-3 relative overflow-hidden rounded-full  text-white px-8 py-4 text-lg font-medium ease-in-out duration-150 group hover:scale-105 "
               >
                 <img
                   src="/gradients/gradient-1.webp"

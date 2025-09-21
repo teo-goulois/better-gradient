@@ -3,11 +3,11 @@ import {
   type ButtonProps as ButtonPrimitiveProps,
   composeRenderProps,
 } from "react-aria-components";
-import { tv, type VariantProps } from "tailwind-variants";
+import { type VariantProps, tv } from "tailwind-variants";
 
 const buttonStyles = tv({
   base: [
-    "[--btn-icon-active:var(--btn-fg)] [--btn-outline:var(--btn-bg)] [--btn-ring:var(--btn-bg)]/20",
+    "cursor-pointer [--btn-icon-active:var(--btn-fg)] [--btn-outline:var(--btn-bg)] [--btn-ring:var(--btn-bg)]/20",
     "bg-(--btn-bg) pressed:bg-(--btn-overlay) text-(--btn-fg) outline-(--btn-outline) ring-(--btn-ring) hover:bg-(--btn-overlay)",
     "relative inset-ring inset-ring-fg/15 isolate inline-flex items-center justify-center font-medium",
     "focus:outline-0 focus-visible:outline focus-visible:outline-offset-2 focus-visible:ring-2 focus-visible:ring-offset-3 focus-visible:ring-offset-bg",
