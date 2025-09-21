@@ -1,3 +1,4 @@
+import { composeTailwindRenderProps } from "@/lib/primitive";
 import { IconChevronLeft } from "@intentui/icons";
 import { use, useMemo, useRef } from "react";
 import type {
@@ -14,7 +15,6 @@ import {
   DisclosureStateContext,
   Heading,
 } from "react-aria-components";
-import { composeTailwindRenderProps } from "@/lib/primitive";
 import { twJoin } from "tailwind-merge";
 
 interface DisclosureGroupProps extends AccordionProps {
@@ -113,6 +113,7 @@ const DisclosurePanel = ({
   style,
   ...props
 }: DisclosurePanelProps) => {
+  // biome-ignore lint/style/noNonNullAssertion: <explanation>
   const { isExpanded } = use(DisclosureStateContext)!;
   const panelRef = useRef<HTMLDivElement>(null);
 

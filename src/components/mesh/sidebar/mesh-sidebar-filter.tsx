@@ -3,14 +3,14 @@ import {
   Disclosure,
   DisclosurePanel,
   DisclosureTrigger,
-} from "@/components/mesh/sidebar/sidebar-disclosure";
+} from "@/components/mesh/sidebar/mesh-sidebar-disclosure";
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
 import { DEFAULT_FILTERS } from "@/lib/config/config.mesh";
 import { useMeshStore } from "@/store/store-mesh";
 import { IconEyeDropper, IconRefresh } from "@intentui/icons";
 
-export const SidebarFilter = () => {
+export const MeshSidebarFilter = () => {
   const { filters, setFilters } = useMeshStore();
 
   return (

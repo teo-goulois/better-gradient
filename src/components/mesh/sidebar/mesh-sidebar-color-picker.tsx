@@ -1,12 +1,3 @@
-import { IconEyeDropper, IconX } from "@intentui/icons";
-import { parseColor } from "@react-stately/color";
-import { use } from "react";
-import {
-  ColorPicker as ColorPickerPrimitive,
-  type ColorPickerProps as ColorPickerPrimitiveProps,
-  ColorPickerStateContext,
-} from "react-aria-components";
-import { twJoin, twMerge } from "tailwind-merge";
 import { Button } from "@/components/ui/button";
 import { ColorArea } from "@/components/ui/color-area";
 import { ColorField } from "@/components/ui/color-field";
@@ -19,8 +10,17 @@ import {
   type PopoverContentProps,
 } from "@/components/ui/popover";
 import { useMeshStore } from "@/store/store-mesh";
+import { IconEyeDropper, IconX } from "@intentui/icons";
+import { parseColor } from "@react-stately/color";
+import { use } from "react";
+import {
+  ColorPicker as ColorPickerPrimitive,
+  type ColorPickerProps as ColorPickerPrimitiveProps,
+  ColorPickerStateContext,
+} from "react-aria-components";
+import { twJoin, twMerge } from "tailwind-merge";
 
-interface SidebarColorPickerProps
+interface Props
   extends ColorPickerPrimitiveProps,
     Pick<PopoverContentProps, "placement"> {
   label?: string;
@@ -34,7 +34,7 @@ interface SidebarColorPickerProps
   divProps?: React.HTMLAttributes<HTMLDivElement>;
 }
 
-const SidebarColorPicker = ({
+export const MeshSidebarColorPicker = ({
   showArrow = false,
   placement = "bottom start",
   label,
@@ -47,14 +47,14 @@ const SidebarColorPicker = ({
   divProps,
 
   ...props
-}: SidebarColorPickerProps) => {
+}: Props) => {
   const { palette } = useMeshStore();
 
   return (
     <div className={twMerge("flex flex-col items-start gap-y-1", className)}>
       <ColorPickerPrimitive {...props}>
         <Popover>
-          <div className="relative group">
+          <Popover.Trigger className="relative group">
             <Button
               isDisabled={isDisabled}
               size={label ? "md" : "sq-sm"}
@@ -84,14 +84,14 @@ const SidebarColorPicker = ({
                 <IconX className="size-2" />
               </Button>
             )}
-          </div>
+          </Popover.Trigger>
           {/* </Popover.Trigger> */}
           <PopoverContent
             className="overflow-auto **:data-[slot=color-area]:w-full **:data-[slot=color-slider]:w-full sm:min-w-min sm:max-w-56 sm:**:data-[slot=color-area]:size-56 *:[[role=dialog]]:p-4 sm:*:[[role=dialog]]:p-3"
             showArrow={showArrow}
             placement={placement}
           >
-            <div className="flex flex-col gap-y-1.5">
+            <div className="flex flex-col gap-y-1.5 p-4">
               {children || (
                 <>
                   <ColorArea
@@ -106,7 +106,15 @@ const SidebarColorPicker = ({
                   />
                   <div className="flex items-center gap-1.5">
                     {eyeDropper && <EyeDropper />}
-                    <ColorField className="h-9" aria-label="Hex" />
+                    <ColorField
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") {
+                          e.currentTarget.blur();
+                        }
+                      }}
+                      className="h-9"
+                      aria-label="Hex"
+                    />
                   </div>
                 </>
               )}
@@ -126,7 +134,7 @@ declare global {
 }
 
 const EyeDropper = () => {
-  const state = use(ColorPickerStateContext)!;
+  const state = use(ColorPickerStateContext);
 
   if (!window.EyeDropper) {
     return "EyeDropper is not supported in your browser.";
@@ -141,7 +149,7 @@ const EyeDropper = () => {
         const eyeDropper = window.EyeDropper ? new window.EyeDropper() : null;
         eyeDropper
           ?.open()
-          .then((result) => state.setColor(parseColor(result.sRGBHex)));
+          .then((result) => state?.setColor(parseColor(result.sRGBHex)));
       }}
     >
       <IconEyeDropper />
@@ -149,5 +157,5 @@ const EyeDropper = () => {
   );
 };
 
-export type { SidebarColorPickerProps };
-export { SidebarColorPicker, EyeDropper };
+export type { Props as MeshSidebarColorPickerProps };
+export { EyeDropper };

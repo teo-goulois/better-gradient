@@ -1,25 +1,12 @@
 import { svgDataUrl, svgStringFromState } from "@/lib/mesh-svg";
-import type {
-	BlobShape,
-	CanvasSettings,
-	Filters,
-	RgbHex,
-} from "@/types/types.mesh";
+import { useMeshStore } from "@/store/store-mesh";
 import { useMemo } from "react";
 
-type UseMeshSvgArgs = {
-	canvas: CanvasSettings;
-	shapes: BlobShape[];
-	palette: RgbHex[];
-	filters: Filters;
-};
-
-export function useMeshSvg({
-	canvas,
-	shapes,
-	palette,
-	filters,
-}: UseMeshSvgArgs) {
+export function useMeshSvg() {
+	const canvas = useMeshStore((s) => s.canvas);
+	const shapes = useMeshStore((s) => s.shapes);
+	const palette = useMeshStore((s) => s.palette);
+	const filters = useMeshStore((s) => s.filters);
 	// Create the SVG string for current state; heavy work is string concat, keep memoized.
 	const svg = useMemo(
 		() =>
@@ -35,5 +22,5 @@ export function useMeshSvg({
 	// Data URL derivative, memoized from svg
 	const svgUrl = useMemo(() => svgDataUrl(svg), [svg]);
 
-	return { svg, svgUrl };
+	return { svg, svgUrl, canvas };
 }

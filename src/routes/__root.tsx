@@ -1,10 +1,10 @@
+import { TanstackDevtools } from "@tanstack/react-devtools";
 import {
   HeadContent,
   Scripts,
   createRootRouteWithContext,
 } from "@tanstack/react-router";
 import { TanStackRouterDevtoolsPanel } from "@tanstack/react-router-devtools";
-import { TanstackDevtools } from "@tanstack/react-devtools";
 
 import Header from "../components/Header";
 
@@ -99,7 +99,7 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
         content: "#000000",
       },
       {
-        name: "apple-mobile-web-app-capable",
+        name: "mobile-web-app-capable",
         content: "yes",
       },
       {
@@ -108,18 +108,6 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
       },
     ],
     links: [
-      {
-        rel: "preload",
-        href: "/logo.png",
-        as: "image",
-        type: "image/png",
-      },
-      {
-        rel: "preload",
-        href: "/gradients/gradient-1.webp",
-        as: "image",
-        type: "image/webp",
-      },
       {
         rel: "preload",
         href: "/Nohemi/Nohemi-Regular-BF6438cc579d934.woff",

@@ -2,9 +2,9 @@
 
 import { Logo } from "@/components/shared/logo";
 import { Link } from "@tanstack/react-router";
-import { SidebarColor } from "./sidebar-color";
-import { SidebarFilter } from "./sidebar-filter";
-import { SidebarSize } from "./sidebar-size";
+import { MeshSidebarColor } from "./mesh-sidebar-color";
+import { MeshSidebarFilter } from "./mesh-sidebar-filter";
+import { MeshSidebarSize } from "./mesh-sidebar-size";
 
 export const MeshSidebar = () => {
   return (
@@ -12,9 +12,9 @@ export const MeshSidebar = () => {
       <Link to="/" className="px-4 py-1 inline-block">
         <Logo />
       </Link>
-      <SidebarColor />
-      <SidebarFilter />
-      <SidebarSize />
+      <MeshSidebarColor />
+      <MeshSidebarFilter />
+      <MeshSidebarSize />
     </div>
   );
 };
