@@ -113,7 +113,6 @@ export const useFrameDragging = ({ outerRef }: Props) => {
 			initialStateRef.current = {
 				ui: {
 					...currentUiState,
-					frame: currentFrame,
 				},
 				boundaries,
 				startMousePos: { x: e.clientX, y: e.clientY },

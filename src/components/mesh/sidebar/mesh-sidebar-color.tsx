@@ -9,6 +9,7 @@ import { Switch } from "@/components/ui/switch";
 import { useMeshStore } from "@/store/store-mesh";
 import { IconColorSwatch } from "@intentui/icons";
 import { MeshSidebarColorPalette } from "./mesh-sidebar-color-palette";
+import { MeshSidebarPresetSelector } from "./mesh-sidebar-preset-selector";
 
 export const MeshSidebarColor = () => {
   const { ui, setUi } = useMeshStore();
@@ -20,6 +21,7 @@ export const MeshSidebarColor = () => {
         </DisclosureTrigger>
         <DisclosurePanel>
           <MeshSidebarColorPalette />
+          <MeshSidebarPresetSelector />
           <div className="flex flex-col gap-2">
             <Switch
               className="font-semibold text-sm"

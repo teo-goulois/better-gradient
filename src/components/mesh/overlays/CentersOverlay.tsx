@@ -1,4 +1,5 @@
 import { Button } from "@/components/ui/button";
+import { ColorSwatch } from "@/components/ui/color-swatch";
 import { Separator } from "@/components/ui/separator";
 import type { BlobShape, RgbHex } from "@/types/types.mesh";
 import { IconArrowDownFill, IconArrowUpFill } from "@intentui/icons";
@@ -64,35 +65,14 @@ export const CentersOverlay = memo(function CentersOverlay({
             className="absolute"
             style={{ left, top }}
           >
-            {/* Crosshair lines */}
-            <div
-              className="absolute bg-black"
-              style={{
-                left: -10,
-                top: 0,
-                width: 20,
-                height: 1,
-                transform: "translateY(-0.5px)",
-              }}
-            />
-            <div
-              className="absolute bg-black"
-              style={{
-                left: 0,
-                top: -10,
-                width: 1,
-                height: 20,
-                transform: "translateX(-0.5px)",
-              }}
-            />
             {/* Draggable center handle */}
-            <div
+            <ColorSwatch
               data-handle="true"
-              className="absolute -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-white"
+              className="absolute -translate-x-1/2 -translate-y-1/2 rounded-full border border-white shadow-md"
+              color={color.color}
               style={{
                 width: 18,
                 height: 18,
-                background: color.color,
                 cursor: "move",
                 pointerEvents: "auto",
               }}

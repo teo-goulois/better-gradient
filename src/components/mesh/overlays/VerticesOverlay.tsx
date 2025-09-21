@@ -70,7 +70,7 @@ export const VerticesOverlay = memo(function VerticesOverlay({
                   <div
                     key={`${s.id}-vertex-${idx}`}
                     data-handle="true"
-                    className="absolute -translate-x-1/2 -translate-y-1/2 rounded-full bg-white"
+                    className="absolute -translate-x-1/2 -translate-y-1/2 rounded-full bg-white shadow-md"
                     style={{
                       left,
                       top,
