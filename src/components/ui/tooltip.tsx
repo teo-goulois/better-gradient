@@ -3,10 +3,10 @@
 import type { TooltipProps as TooltipPrimitiveProps } from "react-aria-components";
 import {
   Button,
-  composeRenderProps,
   OverlayArrow,
   Tooltip as TooltipPrimitive,
   TooltipTrigger as TooltipTriggerPrimitive,
+  composeRenderProps,
 } from "react-aria-components";
 import type { VariantProps } from "tailwind-variants";
 import { tv } from "tailwind-variants";
@@ -36,7 +36,7 @@ const tooltipStyles = tv({
     },
   },
   defaultVariants: {
-    intent: "default",
+    intent: "inverse",
   },
 });
 
@@ -53,7 +53,7 @@ interface TooltipContentProps
 const TooltipContent = ({
   offset = 10,
   showArrow = true,
-  intent = "default",
+  intent = "inverse",
   children,
   ...props
 }: TooltipContentProps) => {
@@ -77,6 +77,7 @@ const TooltipContent = ({
             viewBox="0 0 12 12"
             className="group-placement-left:-rotate-90 block stroke-border group-placement-bottom:rotate-180 group-placement-right:rotate-90 forced-colors:fill-[Canvas] forced-colors:stroke-[ButtonBorder]"
           >
+            <title>Tooltip Arrow</title>
             <path d="M0 0 L6 6 L12 0" />
           </svg>
         </OverlayArrow>
