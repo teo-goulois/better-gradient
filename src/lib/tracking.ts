@@ -76,17 +76,10 @@ declare global {
 	}
 }
 
-async function trackUmamiEvent(
-	event: string,
-	data?: Record<string, unknown>,
-): Promise<void> {
+async function trackUmamiEvent(event: string): Promise<void> {
 	try {
 		if (typeof window !== "undefined" && window.umami) {
-			if (data && Object.keys(data).length > 0) {
-				window.umami.track(event, data);
-			} else {
-				window.umami.track(event);
-			}
+			window.umami.track(event);
 		}
 	} catch (error) {
 		console.error("Failed to track Umami event:", error);
@@ -96,13 +89,14 @@ async function trackUmamiEvent(
 async function trackEvent(
 	event: string,
 	data?: Record<string, unknown>,
+	hideDiscord?: boolean,
 ): Promise<void> {
-	if (env.VITE_SERVER_URL !== "http://localhost:3000") {
-		await Promise.allSettled([
-			sendDiscordNotification(event, data),
-			trackUmamiEvent(event, data),
-		]);
-	}
+	//if (env.VITE_SERVER_URL !== "http://localhost:3000") {
+	await Promise.allSettled([
+		hideDiscord ? Promise.resolve() : sendDiscordNotification(event, data),
+		trackUmamiEvent(event),
+	]);
+	//}
 }
 
 export { sendDiscordNotification, trackUmamiEvent, trackEvent, type EventData };

@@ -1,6 +1,6 @@
+import { trackEvent } from "@/lib/tracking";
 import { createFileRoute } from "@tanstack/react-router";
 import { Link } from "@tanstack/react-router";
-import { trackEvent } from "@/lib/tracking";
 
 const structuredData = {
   "@context": "https://schema.org",
@@ -33,6 +33,29 @@ const structuredData = {
 
 export const Route = createFileRoute("/")({
   component: App,
+  head: () => ({
+    meta: [
+      {
+        name: "description",
+        content:
+          "Create stunning blurred mesh gradients with our intuitive editor. Design beautiful backgrounds, export in high quality, and bring your creative vision to life.",
+      },
+    ],
+    links: [
+      {
+        rel: "preload",
+        href: "/logo.png",
+        as: "image",
+        type: "image/png",
+      },
+      {
+        rel: "preload",
+        href: "/gradients/gradient-1.webp",
+        as: "image",
+        type: "image/webp",
+      },
+    ],
+  }),
 });
 
 function App() {

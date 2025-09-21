@@ -1,3 +1,5 @@
+"use client"
+
 import { IconX } from "@intentui/icons"
 import { useEffect, useRef } from "react"
 import type { HeadingProps, TextProps } from "react-aria-components"

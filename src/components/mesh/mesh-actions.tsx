@@ -9,18 +9,26 @@ export const MeshActions = () => {
 
   const handleRandomize = () => {
     randomize();
-    trackEvent("Randomize Gradient", {
-      shapes_count: shapes.length,
-      colors_count: palette.length,
-    });
+    trackEvent(
+      "Randomize Gradient",
+      {
+        shapes_count: shapes.length,
+        colors_count: palette.length,
+      },
+      true
+    );
   };
 
   const handleShuffleColors = () => {
     shuffleColors();
-    trackEvent("Shuffle Colors", {
-      shapes_count: shapes.length,
-      colors_count: palette.length,
-    });
+    trackEvent(
+      "Shuffle Colors",
+      {
+        shapes_count: shapes.length,
+        colors_count: palette.length,
+      },
+      true
+    );
   };
 
   return (

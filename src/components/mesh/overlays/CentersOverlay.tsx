@@ -1,12 +1,9 @@
-import { memo, useMemo, useRef, useState, useEffect } from "react";
-import type { BlobShape, RgbHex } from "@/store/store-mesh";
-import {
-  IconArrowDownFill,
-  IconArrowUp,
-  IconArrowUpFill,
-} from "@intentui/icons";
 import { Button } from "@/components/ui/button";
+import { ColorSwatch } from "@/components/ui/color-swatch";
 import { Separator } from "@/components/ui/separator";
+import type { BlobShape, RgbHex } from "@/types/types.mesh";
+import { IconArrowDownFill, IconArrowUpFill } from "@intentui/icons";
+import { memo, useEffect, useMemo, useRef, useState } from "react";
 
 type Props = {
   shapes: BlobShape[];
@@ -68,35 +65,14 @@ export const CentersOverlay = memo(function CentersOverlay({
             className="absolute"
             style={{ left, top }}
           >
-            {/* Crosshair lines */}
-            <div
-              className="absolute bg-black"
-              style={{
-                left: -10,
-                top: 0,
-                width: 20,
-                height: 1,
-                transform: "translateY(-0.5px)",
-              }}
-            />
-            <div
-              className="absolute bg-black"
-              style={{
-                left: 0,
-                top: -10,
-                width: 1,
-                height: 20,
-                transform: "translateX(-0.5px)",
-              }}
-            />
             {/* Draggable center handle */}
-            <div
+            <ColorSwatch
               data-handle="true"
-              className="absolute -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-white"
+              className="absolute -translate-x-1/2 -translate-y-1/2 rounded-full border border-white shadow-md"
+              color={color.color}
               style={{
                 width: 18,
                 height: 18,
-                background: color.color,
                 cursor: "move",
                 pointerEvents: "auto",
               }}
@@ -135,12 +111,14 @@ export const CentersOverlay = memo(function CentersOverlay({
               <div
                 className="absolute left-3 top-3 p-2 z-50 rounded-md shadow-md min-h-0 bg-white border pointer-events-auto flex gap-1 items-center"
                 onClick={(e) => e.stopPropagation()}
+                onKeyDown={(e) => e.stopPropagation()}
               >
                 {/* Color palette */}
                 <div className="flex gap-1">
                   {palette.map((c: RgbHex, i: number) => (
                     <button
-                      key={i}
+                      type="button"
+                      key={c.color}
                       className="size-5 rounded-full border"
                       style={{
                         background: c.color,

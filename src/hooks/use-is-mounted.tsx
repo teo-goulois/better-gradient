@@ -1,11 +1,11 @@
 "use client";
 
-import * as React from "react";
+import { useEffect, useState } from "react";
 
 export function useIsMounted() {
-  const [isMounted, setIsMounted] = React.useState(false);
+  const [isMounted, setIsMounted] = useState(false);
 
-  React.useEffect(() => {
+  useEffect(() => {
     setIsMounted(true);
 
     return () => {
