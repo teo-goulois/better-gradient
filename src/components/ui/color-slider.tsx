@@ -1,32 +1,41 @@
 import {
   ColorSlider as ColorSliderPrimitive,
   type ColorSliderProps as ColorSliderPrimitiveProps,
-  composeRenderProps,
   SliderOutput,
   SliderTrack,
-} from "react-aria-components"
-import { twJoin, twMerge } from "tailwind-merge"
-import { ColorThumb } from "./color-thumb"
-import { Label } from "./field"
+  composeRenderProps,
+} from "react-aria-components";
+import { twJoin, twMerge } from "tailwind-merge";
+import { ColorThumb } from "./color-thumb";
+import { Label } from "./field";
 
 interface ColorSliderProps extends ColorSliderPrimitiveProps {
-  label?: string
-  showOutput?: boolean
+  label?: string;
+  showOutput?: boolean;
 }
 
-const ColorSlider = ({ showOutput = true, label, className, ...props }: ColorSliderProps) => {
+const ColorSlider = ({
+  showOutput = true,
+  label,
+  className,
+  ...props
+}: ColorSliderProps) => {
   return (
     <ColorSliderPrimitive
       {...props}
       data-slot="color-slider"
-      className={composeRenderProps(className, (className, { orientation, isDisabled }) =>
-        twMerge(
-          "group relative",
-          orientation === "horizontal" && "grid min-w-56 grid-cols-[1fr_auto]",
-          orientation === "vertical" && "flex flex-col items-center justify-center",
-          isDisabled && "opacity-50 forced-colors:bg-[GrayText]",
-          className,
-        ),
+      className={composeRenderProps(
+        className,
+        (className, { orientation, isDisabled }) =>
+          twMerge(
+            "group relative",
+            orientation === "horizontal" &&
+              "grid min-w-56 grid-cols-[1fr_auto]",
+            orientation === "vertical" &&
+              "flex flex-col items-center justify-center",
+            isDisabled && "opacity-50 forced-colors:bg-[GrayText]",
+            className
+          )
       )}
     >
       <div className="flex items-center">
@@ -42,18 +51,31 @@ const ColorSlider = ({ showOutput = true, label, className, ...props }: ColorSli
           "orientation-vertical:-translate-x-[50%] orientation-vertical:ml-[50%] orientation-vertical:h-56 orientation-vertical:w-6",
           "disabled:opacity-50 disabled:forced-colors:bg-[GrayText]",
         ])}
-        style={({ defaultStyle, isDisabled }) => ({
-          ...defaultStyle,
-          background: isDisabled
-            ? undefined
-            : `${defaultStyle.background}, repeating-conic-gradient(#CCC 0% 25%, white 0% 50%) 50% / 16px 16px`,
-        })}
+        style={({ defaultStyle, isDisabled }) => {
+          const isSafari =
+            typeof navigator !== "undefined" &&
+            /Safari\//.test(navigator.userAgent) &&
+            !/Chrome\//.test(navigator.userAgent);
+          const backgroundBase = defaultStyle.background;
+          const checker =
+            ", repeating-conic-gradient(#CCC 0% 25%, white 0% 50%) 50% / 16px 16px";
+          return {
+            ...defaultStyle,
+            background: isDisabled
+              ? undefined
+              : isSafari
+              ? backgroundBase
+              : `${backgroundBase}${checker}`,
+            contain: "layout paint size style",
+            willChange: "transform, left, top",
+          };
+        }}
       >
         <ColorThumb />
       </SliderTrack>
     </ColorSliderPrimitive>
-  )
-}
+  );
+};
 
-export type { ColorSliderProps }
-export { ColorSlider }
+export type { ColorSliderProps };
+export { ColorSlider };

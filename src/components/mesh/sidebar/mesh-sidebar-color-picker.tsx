@@ -9,17 +9,17 @@ import {
   PopoverContent,
   type PopoverContentProps,
 } from "@/components/ui/popover";
+import { withRafThrottle } from "@/lib/utils/raf-throttle";
 import { useMeshStore } from "@/store/store-mesh";
 import { IconEyeDropper, IconX } from "@intentui/icons";
 import { parseColor } from "@react-stately/color";
-import { use } from "react";
+import { use, useMemo, useState } from "react";
 import {
   ColorPicker as ColorPickerPrimitive,
   type ColorPickerProps as ColorPickerPrimitiveProps,
   ColorPickerStateContext,
 } from "react-aria-components";
 import { twJoin, twMerge } from "tailwind-merge";
-
 interface Props
   extends ColorPickerPrimitiveProps,
     Pick<PopoverContentProps, "placement"> {
@@ -49,10 +49,27 @@ export const MeshSidebarColorPicker = ({
   ...props
 }: Props) => {
   const { palette } = useMeshStore();
+  const { onChange, ...restProps } = props;
+  type OnChange = NonNullable<ColorPickerPrimitiveProps["onChange"]>;
+  const throttledOnChange = useMemo(() => {
+    if (!onChange) return undefined;
+    const throttled = withRafThrottle<Parameters<OnChange>>(
+      onChange as OnChange
+    );
+    return (...args: Parameters<OnChange>) => throttled(...args);
+  }, [onChange]);
 
+  const [value, setValue] = useState(restProps.value);
   return (
     <div className={twMerge("flex flex-col items-start gap-y-1", className)}>
-      <ColorPickerPrimitive {...props}>
+      <ColorPickerPrimitive
+        {...restProps}
+        value={value}
+        onChange={(value) => {
+          setValue(value);
+          throttledOnChange?.(value);
+        }}
+      >
         <Popover>
           <Popover.Trigger className="relative group">
             <Button
@@ -87,7 +104,7 @@ export const MeshSidebarColorPicker = ({
           </Popover.Trigger>
           {/* </Popover.Trigger> */}
           <PopoverContent
-            className="overflow-auto **:data-[slot=color-area]:w-full **:data-[slot=color-slider]:w-full sm:min-w-min sm:max-w-56 sm:**:data-[slot=color-area]:size-56 *:[[role=dialog]]:p-4 sm:*:[[role=dialog]]:p-3"
+            className="**:data-[slot=color-area]:w-full **:data-[slot=color-slider]:w-full sm:min-w-min sm:max-w-56 sm:**:data-[slot=color-area]:size-56 *:[[role=dialog]]:p-4 sm:*:[[role=dialog]]:p-3"
             showArrow={showArrow}
             placement={placement}
           >
@@ -135,6 +152,7 @@ declare global {
 
 const EyeDropper = () => {
   const state = use(ColorPickerStateContext);
+  if (!state) return null;
 
   if (!window.EyeDropper) {
     return "EyeDropper is not supported in your browser.";

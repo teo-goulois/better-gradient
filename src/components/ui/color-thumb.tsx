@@ -2,8 +2,8 @@ import {
   ColorThumb as ColorThumbPrimitive,
   type ColorThumbProps,
   composeRenderProps,
-} from "react-aria-components"
-import { twMerge } from "tailwind-merge"
+} from "react-aria-components";
+import { twMerge } from "tailwind-merge";
 
 const ColorThumb = ({ className, ...props }: ColorThumbProps) => {
   return (
@@ -12,6 +12,8 @@ const ColorThumb = ({ className, ...props }: ColorThumbProps) => {
       style={({ defaultStyle, isDisabled }) => ({
         ...defaultStyle,
         backgroundColor: isDisabled ? undefined : defaultStyle.backgroundColor,
+        contain: "layout paint",
+        willChange: "transform, left, top",
       })}
       className={composeRenderProps(
         className,
@@ -20,12 +22,13 @@ const ColorThumb = ({ className, ...props }: ColorThumbProps) => {
             "top-[50%] left-[50%] size-6 rounded-full border-2 border-white [box-shadow:0_0_0_1px_black,_inset_0_0_0_1px_black]",
             isFocusVisible && "size-8",
             isDragging && "bg-muted-fg forced-colors:bg-[ButtonBorder]",
-            isDisabled && "opacity-50 forced-colors:border-[GrayText] forced-colors:bg-[GrayText]",
-            className,
-          ),
+            isDisabled &&
+              "opacity-50 forced-colors:border-[GrayText] forced-colors:bg-[GrayText]",
+            className
+          )
       )}
     />
-  )
-}
+  );
+};
 
-export { ColorThumb }
+export { ColorThumb };

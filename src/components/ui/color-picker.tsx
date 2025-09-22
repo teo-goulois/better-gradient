@@ -1,30 +1,31 @@
-import { IconEyeDropper } from "@intentui/icons"
-import { parseColor } from "@react-stately/color"
-import { use } from "react"
+import { withRafThrottle } from "@/lib/utils/raf-throttle";
+import { IconEyeDropper } from "@intentui/icons";
+import { parseColor } from "@react-stately/color";
+import { use, useMemo } from "react";
 import {
   ColorPicker as ColorPickerPrimitive,
   type ColorPickerProps as ColorPickerPrimitiveProps,
   ColorPickerStateContext,
-} from "react-aria-components"
-import { twJoin, twMerge } from "tailwind-merge"
-import { Button } from "./button"
-import { ColorArea } from "./color-area"
-import { ColorField } from "./color-field"
-import { ColorSlider } from "./color-slider"
-import { ColorSwatch } from "./color-swatch"
-import { Description } from "./field"
-import { Popover, PopoverContent, type PopoverContentProps } from "./popover"
+} from "react-aria-components";
+import { twJoin, twMerge } from "tailwind-merge";
+import { Button } from "./button";
+import { ColorArea } from "./color-area";
+import { ColorField } from "./color-field";
+import { ColorSlider } from "./color-slider";
+import { ColorSwatch } from "./color-swatch";
+import { Description } from "./field";
+import { Popover, PopoverContent, type PopoverContentProps } from "./popover";
 
 interface ColorPickerProps
   extends ColorPickerPrimitiveProps,
     Pick<PopoverContentProps, "placement"> {
-  label?: string
-  className?: string
-  children?: React.ReactNode
-  showArrow?: boolean
-  isDisabled?: boolean
-  description?: string
-  eyeDropper?: boolean
+  label?: string;
+  className?: string;
+  children?: React.ReactNode;
+  showArrow?: boolean;
+  isDisabled?: boolean;
+  description?: string;
+  eyeDropper?: boolean;
 }
 
 const ColorPicker = ({
@@ -38,9 +39,18 @@ const ColorPicker = ({
   className,
   ...props
 }: ColorPickerProps) => {
+  const { onChange, ...restProps } = props;
+  type OnChange = NonNullable<ColorPickerPrimitiveProps["onChange"]>;
+  const throttledOnChange = useMemo(() => {
+    if (!onChange) return undefined;
+    const throttled = withRafThrottle<Parameters<OnChange>>(
+      onChange as OnChange
+    );
+    return (...args: Parameters<OnChange>) => throttled(...args);
+  }, [onChange]);
   return (
     <div className={twMerge("flex flex-col items-start gap-y-1", className)}>
-      <ColorPickerPrimitive {...props}>
+      <ColorPickerPrimitive {...restProps} onChange={throttledOnChange}>
         <Popover>
           <Button
             isDisabled={isDisabled}
@@ -48,22 +58,30 @@ const ColorPicker = ({
             intent="plain"
             className={twJoin(
               "*:data-[slot=color-swatch]:-mx-0.5 w-auto px-2.5 *:data-[slot=color-swatch]:size-5",
-              !label && "size-10",
+              !label && "size-10"
             )}
           >
             <ColorSwatch />
             {label && label}
           </Button>
           <PopoverContent
-            className="overflow-auto **:data-[slot=color-area]:w-full **:data-[slot=color-slider]:w-full sm:min-w-min sm:max-w-56 sm:**:data-[slot=color-area]:size-56 *:[[role=dialog]]:p-4 sm:*:[[role=dialog]]:p-3"
+            className="**:data-[slot=color-area]:w-full **:data-[slot=color-slider]:w-full sm:min-w-min sm:max-w-56 sm:**:data-[slot=color-area]:size-56 *:[[role=dialog]]:p-4 sm:*:[[role=dialog]]:p-3"
             showArrow={showArrow}
             placement={placement}
           >
             <div className="flex flex-col gap-y-1.5">
               {children || (
                 <>
-                  <ColorArea colorSpace="hsb" xChannel="saturation" yChannel="brightness" />
-                  <ColorSlider showOutput={false} colorSpace="hsb" channel="hue" />
+                  <ColorArea
+                    colorSpace="hsb"
+                    xChannel="saturation"
+                    yChannel="brightness"
+                  />
+                  <ColorSlider
+                    showOutput={false}
+                    colorSpace="hsb"
+                    channel="hue"
+                  />
                   <div className="flex items-center gap-1.5">
                     {eyeDropper && <EyeDropper />}
                     <ColorField className="h-9" aria-label="Hex" />
@@ -76,20 +94,21 @@ const ColorPicker = ({
       </ColorPickerPrimitive>
       {description && <Description>{description}</Description>}
     </div>
-  )
-}
+  );
+};
 
 declare global {
   interface Window {
-    EyeDropper?: new () => { open: () => Promise<{ sRGBHex: string }> }
+    EyeDropper?: new () => { open: () => Promise<{ sRGBHex: string }> };
   }
 }
 
 const EyeDropper = () => {
-  const state = use(ColorPickerStateContext)!
+  const state = use(ColorPickerStateContext);
+  if (!state) return null;
 
   if (!window.EyeDropper) {
-    return "EyeDropper is not supported in your browser."
+    return "EyeDropper is not supported in your browser.";
   }
 
   return (
@@ -98,14 +117,16 @@ const EyeDropper = () => {
       size="sq-sm"
       intent="outline"
       onPress={() => {
-        const eyeDropper = window.EyeDropper ? new window.EyeDropper() : null
-        eyeDropper?.open().then((result) => state.setColor(parseColor(result.sRGBHex)))
+        const eyeDropper = window.EyeDropper ? new window.EyeDropper() : null;
+        eyeDropper
+          ?.open()
+          .then((result) => state.setColor(parseColor(result.sRGBHex)));
       }}
     >
       <IconEyeDropper />
     </Button>
-  )
-}
+  );
+};
 
-export type { ColorPickerProps }
-export { ColorPicker, EyeDropper }
+export type { ColorPickerProps };
+export { ColorPicker, EyeDropper };
