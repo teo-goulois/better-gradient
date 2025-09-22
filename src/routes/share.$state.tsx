@@ -1,4 +1,5 @@
-import { MeshPreview } from "@/components/mesh/mesh-preview";
+import { FrameProvider } from "@/components/mesh/frame/frame-context";
+import { MeshPreviewShared } from "@/components/mesh/mesh-preview-shared";
 import { trackEvent } from "@/lib/tracking";
 import { useMeshStore } from "@/store/store-mesh";
 import { createFileRoute } from "@tanstack/react-router";
@@ -25,8 +26,10 @@ function Share() {
   }, [params.state, fromShareString, shapes.length, palette.length]);
 
   return (
-    <div className="flex-1 w-full bg-gray-100 relative">
-      <MeshPreview />
-    </div>
+    <FrameProvider>
+      <div className="flex-1 w-full bg-gray-100 relative">
+        <MeshPreviewShared />
+      </div>
+    </FrameProvider>
   );
 }
