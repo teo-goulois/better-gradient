@@ -12,6 +12,7 @@ import { createServerRootRoute } from '@tanstack/react-start/server'
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as EditorRouteImport } from './routes/editor'
+import { Route as DiscoveryRouteImport } from './routes/discovery'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ShareStateRouteImport } from './routes/share.$state'
 import { ServerRoute as SitemapDotxmlServerRouteImport } from './routes/sitemap[.]xml'
@@ -22,6 +23,11 @@ const rootServerRouteImport = createServerRootRoute()
 const EditorRoute = EditorRouteImport.update({
   id: '/editor',
   path: '/editor',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DiscoveryRoute = DiscoveryRouteImport.update({
+  id: '/discovery',
+  path: '/discovery',
   getParentRoute: () => rootRouteImport,
 } as any)
 const IndexRoute = IndexRouteImport.update({
@@ -47,30 +53,34 @@ const RobotsDottxtServerRoute = RobotsDottxtServerRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/discovery': typeof DiscoveryRoute
   '/editor': typeof EditorRoute
   '/share/$state': typeof ShareStateRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/discovery': typeof DiscoveryRoute
   '/editor': typeof EditorRoute
   '/share/$state': typeof ShareStateRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/discovery': typeof DiscoveryRoute
   '/editor': typeof EditorRoute
   '/share/$state': typeof ShareStateRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/editor' | '/share/$state'
+  fullPaths: '/' | '/discovery' | '/editor' | '/share/$state'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/editor' | '/share/$state'
-  id: '__root__' | '/' | '/editor' | '/share/$state'
+  to: '/' | '/discovery' | '/editor' | '/share/$state'
+  id: '__root__' | '/' | '/discovery' | '/editor' | '/share/$state'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  DiscoveryRoute: typeof DiscoveryRoute
   EditorRoute: typeof EditorRoute
   ShareStateRoute: typeof ShareStateRoute
 }
@@ -107,6 +117,13 @@ declare module '@tanstack/react-router' {
       path: '/editor'
       fullPath: '/editor'
       preLoaderRoute: typeof EditorRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/discovery': {
+      id: '/discovery'
+      path: '/discovery'
+      fullPath: '/discovery'
+      preLoaderRoute: typeof DiscoveryRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/': {
@@ -146,6 +163,7 @@ declare module '@tanstack/react-start/server' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  DiscoveryRoute: DiscoveryRoute,
   EditorRoute: EditorRoute,
   ShareStateRoute: ShareStateRoute,
 }

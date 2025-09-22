@@ -6,12 +6,12 @@ import {
 } from "@tanstack/react-router";
 import { TanStackRouterDevtoolsPanel } from "@tanstack/react-router-devtools";
 
-import Header from "../components/Header";
-
 import TanStackQueryDevtools from "../integrations/tanstack-query/devtools";
 
 import appCss from "../styles.css?url";
 
+import { SharedDefaultCatchBoundary } from "@/components/shared/shared-default-catch-boundary";
+import { SharedNotFound } from "@/components/shared/shared-not-found";
 import type { QueryClient } from "@tanstack/react-query";
 
 interface MyRouterContext {
@@ -177,8 +177,15 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
       },
     ],
   }),
-
   shellComponent: RootDocument,
+  errorComponent: (props) => {
+    return (
+      <RootDocument>
+        <SharedDefaultCatchBoundary {...props} />
+      </RootDocument>
+    );
+  },
+  notFoundComponent: () => <SharedNotFound />,
 });
 
 function RootDocument({ children }: { children: React.ReactNode }) {

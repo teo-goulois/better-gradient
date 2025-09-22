@@ -1,4 +1,5 @@
 "use client";
+import { saveGradientToDb } from "@/lib/actions/actions.gradient";
 import {
   svgDataUrl,
   svgStringFromState,
@@ -37,23 +38,20 @@ export const MeshExports = ({ outerRef, contentRef }: Props) => {
     }, 1500);
   };
 
-  const downloadViewPng = async () => {
-    const node = contentRef?.current ?? outerRef.current;
-    if (!node) return;
-    // Capture exactly what is rendered inside outerRef
-    const dataUrl = await toPng(node, {
-      pixelRatio: 1,
-      cacheBust: true,
-      style: {
-        // Ensure current size is used
-        width: `${node.clientWidth}px`,
-        height: `${node.clientHeight}px`,
+  const persist = async (format: "png" | "svg" | "css" | "share") => {
+    const width = contentRef?.current?.clientWidth ?? canvas.width;
+    const height = contentRef?.current?.clientHeight ?? canvas.height;
+    const share = toShareString();
+    await saveGradientToDb({
+      data: {
+        share,
+        width,
+        height,
+        shapesCount: shapes.length,
+        colorsCount: palette.length,
+        format,
       },
     });
-    const a = document.createElement("a");
-    a.href = dataUrl;
-    a.download = "mesh-view.png";
-    a.click();
   };
 
   const downloadPng = async () => {
@@ -85,6 +83,7 @@ export const MeshExports = ({ outerRef, contentRef }: Props) => {
       shapes_count: shapes.length,
       colors_count: palette.length,
     });
+    persist("png");
   };
 
   const downloadSvg = () => {
@@ -111,6 +110,7 @@ export const MeshExports = ({ outerRef, contentRef }: Props) => {
       shapes_count: shapes.length,
       colors_count: palette.length,
     });
+    persist("svg");
   };
 
   const copyCss = async () => {
@@ -133,6 +133,7 @@ export const MeshExports = ({ outerRef, contentRef }: Props) => {
       shapes_count: shapes.length,
       colors_count: palette.length,
     });
+    persist("css");
   };
 
   const copyShareUrl = async () => {
@@ -143,6 +144,7 @@ export const MeshExports = ({ outerRef, contentRef }: Props) => {
       shapes_count: shapes.length,
       colors_count: palette.length,
     });
+    persist("share");
   };
 
   return (
