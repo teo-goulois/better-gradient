@@ -2,14 +2,20 @@ import {
   type CreatedGradient,
   CreatedGradientCard,
 } from "@/components/shared/created-gradient-card";
+import { Button } from "@/components/ui/button";
+import { Modal } from "@/components/ui/modal";
 import {
+  deleteGradientFromDb,
   getGradientsInfiniteOptions,
   updateGradientStatusInDb,
 } from "@/lib/actions/actions.gradient";
+import type { CreatedGradientTable } from "@/lib/db/schema";
 import {
+  type InfiniteData,
   keepPreviousData,
   useInfiniteQuery,
   useMutation,
+  useQueryClient,
 } from "@tanstack/react-query";
 import { createFileRoute, notFound } from "@tanstack/react-router";
 import { useEffect, useMemo, useRef, useState } from "react";
@@ -30,6 +36,8 @@ function CreatedPage() {
   if (process.env.NODE_ENV !== "development") throw notFound();
 
   const [status, setStatus] = useState<"draft" | "public" | null>(null);
+  const queryClient = useQueryClient();
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
 
   const infiniteOptions = useMemo(
     () => getGradientsInfiniteOptions({ limit: 10, status }),
@@ -63,6 +71,25 @@ function CreatedPage() {
 
   const updateStatusMutation = useMutation({
     mutationFn: updateGradientStatusInDb,
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: deleteGradientFromDb,
+    onSuccess: (_res, variables: { data: { id: string } }) => {
+      // Remove the deleted item from all cached infinite pages
+      queryClient.setQueriesData<
+        InfiniteData<{ gradients: CreatedGradientTable[] }>
+      >({ queryKey: ["gradientsInfinite"] }, (old) => {
+        if (!old) return old;
+        return {
+          ...old,
+          pages: old.pages.map((p) => ({
+            ...p,
+            gradients: p.gradients.filter((g) => g.id !== variables.data.id),
+          })),
+        };
+      });
+    },
   });
 
   return (
@@ -109,6 +136,7 @@ function CreatedPage() {
                     data: { id: it.id, status: next },
                   })
                 }
+                onDelete={() => setConfirmDeleteId(it.id)}
               />
             ))}
           </ul>
@@ -117,6 +145,37 @@ function CreatedPage() {
         {isFetchingNextPage && (
           <p className="mt-4 text-center">Loading more…</p>
         )}
+        <Modal
+          isOpen={!!confirmDeleteId}
+          onOpenChange={(open) => !open && setConfirmDeleteId(null)}
+        >
+          <Modal.Content role="alertdialog" size="sm">
+            <Modal.Header
+              title="Delete gradient?"
+              description="This action cannot be undone."
+            />
+            <Modal.Footer>
+              <Button
+                intent="outline"
+                onPress={() => setConfirmDeleteId(null)}
+                isPending={deleteMutation.isPending}
+              >
+                Cancel
+              </Button>
+              <Button
+                intent="danger"
+                isPending={deleteMutation.isPending}
+                onPress={() => {
+                  if (!confirmDeleteId) return;
+                  deleteMutation.mutate({ data: { id: confirmDeleteId } });
+                  setConfirmDeleteId(null);
+                }}
+              >
+                Delete
+              </Button>
+            </Modal.Footer>
+          </Modal.Content>
+        </Modal>
       </div>
     </div>
   );

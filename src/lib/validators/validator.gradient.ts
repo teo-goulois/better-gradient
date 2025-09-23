@@ -18,6 +18,10 @@ export const updateGradientValidator = z.object({
 	status: z.enum(["draft", "public"]),
 });
 
+export const deleteGradientValidator = z.object({
+	id: z.string(),
+});
+
 export const getGradientsValidator = z.object({
 	page: z.number(),
 	limit: z.number(),

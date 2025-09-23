@@ -17,9 +17,11 @@ export type CreatedGradient = {
 export function CreatedGradientCard({
   item,
   onStatusChange,
+  onDelete,
 }: {
   item: CreatedGradient;
   onStatusChange: (status: string) => void;
+  onDelete?: () => void;
 }) {
   const formats = JSON.parse(item.exportedFormats) as string[];
 
@@ -47,19 +49,29 @@ export function CreatedGradientCard({
           {new Date(item.createdAt).toLocaleString()}
         </span>
       </div>
-      <div className="mb-4">
+      <div className="mb-4 relative group">
         {previewDataUrl ? (
-          <div className="rounded-lg overflow-hidden border">
+          <div className="rounded-lg overflow-hidden border aspect-[4/3]">
             <img
               src={previewDataUrl}
               alt="Gradient preview"
-              className="block w-full h-40 object-cover"
+              className="block w-full h-full object-cover"
               loading="lazy"
               decoding="async"
             />
+            {onDelete && (
+              <button
+                type="button"
+                onClick={onDelete}
+                className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity inline-flex items-center px-2 py-1 rounded-md bg-red-600 text-white text-xs"
+                aria-label="Delete gradient"
+              >
+                Delete
+              </button>
+            )}
           </div>
         ) : (
-          <div className="h-40 rounded-lg bg-neutral-100 flex items-center justify-center text-neutral-400 text-sm">
+          <div className="aspect-[4/3] rounded-lg bg-neutral-100 flex items-center justify-center text-neutral-400 text-sm">
             No preview
           </div>
         )}

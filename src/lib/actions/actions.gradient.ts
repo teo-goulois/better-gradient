@@ -5,6 +5,7 @@ import { db } from "../db";
 import { createdGradientsTable } from "../db/schema";
 import {
 	type GetGradientsValidator,
+	deleteGradientValidator,
 	getGradientsValidator,
 	saveGradientValidator,
 	updateGradientValidator,
@@ -88,6 +89,18 @@ export const updateGradientStatusInDb = createServerFn({
 			.set({ status: data.status })
 			.where(eq(createdGradientsTable.id, data.id));
 		return { ok: true, id: data.id, updated: true };
+	});
+
+export const deleteGradientFromDb = createServerFn({
+	method: "POST",
+	response: "data",
+})
+	.validator((data: unknown) => deleteGradientValidator.parse(data))
+	.handler(async ({ data }) => {
+		await db
+			.delete(createdGradientsTable)
+			.where(eq(createdGradientsTable.id, data.id));
+		return { ok: true, id: data.id, deleted: true };
 	});
 
 export const getGradientsFromDb = createServerFn({
