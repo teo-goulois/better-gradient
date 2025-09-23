@@ -17,3 +17,10 @@ export const updateGradientValidator = z.object({
 	id: z.string(),
 	status: z.enum(["draft", "public"]),
 });
+
+export const getGradientsValidator = z.object({
+	page: z.number(),
+	limit: z.number(),
+	status: z.enum(["draft", "public"]).nullable(),
+});
+export type GetGradientsValidator = z.infer<typeof getGradientsValidator>;

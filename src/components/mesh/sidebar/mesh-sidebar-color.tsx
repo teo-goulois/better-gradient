@@ -25,14 +25,14 @@ export const MeshSidebarColor = () => {
           <MeshSidebarPresetSelector />
           <div className="flex flex-col items-start gap-2">
             <Switch
-              className="font-semibold text-sm"
+              className="font-semibold text-sm w-full"
               isSelected={ui.showCenters}
               onChange={(v) => setUi({ showCenters: v })}
             >
               Adjust color position
             </Switch>
             <Switch
-              className="font-semibold text-sm"
+              className="font-semibold text-sm w-full"
               isSelected={ui.showVertices}
               onChange={(v) => setUi({ showVertices: v })}
             >

@@ -3,7 +3,7 @@ import {
   updateGradientStatusInDb,
 } from "@/lib/actions/actions.gradient";
 import { useMutation, useSuspenseQuery } from "@tanstack/react-query";
-import { Link, createFileRoute } from "@tanstack/react-router";
+import { Link, createFileRoute, notFound } from "@tanstack/react-router";
 import { useState } from "react";
 
 export const Route = createFileRoute("/discovery")({
@@ -14,10 +14,13 @@ export const Route = createFileRoute("/discovery")({
 
     return data;
   },
+
   component: CreatedPage,
 });
 
 function CreatedPage() {
+  if (process.env.NODE_ENV !== "development") notFound();
+
   const [status, setStatus] = useState<string | "">("");
 
   const { data, isLoading } = useSuspenseQuery(

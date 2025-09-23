@@ -11,6 +11,7 @@
 import { createServerRootRoute } from '@tanstack/react-start/server'
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as ManageGradientsRouteImport } from './routes/manage-gradients'
 import { Route as EditorRouteImport } from './routes/editor'
 import { Route as DiscoveryRouteImport } from './routes/discovery'
 import { Route as IndexRouteImport } from './routes/index'
@@ -20,6 +21,11 @@ import { ServerRoute as RobotsDottxtServerRouteImport } from './routes/robots[.]
 
 const rootServerRouteImport = createServerRootRoute()
 
+const ManageGradientsRoute = ManageGradientsRouteImport.update({
+  id: '/manage-gradients',
+  path: '/manage-gradients',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const EditorRoute = EditorRouteImport.update({
   id: '/editor',
   path: '/editor',
@@ -55,12 +61,14 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/discovery': typeof DiscoveryRoute
   '/editor': typeof EditorRoute
+  '/manage-gradients': typeof ManageGradientsRoute
   '/share/$state': typeof ShareStateRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/discovery': typeof DiscoveryRoute
   '/editor': typeof EditorRoute
+  '/manage-gradients': typeof ManageGradientsRoute
   '/share/$state': typeof ShareStateRoute
 }
 export interface FileRoutesById {
@@ -68,20 +76,33 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/discovery': typeof DiscoveryRoute
   '/editor': typeof EditorRoute
+  '/manage-gradients': typeof ManageGradientsRoute
   '/share/$state': typeof ShareStateRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/discovery' | '/editor' | '/share/$state'
+  fullPaths:
+    | '/'
+    | '/discovery'
+    | '/editor'
+    | '/manage-gradients'
+    | '/share/$state'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/discovery' | '/editor' | '/share/$state'
-  id: '__root__' | '/' | '/discovery' | '/editor' | '/share/$state'
+  to: '/' | '/discovery' | '/editor' | '/manage-gradients' | '/share/$state'
+  id:
+    | '__root__'
+    | '/'
+    | '/discovery'
+    | '/editor'
+    | '/manage-gradients'
+    | '/share/$state'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   DiscoveryRoute: typeof DiscoveryRoute
   EditorRoute: typeof EditorRoute
+  ManageGradientsRoute: typeof ManageGradientsRoute
   ShareStateRoute: typeof ShareStateRoute
 }
 export interface FileServerRoutesByFullPath {
@@ -112,6 +133,13 @@ export interface RootServerRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/manage-gradients': {
+      id: '/manage-gradients'
+      path: '/manage-gradients'
+      fullPath: '/manage-gradients'
+      preLoaderRoute: typeof ManageGradientsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/editor': {
       id: '/editor'
       path: '/editor'
@@ -165,6 +193,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   DiscoveryRoute: DiscoveryRoute,
   EditorRoute: EditorRoute,
+  ManageGradientsRoute: ManageGradientsRoute,
   ShareStateRoute: ShareStateRoute,
 }
 export const routeTree = rootRouteImport
