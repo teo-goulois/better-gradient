@@ -95,6 +95,15 @@ function App() {
               <p className="mt-3 text-sm text-neutral-500">
                 No signup required • Free to use
               </p>
+
+              {/* <div className="mt-6">
+                <Link
+                  to="/created"
+                  className="text-sm underline text-neutral-700 hover:text-black"
+                >
+                  See created gradients
+                </Link>
+              </div> */}
             </div>
           </div>
         </div>

@@ -198,7 +198,7 @@ export const MeshSidebarPresetSelector = () => {
           selectedKey={selectedPresetKey}
           onSelectionChange={(key) => applyPreset(key)}
           aria-label="Presets"
-          placeholder="Select a preset"
+          placeholder="Apply predefined preset"
         >
           <Select.Trigger />
           <Select.Content items={allPresets}>
