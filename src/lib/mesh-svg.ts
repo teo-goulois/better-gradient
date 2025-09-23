@@ -81,12 +81,12 @@ export function svgStringFromState(args: {
 	if (filters.grainEnabled) {
 		// Procedural grain filter using turbulence + specular lighting
 		svgParts.push(
-			`<filter id="grain" x="${filterX}" y="${filterY}" width="${filterW}" height="${filterH}" filterUnits="userSpaceOnUse" primitiveUnits="userSpaceOnUse" color-interpolation-filters="linearRGB">` +
-				`<feTurbulence type="fractalNoise" baseFrequency=".2" numOctaves="4" seed="15" stitchTiles="no-stitch" x="0" y="0" width="${wCanvas}" height="${hCanvas}" result="turbulence"/>` +
-				`<feSpecularLighting surfaceScale="10" specularConstant="1.21" specularExponent="20" lighting-color="#fff" x="0" y="0" width="${wCanvas}" height="${hCanvas}" in="turbulence" result="specularLighting">` +
-				`<feDistantLight azimuth="3" elevation="100"/>` +
-				`</feSpecularLighting>` +
-				`</filter>`,
+			`<filter id="grain" x="${filterX}" y="${filterY}" width="${filterW}" height="${filterH}" filterUnits="userSpaceOnUse" primitiveUnits="userSpaceOnUse" color-interpolation-filters="linearRGB">
+				<feTurbulence type="fractalNoise" baseFrequency=".2" numOctaves="4" seed="15" stitchTiles="no-stitch" x="0" y="0" width="${wCanvas}" height="${hCanvas}" result="turbulence"/>
+				<feSpecularLighting surfaceScale="10" specularConstant="1.21" specularExponent="20" lighting-color="#fff" x="0" y="0" width="${wCanvas}" height="${hCanvas}" in="turbulence" result="specularLighting">
+					<feDistantLight azimuth="3" elevation="100"/>
+				</feSpecularLighting>
+			</filter>`,
 		);
 	}
 	svgParts.push("</defs>");
@@ -101,8 +101,9 @@ export function svgStringFromState(args: {
 	for (const s of shapes) {
 		// Shapes can use any entry of the palette, including background at index 0
 		const color = palette[s.fillIndex].color ?? palette[0].color ?? "#000000";
+		const opacity = Math.max(0, Math.min(s.opacity ?? 1, 1));
 		svgParts.push(
-			`<path d="${pathDataFromPoints(s.points)}" fill="${color}"/>`,
+			`<path d="${pathDataFromPoints(s.points)}" fill="${color}" fill-opacity="${opacity}"/>`,
 		);
 	}
 	svgParts.push("</g>");
@@ -178,7 +179,10 @@ export async function svgToPngDataUrl(
 	const canvas = document.createElement("canvas");
 	canvas.width = width;
 	canvas.height = height;
-	const ctx = canvas.getContext("2d")!;
+	const ctx = canvas.getContext("2d");
+	if (!ctx) {
+		return canvas.toDataURL("image/png");
+	}
 	ctx.imageSmoothingEnabled = true;
 	ctx.imageSmoothingQuality = "high";
 	ctx.drawImage(img, 0, 0, width, height);

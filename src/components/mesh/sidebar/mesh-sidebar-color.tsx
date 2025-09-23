@@ -48,6 +48,8 @@ export const MeshSidebarColor = () => {
                 <ul className="list-disc list-inside">
                   <li>Change the index of the color</li>
                   <li>Change the color</li>
+                  <li>Change the spread</li>
+                  <li>Change the opacity</li>
                 </ul>
               </Tooltip.Content>
             </Tooltip>

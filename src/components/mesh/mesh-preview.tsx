@@ -4,7 +4,6 @@ import { useContainerSize } from "@/hooks/mesh/use-container-size";
 import { useFrameOnMount } from "@/hooks/mesh/use-frame-on-mount";
 import { useMeshDrawing } from "@/hooks/mesh/use-mesh-drawing";
 import { useMeshFrame } from "@/hooks/mesh/use-mesh-frame";
-import { useMeshSvg } from "@/hooks/mesh/use-mesh-svg";
 import { useIsMounted } from "@/hooks/use-is-mounted";
 import { useMeshStore } from "@/store/store-mesh";
 import { useCallback, useRef } from "react";
@@ -12,7 +11,7 @@ import { SharedFeedback } from "../shared/shared-feedback";
 import { Loader } from "../ui/loader";
 import { useFrameContext } from "./frame/frame-context";
 import { MeshActions } from "./mesh-actions";
-import { MeshDevtools } from "./mesh-devtools";
+// import { MeshDevtools } from "./mesh-devtools";
 import { MeshExports } from "./mesh-exports";
 import { MeshUndo } from "./mesh-undo";
 import { CentersOverlay } from "./overlays/CentersOverlay";
@@ -127,6 +126,23 @@ export const MeshPreview = () => {
               }
               onMoveShapeUp={moveShapeUp}
               onMoveShapeDown={moveShapeDown}
+              onSetShapeOpacity={(shapeId, opacity) =>
+                updateShape(shapeId, (old) => ({ ...old, opacity }))
+              }
+              onScaleShape={(shapeId, factor) =>
+                updateShape(shapeId, (old) => {
+                  // Scale points around the centroid
+                  const cx =
+                    old.points.reduce((a, b) => a + b.x, 0) / old.points.length;
+                  const cy =
+                    old.points.reduce((a, b) => a + b.y, 0) / old.points.length;
+                  const scaled = old.points.map((p) => ({
+                    x: cx + (p.x - cx) * factor,
+                    y: cy + (p.y - cy) * factor,
+                  }));
+                  return { ...old, points: scaled };
+                })
+              }
             />
           )}
           {/* <ResizeHandles /> */}

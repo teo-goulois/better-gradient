@@ -1,26 +1,29 @@
-import React, { useState } from "react"
+import React, { useState } from "react";
 
-import type { SliderProps as SliderPrimitiveProps, SliderThumbProps } from "react-aria-components"
+import { composeTailwindRenderProps } from "@/lib/primitive";
+import type {
+  SliderProps as SliderPrimitiveProps,
+  SliderThumbProps,
+} from "react-aria-components";
 import {
-  composeRenderProps,
   SliderOutput,
   Slider as SliderPrimitive,
   SliderStateContext,
   SliderThumb as SliderThumbPrimitive,
   SliderTrack as SliderTrackPrimitive,
   type SliderTrackProps,
-} from "react-aria-components"
-import { twJoin, twMerge } from "tailwind-merge"
-import { tv } from "tailwind-variants"
-import { composeTailwindRenderProps } from "@/lib/primitive"
-import { Description, Label } from "./field"
-import { Tooltip } from "./tooltip"
+  composeRenderProps,
+} from "react-aria-components";
+import { twJoin, twMerge } from "tailwind-merge";
+import { tv } from "tailwind-variants";
+import { Description, Label } from "./field";
+import { Tooltip } from "./tooltip";
 
 interface SliderProps extends SliderPrimitiveProps {
-  output?: "inline" | "tooltip" | "none"
-  label?: string
-  description?: string
-  thumbLabels?: string[]
+  output?: "inline" | "tooltip" | "none";
+  label?: string;
+  description?: string;
+  thumbLabels?: string[];
 }
 
 const Slider = ({
@@ -29,33 +32,33 @@ const Slider = ({
   className,
   ...props
 }: SliderProps) => {
-  const showTooltip = output === "tooltip"
-  const [showTooltipState, setShowTooltipState] = useState(false)
+  const showTooltip = output === "tooltip";
+  const [showTooltipState, setShowTooltipState] = useState(false);
 
   const onFocusChange = () => {
     if (showTooltip) {
-      setShowTooltipState(true)
+      setShowTooltipState(true);
     }
-  }
+  };
 
   const onHoverStart = () => {
     if (showTooltip) {
-      setShowTooltipState(true)
+      setShowTooltipState(true);
     }
-  }
+  };
 
   const onFocusEnd = React.useCallback(() => {
-    setShowTooltipState(false)
-  }, [])
+    setShowTooltipState(false);
+  }, []);
 
   React.useEffect(() => {
     if (showTooltip) {
-      window.addEventListener("pointerup", onFocusEnd)
+      window.addEventListener("pointerup", onFocusEnd);
       return () => {
-        window.removeEventListener("pointerup", onFocusEnd)
-      }
+        window.removeEventListener("pointerup", onFocusEnd);
+      };
     }
-  }, [showTooltip, onFocusEnd])
+  }, [showTooltip, onFocusEnd]);
 
   const renderThumb = (value: number) => {
     const thumb = (
@@ -65,12 +68,16 @@ const Slider = ({
         onFocusChange={onFocusChange}
         onHoverStart={onHoverStart}
       />
-    )
+    );
 
-    if (!showTooltip) return thumb
+    if (!showTooltip) return thumb;
 
     return (
-      <Tooltip delay={0} isOpen={showTooltipState} onOpenChange={setShowTooltipState}>
+      <Tooltip
+        delay={0}
+        isOpen={showTooltipState}
+        onOpenChange={setShowTooltipState}
+      >
         {thumb}
         <Tooltip.Content
           showArrow={false}
@@ -82,8 +89,8 @@ const Slider = ({
           <SliderOutput />
         </Tooltip.Content>
       </Tooltip>
-    )
-  }
+    );
+  };
 
   return (
     <SliderPrimitive
@@ -92,20 +99,29 @@ const Slider = ({
         twMerge([
           "group relative flex touch-none select-none flex-col disabled:opacity-50",
           orientation === "horizontal" && "w-full min-w-56 gap-y-2",
-          orientation === "vertical" && "h-full min-h-56 w-1.5 items-center gap-y-2",
+          orientation === "vertical" &&
+            "h-full min-h-56 w-1.5 items-center gap-y-2",
           className,
-        ]),
+        ])
       )}
       {...props}
     >
-      <div className="flex text-fg">
-        {props.label && <Label>{props.label}</Label>}
-        {output === "inline" && (
-          <SliderOutput className="text-muted-fg text-sm tabular-nums data-[orientation=vertical]:mx-auto data-[orientation=horizontal]:ml-auto">
-            {({ state }) => state.values.map((_, i) => state.getThumbValueLabel(i)).join(" – ")}
-          </SliderOutput>
-        )}
-      </div>
+      {props.label ||
+        (output === "inline" && (
+          <div className="flex text-fg">
+            {props.label && <Label>{props.label}</Label>}
+            {output === "inline" && (
+              <SliderOutput className="text-muted-fg text-sm tabular-nums data-[orientation=vertical]:mx-auto data-[orientation=horizontal]:ml-auto">
+                {({ state }) =>
+                  state.values
+                    .map((_, i) => state.getThumbValueLabel(i))
+                    .join(" – ")
+                }
+              </SliderOutput>
+            )}
+          </div>
+        ))}
+
       <SliderTrack>
         {({ state }) => (
           <>
@@ -118,8 +134,8 @@ const Slider = ({
       </SliderTrack>
       {props.description && <Description>{props.description}</Description>}
     </SliderPrimitive>
-  )
-}
+  );
+};
 
 const SliderTrack = ({ className, ...props }: SliderTrackProps) => {
   return (
@@ -131,28 +147,33 @@ const SliderTrack = ({ className, ...props }: SliderTrackProps) => {
           "[--slider:color-mix(in_oklab,var(--color-muted)_90%,black_10%)] dark:[--slider:color-mix(in_oklab,var(--color-muted)_90%,white_10%)]",
           "group/track relative cursor-default rounded-full bg-(--slider) disabled:cursor-default disabled:opacity-60",
           "grow group-data-[orientation=horizontal]:h-1.5 group-data-[orientation=horizontal]:w-full group-data-[orientation=vertical]:w-1.5 group-data-[orientation=vertical]:flex-1",
-        ]),
+        ])
       )}
     />
-  )
-}
+  );
+};
 
-const SliderFiller = ({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) => {
-  const state = React.useContext(SliderStateContext)
-  const { orientation, getThumbPercent, values } = state || {}
+const SliderFiller = ({
+  className,
+  ...props
+}: React.HTMLAttributes<HTMLDivElement>) => {
+  const state = React.useContext(SliderStateContext);
+  const { orientation, getThumbPercent, values } = state || {};
 
   const getStyle = () => {
-    const percent0 = getThumbPercent ? getThumbPercent(0) * 100 : 0
-    const percent1 = getThumbPercent ? getThumbPercent(1) * 100 : 0
+    const percent0 = getThumbPercent ? getThumbPercent(0) * 100 : 0;
+    const percent1 = getThumbPercent ? getThumbPercent(1) * 100 : 0;
 
     if (values?.length === 1) {
-      return orientation === "horizontal" ? { width: `${percent0}%` } : { height: `${percent0}%` }
+      return orientation === "horizontal"
+        ? { width: `${percent0}%` }
+        : { height: `${percent0}%` };
     }
 
     return orientation === "horizontal"
       ? { left: `${percent0}%`, width: `${Math.abs(percent0 - percent1)}%` }
-      : { bottom: `${percent0}%`, height: `${Math.abs(percent0 - percent1)}%` }
-  }
+      : { bottom: `${percent0}%`, height: `${Math.abs(percent0 - percent1)}%` };
+  };
 
   return (
     <div
@@ -160,11 +181,11 @@ const SliderFiller = ({ className, ...props }: React.HTMLAttributes<HTMLDivEleme
       style={getStyle()}
       className={twMerge(
         "group-data-[orientation=horizontal]/top-0 pointer-events-none absolute rounded-full bg-primary group-disabled/track:opacity-60 group-data-[orientation=vertical]/track:bottom-0 group-data-[orientation=horizontal]/track:h-full group-data-[orientation=vertical]/track:w-full",
-        className,
+        className
       )}
     />
-  )
-}
+  );
+};
 
 const thumbStyles = tv({
   base: [
@@ -181,17 +202,17 @@ const thumbStyles = tv({
       true: "opacity-50 forced-colors:border-[GrayText]",
     },
   },
-})
+});
 const SliderThumb = ({ className, ...props }: SliderThumbProps) => {
   return (
     <SliderThumbPrimitive
       {...props}
       className={composeRenderProps(className, (className, renderProps) =>
-        thumbStyles({ ...renderProps, className }),
+        thumbStyles({ ...renderProps, className })
       )}
     />
-  )
-}
+  );
+};
 
-export type { SliderProps }
-export { Slider, SliderFiller, SliderTrack, SliderThumb }
+export type { SliderProps };
+export { Slider, SliderFiller, SliderTrack, SliderThumb };

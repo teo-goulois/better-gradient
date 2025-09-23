@@ -10,6 +10,7 @@ export type BlobShape = {
 	id: string;
 	points: Point[];
 	fillIndex: number; // index in palette (includes background at index 0)
+	opacity?: number; // 0..1 (default 1)
 };
 
 export type Filters = {
