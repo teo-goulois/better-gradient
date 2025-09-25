@@ -108,7 +108,7 @@ const DropdownItem = ({ className, children, ...props }: DropdownItemProps) => {
               data-slot="check-indicator"
             />
           )}
-          <div className="col-start-2 col-span-3">
+          <div className="col-start-2 col-span-3 w-full">
             {typeof children === "string" ? (
               <DropdownLabel>{children}</DropdownLabel>
             ) : (

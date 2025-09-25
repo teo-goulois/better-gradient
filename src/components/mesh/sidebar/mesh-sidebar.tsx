@@ -10,6 +10,7 @@ import { MeshSidebarSize } from "./mesh-sidebar-size";
 export const MeshSidebar = () => {
   return (
     <ScrollArea
+      type="scroll"
       style={{ position: "fixed" }}
       className="w-64 min-h-0 h-[calc(100vh-2rem)] fixed left-4 top-4 rounded-xl bg-white  z-50 "
     >

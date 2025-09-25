@@ -165,6 +165,13 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
       },
     ],
     scripts: [
+      process.env.NODE_ENV === "development"
+        ? {
+            src: "https://unpkg.com/react-scan/dist/auto.global.js",
+            crossOrigin: "anonymous",
+            async: true,
+          }
+        : undefined,
       {
         src: "https://tally.so/widgets/embed.js",
         async: true,

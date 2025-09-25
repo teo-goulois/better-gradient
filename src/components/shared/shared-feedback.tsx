@@ -2,9 +2,7 @@
 
 import { ButtonPrimitive } from "../ui/button";
 
-type Props = {};
-
-export const SharedFeedback = ({}: Props) => {
+export const SharedFeedback = () => {
   return (
     <div className="absolute bottom-0 left-0">
       <ButtonPrimitive
