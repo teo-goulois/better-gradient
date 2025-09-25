@@ -23,9 +23,11 @@ type Props = {
 };
 
 export const MeshExports = ({ outerRef, contentRef }: Props) => {
-  const { canvas, shapes, palette, filters, ui, toShareString } =
-    useMeshStore();
-  const { frame } = useFrameContext();
+  const canvas = useMeshStore((state) => state.canvas);
+  const shapes = useMeshStore((state) => state.shapes);
+  const palette = useMeshStore((state) => state.palette);
+  const filters = useMeshStore((state) => state.filters);
+  const toShareString = useMeshStore((state) => state.toShareString);
 
   const [feedbackStates, setFeedbackStates] = useState<Record<string, boolean>>(
     {}

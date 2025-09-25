@@ -12,7 +12,8 @@ export const Route = createFileRoute("/share/$state")({
 function Share() {
   const params = Route.useParams();
   const fromShareString = useMeshStore((s) => s.fromShareString);
-  const { shapes, palette } = useMeshStore();
+  const palette = useMeshStore((state) => state.palette);
+  const shapes = useMeshStore((state) => state.shapes);
 
   useEffect(() => {
     if (params.state) {

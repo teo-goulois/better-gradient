@@ -48,7 +48,8 @@ export const MeshSidebarColorPicker = ({
 
   ...props
 }: Props) => {
-  const { palette } = useMeshStore();
+  const palette = useMeshStore((state) => state.palette);
+
   const { onChange, ...restProps } = props;
   type OnChange = NonNullable<ColorPickerPrimitiveProps["onChange"]>;
   const throttledOnChange = useMemo(() => {

@@ -12,7 +12,8 @@ import { IconCircleQuestionmark, IconPlus } from "@intentui/icons";
 import { MeshSidebarColorPicker } from "./mesh-sidebar-color-picker";
 
 export const MeshSidebarColorPalette = () => {
-  const { palette, setPalette } = useMeshStore();
+  const palette = useMeshStore((state) => state.palette);
+  const setPalette = useMeshStore((state) => state.setPalette);
 
   return (
     <div className="space-y-2">
@@ -74,7 +75,9 @@ type SortableColorProps = {
 };
 
 const SortableColor = ({ color, index }: SortableColorProps) => {
-  const { palette, setPalette } = useMeshStore();
+  const palette = useMeshStore((state) => state.palette);
+  const setPalette = useMeshStore((state) => state.setPalette);
+
   const sortable = useSortable({ id: color.id, index });
 
   const style = {

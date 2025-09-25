@@ -85,7 +85,11 @@ const useUserPresets = () => {
 };
 
 export const MeshSidebarPresetSelector = () => {
-  const { setPalette, setShapes, shapes, palette } = useMeshStore();
+  const palette = useMeshStore((state) => state.palette);
+  const setPalette = useMeshStore((state) => state.setPalette);
+  const shapes = useMeshStore((state) => state.shapes);
+  const setShapes = useMeshStore((state) => state.setShapes);
+
   const { userPresets } = useUserPresets();
 
   // Combine built-in presets with user presets
@@ -218,7 +222,11 @@ const SelectHeader = ({
 }: {
   selectedPresetKey: Key | null;
 }) => {
-  const { setPalette, setShapes, shapes, palette } = useMeshStore();
+  const palette = useMeshStore((state) => state.palette);
+  const setPalette = useMeshStore((state) => state.setPalette);
+  const shapes = useMeshStore((state) => state.shapes);
+  const setShapes = useMeshStore((state) => state.setShapes);
+
   const { userPresets, saveUserPreset } = useUserPresets();
   const [presetName, setPresetName] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);

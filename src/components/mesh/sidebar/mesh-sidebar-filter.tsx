@@ -12,14 +12,10 @@ import { IconEyeDropper, IconRefresh } from "@intentui/icons";
 import { useMemo, useRef, useState } from "react";
 
 export const MeshSidebarFilter = () => {
-  const { filters, setFilters, shapes, setShapes } = useMeshStore();
-  // Global opacity reflects the average of shape opacities for display; slider sets all
-  const averageOpacityPct = useMemo(() => {
-    if (!shapes || shapes.length === 0) return 100;
-    const avg =
-      shapes.reduce((acc, s) => acc + (s.opacity ?? 1), 0) / shapes.length;
-    return Math.round(Math.max(0, Math.min(1, avg)) * 100);
-  }, [shapes]);
+  const filters = useMeshStore((state) => state.filters);
+  const setFilters = useMeshStore((state) => state.setFilters);
+  const shapes = useMeshStore((state) => state.shapes);
+  const setShapes = useMeshStore((state) => state.setShapes);
 
   // Global spread uses a local slider state; applying delta to avoid compounding from absolute values
   const [spreadPct, setSpreadPct] = useState<number>(100);

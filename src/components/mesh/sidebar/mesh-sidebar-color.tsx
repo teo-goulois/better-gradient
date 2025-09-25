@@ -13,7 +13,9 @@ import { MeshSidebarColorPalette } from "./mesh-sidebar-color-palette";
 import { MeshSidebarPresetSelector } from "./mesh-sidebar-preset-selector";
 
 export const MeshSidebarColor = () => {
-  const { ui, setUi } = useMeshStore();
+  const ui = useMeshStore((state) => state.ui);
+  const setUi = useMeshStore((state) => state.setUi);
+
   return (
     <div>
       <Disclosure defaultExpanded>

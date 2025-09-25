@@ -13,6 +13,8 @@ import appCss from "../styles.css?url";
 import { SharedDefaultCatchBoundary } from "@/components/shared/shared-default-catch-boundary";
 import { SharedNotFound } from "@/components/shared/shared-not-found";
 import type { QueryClient } from "@tanstack/react-query";
+import { useEffect } from "react";
+import { scan } from "react-scan";
 
 interface MyRouterContext {
   queryClient: QueryClient;
@@ -165,13 +167,6 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
       },
     ],
     scripts: [
-      process.env.NODE_ENV === "development"
-        ? {
-            src: "https://unpkg.com/react-scan/dist/auto.global.js",
-            crossOrigin: "anonymous",
-            async: true,
-          }
-        : undefined,
       {
         src: "https://tally.so/widgets/embed.js",
         async: true,
@@ -196,6 +191,13 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
 });
 
 function RootDocument({ children }: { children: React.ReactNode }) {
+  useEffect(() => {
+    // Make sure to run this only after hydration
+    scan({
+      enabled: process.env.NODE_ENV === "development",
+    });
+  }, []);
+
   return (
     <html lang="en">
       <head>
