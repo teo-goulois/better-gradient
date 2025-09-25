@@ -36,6 +36,7 @@ export function svgStringFromState(args: {
 	const { canvas, shapes, palette, filters } = args;
 
 	const blur = Math.max(0, Math.min(filters.blur, 256));
+
 	const wCanvas = canvas.width;
 	const hCanvas = canvas.height;
 	const wOut = args.outputSize?.width ?? wCanvas;
@@ -101,7 +102,7 @@ export function svgStringFromState(args: {
 	for (const s of shapes) {
 		// Shapes can use any entry of the palette, including background at index 0
 		const color = palette[s.fillIndex].color ?? palette[0].color ?? "#000000";
-		const opacity = Math.max(0, Math.min(s.opacity ?? 1, 1));
+		const opacity = Math.max(0, Math.min(s.opacity ?? filters.opacity, 1));
 		svgParts.push(
 			`<path d="${pathDataFromPoints(s.points)}" fill="${color}" fill-opacity="${opacity}"/>`,
 		);

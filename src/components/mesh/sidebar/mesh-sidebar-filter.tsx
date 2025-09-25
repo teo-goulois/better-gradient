@@ -53,12 +53,12 @@ export const MeshSidebarFilter = () => {
           />
           <Slider
             label="Opacity"
-            value={averageOpacityPct}
+            value={filters.opacity * 100}
             onChange={(v) => {
               const value = typeof v === "number" ? v : v[0];
               const next = Math.max(0, Math.min(100, value));
               const opacity = next / 100;
-              setShapes(shapes.map((s) => ({ ...s, opacity })));
+              setFilters({ opacity: opacity });
             }}
           />
           <Slider

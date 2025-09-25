@@ -17,6 +17,8 @@ export type Filters = {
 	blur: number;
 	grainEnabled: boolean;
 	grain: number; // 0..1
+	opacity: number; // 0..100
+	spread: number; // 0..100
 };
 
 export type CanvasSettings = {

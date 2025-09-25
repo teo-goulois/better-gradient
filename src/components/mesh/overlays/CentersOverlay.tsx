@@ -3,6 +3,7 @@ import { ColorSwatch } from "@/components/ui/color-swatch";
 import { Label } from "@/components/ui/field";
 import { Separator } from "@/components/ui/separator";
 import { Slider } from "@/components/ui/slider";
+import { useMeshStore } from "@/store/store-mesh";
 import type { BlobShape, RgbHex } from "@/types/types.mesh";
 import { IconArrowDownFill, IconArrowUpFill } from "@intentui/icons";
 import { memo, useEffect, useMemo, useRef, useState } from "react";
@@ -32,6 +33,7 @@ export const CentersOverlay = memo(function CentersOverlay({
   onSetShapeOpacity,
   onScaleShape,
 }: Props) {
+  const filter = useMeshStore((state) => state.filters);
   const overlayRef = useRef<HTMLDivElement>(null);
   const [menuFor, setMenuFor] = useState<string | null>(null);
   const [isDragging, setIsDragging] = useState(false);
@@ -48,14 +50,16 @@ export const CentersOverlay = memo(function CentersOverlay({
   }, [menuFor, isDragging]);
 
   const centers = useMemo(() => {
-    return shapes.map((s) => ({
-      id: s.id,
-      cx: s.points.reduce((a, b) => a + b.x, 0) / s.points.length,
-      cy: s.points.reduce((a, b) => a + b.y, 0) / s.points.length,
-      fillIndex: s.fillIndex,
-      opacity: s.opacity ?? 1,
-    }));
-  }, [shapes]);
+    return shapes.map((s) => {
+      return {
+        id: s.id,
+        cx: s.points.reduce((a, b) => a + b.x, 0) / s.points.length,
+        cy: s.points.reduce((a, b) => a + b.y, 0) / s.points.length,
+        fillIndex: s.fillIndex,
+        opacity: s.opacity ?? filter.opacity,
+      };
+    });
+  }, [shapes, filter.opacity]);
 
   return (
     <div
