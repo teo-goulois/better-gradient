@@ -104,6 +104,7 @@ const Slider = ({
           className,
         ])
       )}
+      aria-label={props.label && output === "inline" ? props.label : undefined}
       {...props}
     >
       {props.label ||
@@ -127,7 +128,7 @@ const Slider = ({
           <>
             <SliderFiller />
             {state.values.map((_, i) => (
-              <React.Fragment key={i}>{renderThumb(i)}</React.Fragment>
+              <React.Fragment key={_}>{renderThumb(i)}</React.Fragment>
             ))}
           </>
         )}
