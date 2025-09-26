@@ -77,6 +77,16 @@ export type MeshState = {
 	setUiContainerSize: (size: ContainerSize) => void;
 	// shapes
 	toggleAspectLock: (locked: boolean) => void;
+	addShapeFromPoints: (
+		points: Point[],
+		opts?: { fillIndex?: number; opacity?: number },
+		// history handling consistent with other actions
+		mode?: { history?: "push" | "replace" | "skip" },
+	) => void;
+	removeShape: (
+		id: string,
+		opts?: { history?: "push" | "replace" | "skip" },
+	) => void;
 	updateShape: (
 		id: string,
 		updater: (s: BlobShape) => BlobShape,
@@ -100,6 +110,8 @@ export type MeshStoreActions = Pick<
 	| "shuffleColors"
 	| "setSelectedShape"
 	| "setUi"
+	| "addShapeFromPoints"
+	| "removeShape"
 	| "updateShape"
 	| "undo"
 	| "redo"
@@ -403,6 +415,50 @@ export const useMeshStore = create<MeshState>()(
 								: curr.frame,
 						};
 					}),
+				addShapeFromPoints: (points, opts, mode) => {
+					const curr = get();
+					const history = mode?.history ?? "push";
+					// pick palette index with slight downweight for background (index 0)
+					const r = prng(`${curr.seed}-add-${Date.now()}-${curr._past.length}`);
+					const paletteLen = Math.max(1, curr.palette.length);
+					let fillIndex = Math.max(
+						0,
+						Math.min(opts?.fillIndex ?? 0, paletteLen - 1),
+					);
+					if (opts?.fillIndex === undefined) {
+						if (paletteLen === 1) fillIndex = 0;
+						else {
+							const weights: number[] = new Array(paletteLen).fill(1);
+							weights[0] = 0.5;
+							const sum = weights.reduce((a, b) => a + b, 0);
+							const target = r.float(0, sum);
+							let acc = 0;
+							for (let idx = 0; idx < paletteLen; idx++) {
+								acc += weights[idx];
+								if (target <= acc) {
+									fillIndex = idx;
+									break;
+								}
+							}
+						}
+					}
+					const shape: BlobShape = {
+						id: `blob_${Math.random().toString(36).slice(2, 10)}`,
+						points: points.map((p) => ({ x: p.x, y: p.y })),
+						fillIndex,
+						opacity: opts?.opacity,
+					};
+					const next = { shapes: [...curr.shapes, shape] };
+					if (history === "skip") set(next);
+					else commit(next, history === "replace" ? "replace" : "push");
+				},
+				removeShape: (id, opts) => {
+					const curr = get();
+					const shapes = curr.shapes.filter((s) => s.id !== id);
+					const history = opts?.history ?? "push";
+					if (history === "skip") set({ shapes });
+					else commit({ shapes }, history === "replace" ? "replace" : "push");
+				},
 				updateShape: (id, updater, opts) => {
 					const curr = get();
 					const shapes = curr.shapes.map((s) => (s.id === id ? updater(s) : s));

@@ -128,7 +128,8 @@ const Slider = ({
           <>
             <SliderFiller />
             {state.values.map((_, i) => (
-              <React.Fragment key={_}>{renderThumb(i)}</React.Fragment>
+              // biome-ignore lint/suspicious/noArrayIndexKey: <explanation>
+              <React.Fragment key={i}>{renderThumb(i)}</React.Fragment>
             ))}
           </>
         )}

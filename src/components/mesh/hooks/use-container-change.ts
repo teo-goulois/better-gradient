@@ -12,8 +12,6 @@ export const useContainerChange = (
 
 	// biome-ignore lint/correctness/useExhaustiveDependencies: <explanation>
 	useEffect(() => {
-		console.log("element", element, Node.ELEMENT_NODE, element?.nodeType);
-
 		if (previousObserver.current) {
 			previousObserver.current.disconnect();
 			previousObserver.current = null;
@@ -21,7 +19,6 @@ export const useContainerChange = (
 
 		if (element?.nodeType === Node.ELEMENT_NODE) {
 			const observer = new ResizeObserver(([entry]) => {
-				console.log("entry", entry);
 				if (entry?.borderBoxSize) {
 					const { inlineSize: width, blockSize: height } =
 						entry.borderBoxSize[0];
@@ -30,7 +27,6 @@ export const useContainerChange = (
 						width !== ui.container?.width ||
 						height !== ui.container?.height
 					) {
-						console.log("container changed", width, height);
 						setUi({ container: { width, height } });
 					}
 				}

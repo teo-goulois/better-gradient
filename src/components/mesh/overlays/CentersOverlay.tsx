@@ -3,9 +3,10 @@ import { ColorSwatch } from "@/components/ui/color-swatch";
 import { Label } from "@/components/ui/field";
 import { Separator } from "@/components/ui/separator";
 import { Slider } from "@/components/ui/slider";
+import { Tooltip } from "@/components/ui/tooltip";
 import { useMeshStore } from "@/store/store-mesh";
 import type { BlobShape, RgbHex } from "@/types/types.mesh";
-import { IconArrowDownFill, IconArrowUpFill } from "@intentui/icons";
+import { IconArrowDownFill, IconArrowUpFill, IconTrash } from "@intentui/icons";
 import { memo, useEffect, useMemo, useRef, useState } from "react";
 
 type Props = {
@@ -19,6 +20,7 @@ type Props = {
   onMoveShapeDown: (shapeId: string) => void;
   onSetShapeOpacity: (shapeId: string, opacity: number) => void;
   onScaleShape: (shapeId: string, factor: number) => void;
+  onRemoveShape: (shapeId: string) => void;
 };
 
 export const CentersOverlay = memo(function CentersOverlay({
@@ -32,6 +34,7 @@ export const CentersOverlay = memo(function CentersOverlay({
   onMoveShapeDown,
   onSetShapeOpacity,
   onScaleShape,
+  onRemoveShape,
 }: Props) {
   const filter = useMeshStore((state) => state.filters);
   const overlayRef = useRef<HTMLDivElement>(null);
@@ -173,32 +176,29 @@ export const CentersOverlay = memo(function CentersOverlay({
                       <IconArrowDownFill />
                     </Button>
                     <div className="h-7 px-2 flex items-center justify-center ">
-                      {/* TODO: Add layer index */}
                       <span className="text-xs text-muted-fg font-semibold">
                         {centers.findIndex((c) => c.id === id) + 1}
                       </span>
                     </div>
+                    <Tooltip>
+                      <Button
+                        intent="plain"
+                        size="sq-xs"
+                        onPress={() => {
+                          onRemoveShape(id);
+                          setMenuFor(null);
+                        }}
+                        className="data-hovered:text-danger transition-colors"
+                        aria-label="Remove shape"
+                      >
+                        <IconTrash />
+                      </Button>
+                      <Tooltip.Content intent="inverse">
+                        Remove shape
+                      </Tooltip.Content>
+                    </Tooltip>
                   </div>
                   <Separator orientation="vertical" />
-                  {/* Size controls */}
-                  {/* <div className="flex gap-1 items-center pl-2">
-                  <Button
-                    size="sq-xs"
-                    intent="plain"
-                    onPress={() => onScaleShape(id, 0.9)}
-                    aria-label="Decrease size"
-                  >
-                    <IconMinus />
-                  </Button>
-                  <Button
-                    size="sq-xs"
-                    intent="plain"
-                    onPress={() => onScaleShape(id, 1.1)}
-                    aria-label="Increase size"
-                  >
-                    <IconPlus />
-                  </Button>
-                </div> */}
                 </div>
                 <Separator orientation="horizontal" className="my-2" />
                 <div className="space-y-2">
@@ -228,8 +228,8 @@ export const CentersOverlay = memo(function CentersOverlay({
                         output="tooltip"
                         aria-label="Spread"
                         value={lastSpreadByShapeRef.current[id] ?? 100}
-                        minValue={50}
-                        maxValue={150}
+                        minValue={25}
+                        maxValue={200}
                         onChange={(v) => {
                           const raw = typeof v === "number" ? v : v[0];
                           const next = Math.max(1, Math.min(1000, raw));
