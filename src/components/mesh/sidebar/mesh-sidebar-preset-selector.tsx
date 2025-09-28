@@ -16,6 +16,8 @@ import { IconSparklesTwo, IconTrash } from "@intentui/icons";
 import { useCallback, useState } from "react";
 import type { Key } from "react-aria-components";
 import { useLocalStorage } from "usehooks-ts";
+import { useShallow } from "zustand/react/shallow";
+
 // Type for user presets
 interface UserPreset {
   title: string;
@@ -87,7 +89,7 @@ const useUserPresets = () => {
 export const MeshSidebarPresetSelector = () => {
   const palette = useMeshStore((state) => state.palette);
   const setPalette = useMeshStore((state) => state.setPalette);
-  const shapes = useMeshStore((state) => state.shapes);
+  const shapes = useMeshStore(useShallow((state) => state.shapes));
   const setShapes = useMeshStore((state) => state.setShapes);
 
   const { userPresets } = useUserPresets();
@@ -261,7 +263,7 @@ const SelectHeader = ({
       <Modal isOpen={isModalOpen} onOpenChange={setIsModalOpen}>
         <ButtonPrimitive
           isDisabled={!!selectedPresetKey}
-          className={cx(["data-[disabled]:opacity-50"])}
+          className={cx(["data-[disabled]:opacity-50 cursor-pointer"])}
         >
           Add to preset
         </ButtonPrimitive>

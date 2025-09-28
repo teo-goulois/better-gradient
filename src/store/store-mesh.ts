@@ -22,6 +22,8 @@ import { createJSONStorage, persist } from "zustand/middleware";
 export type MeshState = {
 	palette: RgbHex[];
 	shapes: BlobShape[];
+	// Live editing buffer used during drag operations; not persisted
+	shapesLive?: BlobShape[] | null;
 	filters: Filters;
 	canvas: CanvasSettings;
 	seed: string;
@@ -48,6 +50,11 @@ export type MeshState = {
 	setFilters: (filters: Partial<Filters>) => void;
 	setCanvas: (canvas: Partial<CanvasSettings>) => void;
 	setShapes: (shapes: BlobShape[]) => void;
+	// Live editing helpers (no history, no persistence)
+	beginShapesLive: () => void;
+	setShapesLive: (shapes: BlobShape[] | null) => void;
+	updateShapeLive: (id: string, updater: (s: BlobShape) => BlobShape) => void;
+	commitShapesLive: (opts?: { history?: "push" | "replace" }) => void;
 	moveShapeUp: (shapeId: string) => void;
 	moveShapeDown: (shapeId: string) => void;
 	shuffleColors: () => void;
@@ -105,6 +112,10 @@ export type MeshStoreActions = Pick<
 	| "setFilters"
 	| "setCanvas"
 	| "setShapes"
+	| "beginShapesLive"
+	| "setShapesLive"
+	| "updateShapeLive"
+	| "commitShapesLive"
 	| "moveShapeUp"
 	| "moveShapeDown"
 	| "shuffleColors"
@@ -137,6 +148,7 @@ const initialStateBase: Omit<MeshState, keyof MeshStoreActions> = {
 	canvas: DEFAULT_CANVAS,
 	seed: INITIAL_SEED,
 	shapes: INITIAL_SHAPES,
+	shapesLive: null,
 	selectedShapeId: undefined as string | undefined,
 	frame: undefined,
 	ui: {
@@ -235,6 +247,35 @@ export const useMeshStore = create<MeshState>()(
 					commit({ canvas: { ...curr.canvas, ...canvas, width, height } });
 				},
 				setShapes: (shapes) => commit({ shapes }),
+				// Initialize live buffer from committed shapes
+				beginShapesLive: () => {
+					const curr = get();
+					const clone = curr.shapes.map((s) => ({
+						id: s.id,
+						fillIndex: s.fillIndex,
+						opacity: s.opacity,
+						points: s.points.map((p) => ({ x: p.x, y: p.y })),
+					}));
+					set({ shapesLive: clone });
+				},
+				setShapesLive: (shapes) => set({ shapesLive: shapes }),
+				updateShapeLive: (id, updater) => {
+					set((state) => {
+						const curr = state as MeshState;
+						const src = curr.shapesLive ?? curr.shapes;
+						const next = src.map((s) => (s.id === id ? updater(s) : s));
+						return {
+							...state,
+							shapesLive: next,
+						} as Partial<MeshState> as MeshState;
+					});
+				},
+				commitShapesLive: (opts) => {
+					const curr = get();
+					if (!curr.shapesLive) return;
+					const history = opts?.history ?? "push";
+					commit({ shapes: curr.shapesLive, shapesLive: null }, history);
+				},
 				moveShapeUp: (shapeId) => {
 					const curr = get();
 					const index = curr.shapes.findIndex((s) => s.id === shapeId);

@@ -9,17 +9,28 @@ import { Slider } from "@/components/ui/slider";
 import { DEFAULT_FILTERS } from "@/lib/config/config.mesh";
 import { useMeshStore } from "@/store/store-mesh";
 import { IconEyeDropper, IconRefresh } from "@intentui/icons";
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 export const MeshSidebarFilter = () => {
   const filters = useMeshStore((state) => state.filters);
   const setFilters = useMeshStore((state) => state.setFilters);
   const shapes = useMeshStore((state) => state.shapes);
-  const setShapes = useMeshStore((state) => state.setShapes);
+  const shapesLive = useMeshStore((state) => state.shapesLive);
+  const beginShapesLive = useMeshStore((state) => state.beginShapesLive);
+  const setShapesLive = useMeshStore((state) => state.setShapesLive);
+  const commitShapesLive = useMeshStore((state) => state.commitShapesLive);
 
   // Global spread uses a local slider state; applying delta to avoid compounding from absolute values
   const [spreadPct, setSpreadPct] = useState<number>(100);
   const lastAppliedSpreadRef = useRef<number>(100);
+  const commitAttachedRef = useRef<boolean>(false);
+
+  // Ensure we clean any pending handler on unmount
+  useEffect(() => {
+    return () => {
+      commitAttachedRef.current = false;
+    };
+  }, []);
 
   return (
     <div>
@@ -67,9 +78,12 @@ export const MeshSidebarFilter = () => {
               const safeNext = Math.max(1, Math.min(1000, next));
               const prev = lastAppliedSpreadRef.current || 100;
               const deltaFactor = safeNext / prev;
-              if (deltaFactor !== 1 && shapes.length > 0) {
-                setShapes(
-                  shapes.map((s) => {
+              const source = (shapesLive ?? shapes) || [];
+              if (deltaFactor !== 1 && source.length > 0) {
+                // Begin live session lazily
+                if (!shapesLive) beginShapesLive();
+                setShapesLive(
+                  source.map((s) => {
                     const cx =
                       s.points.reduce((a, b) => a + b.x, 0) / s.points.length;
                     const cy =
@@ -84,6 +98,16 @@ export const MeshSidebarFilter = () => {
                   })
                 );
                 lastAppliedSpreadRef.current = safeNext;
+                // Commit once on pointer up
+                if (!commitAttachedRef.current) {
+                  commitAttachedRef.current = true;
+                  const onUp = () => {
+                    commitShapesLive({ history: "replace" });
+                    commitAttachedRef.current = false;
+                    window.removeEventListener("pointerup", onUp);
+                  };
+                  window.addEventListener("pointerup", onUp);
+                }
               }
               setSpreadPct(safeNext);
             }}
@@ -92,9 +116,7 @@ export const MeshSidebarFilter = () => {
             intent="outline"
             onPress={() => {
               setFilters(DEFAULT_FILTERS);
-              const prev = lastAppliedSpreadRef.current || 100;
-              const deltaFactor = prev !== 100 ? 100 / prev : 1;
-              setShapes(
+              /*  setShapes(
                 shapes.map((s) => {
                   let points = s.points;
                   if (deltaFactor !== 1) {
@@ -109,7 +131,7 @@ export const MeshSidebarFilter = () => {
                   }
                   return { ...s, points, opacity: undefined };
                 })
-              );
+              ); */
               lastAppliedSpreadRef.current = 100;
               setSpreadPct(100);
             }}

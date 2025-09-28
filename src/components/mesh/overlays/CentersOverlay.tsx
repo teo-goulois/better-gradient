@@ -21,6 +21,7 @@ type Props = {
   onSetShapeOpacity: (shapeId: string, opacity: number) => void;
   onScaleShape: (shapeId: string, factor: number) => void;
   onRemoveShape: (shapeId: string) => void;
+  onEndDragShape: () => void;
 };
 
 export const CentersOverlay = memo(function CentersOverlay({
@@ -35,6 +36,7 @@ export const CentersOverlay = memo(function CentersOverlay({
   onSetShapeOpacity,
   onScaleShape,
   onRemoveShape,
+  onEndDragShape,
 }: Props) {
   const filter = useMeshStore((state) => state.filters);
   const overlayRef = useRef<HTMLDivElement>(null);
@@ -113,6 +115,7 @@ export const CentersOverlay = memo(function CentersOverlay({
                   window.removeEventListener("mousemove", move);
                   window.removeEventListener("mouseup", up);
                   setIsDragging(false);
+                  onEndDragShape();
                 };
                 window.addEventListener("mousemove", move);
                 window.addEventListener("mouseup", up);

@@ -8,6 +8,7 @@ type Props = {
   palette: RgbHex[];
   onBeginDragVertex: (shapeId: string) => void;
   onUpdateVertex: (shapeId: string, vertexIndex: number, point: Point) => void;
+  onEndDragVertex: () => void;
 };
 
 export const VerticesOverlay = memo(function VerticesOverlay({
@@ -17,6 +18,7 @@ export const VerticesOverlay = memo(function VerticesOverlay({
   palette,
   onBeginDragVertex,
   onUpdateVertex,
+  onEndDragVertex,
 }: Props) {
   const overlayRef = useRef<HTMLDivElement>(null);
 
@@ -124,6 +126,7 @@ export const VerticesOverlay = memo(function VerticesOverlay({
                       const up = () => {
                         window.removeEventListener("mousemove", move);
                         window.removeEventListener("mouseup", up);
+                        onEndDragVertex();
                       };
                       window.addEventListener("mousemove", move);
                       window.addEventListener("mouseup", up);

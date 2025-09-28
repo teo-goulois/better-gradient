@@ -5,6 +5,7 @@ import { useMemo } from "react";
 export function useMeshSvg() {
 	const canvas = useMeshStore((s) => s.canvas);
 	const shapes = useMeshStore((s) => s.shapes);
+	const shapesLive = useMeshStore((s) => s.shapesLive);
 	const palette = useMeshStore((s) => s.palette);
 	const filters = useMeshStore((s) => s.filters);
 	// Create the SVG string for current state; heavy work is string concat, keep memoized.
@@ -12,11 +13,11 @@ export function useMeshSvg() {
 		() =>
 			svgStringFromState({
 				canvas,
-				shapes,
+				shapes: shapesLive ?? shapes,
 				palette,
 				filters,
 			}),
-		[canvas, shapes, palette, filters],
+		[canvas, shapes, shapesLive, palette, filters],
 	);
 
 	// Data URL derivative, memoized from svg
