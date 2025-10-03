@@ -5,7 +5,10 @@ import { useMeshStore } from "@/store/store-mesh";
 import { Button } from "../ui/button";
 
 export const MeshActions = () => {
-  const { randomize, shuffleColors, shapes, palette } = useMeshStore();
+  const randomize = useMeshStore((state) => state.randomize);
+  const shuffleColors = useMeshStore((state) => state.shuffleColors);
+  const shapes = useMeshStore((state) => state.shapes);
+  const palette = useMeshStore((state) => state.palette);
 
   const handleRandomize = () => {
     randomize();

@@ -116,22 +116,6 @@ export const MeshSidebarFilter = () => {
             intent="outline"
             onPress={() => {
               setFilters(DEFAULT_FILTERS);
-              /*  setShapes(
-                shapes.map((s) => {
-                  let points = s.points;
-                  if (deltaFactor !== 1) {
-                    const cx =
-                      s.points.reduce((a, b) => a + b.x, 0) / s.points.length;
-                    const cy =
-                      s.points.reduce((a, b) => a + b.y, 0) / s.points.length;
-                    points = s.points.map((p) => ({
-                      x: cx + (p.x - cx) * deltaFactor,
-                      y: cy + (p.y - cy) * deltaFactor,
-                    }));
-                  }
-                  return { ...s, points, opacity: undefined };
-                })
-              ); */
               lastAppliedSpreadRef.current = 100;
               setSpreadPct(100);
             }}

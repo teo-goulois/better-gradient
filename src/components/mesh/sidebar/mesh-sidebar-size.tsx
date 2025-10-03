@@ -32,6 +32,7 @@ const CANVAS_PRESETS = [
 export const MeshSidebarSize = () => {
   // ===== HOOKS =====
   const { saveFrame, frame } = useFrameContext();
+
   const ui = useMeshStore((s) => s.ui);
   const canvas = useMeshStore((s) => s.canvas);
   const setCanvas = useMeshStore((s) => s.setCanvas);

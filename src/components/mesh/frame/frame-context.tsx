@@ -21,6 +21,7 @@ const FrameContext = createContext<FrameContextProps | null>(null);
 const FrameProvider = ({ children }: PropsWithChildren) => {
   const localFrame = useMeshStore((s) => s.frame);
   const setUiFrame = useMeshStore((s) => s.setUiFrame);
+
   const [frame, setFrame] = useState<FrameContextProps["frame"]>(
     localFrame ?? null
   );
