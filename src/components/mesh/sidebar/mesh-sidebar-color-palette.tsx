@@ -14,7 +14,6 @@ import { MeshSidebarColorPicker } from "./mesh-sidebar-color-picker";
 
 export const MeshSidebarColorPalette = () => {
   const palette = useMeshStore((state) => state.palette);
-  console.log({ palette });
   const setPalette = useMeshStore((state) => state.setPalette);
   const isReorderHistorySessionRef = useRef<boolean>(false);
 
