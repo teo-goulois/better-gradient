@@ -50,6 +50,8 @@ export const MeshSidebarColorPicker = ({
 }: Props) => {
   const palette = useMeshStore((state) => state.palette);
 
+  console.log("palette", palette);
+
   const { onChange, ...restProps } = props;
   type OnChange = NonNullable<ColorPickerPrimitiveProps["onChange"]>;
   const throttledOnChange = useMemo(() => {
@@ -61,6 +63,7 @@ export const MeshSidebarColorPicker = ({
   }, [onChange]);
 
   const [value, setValue] = useState(restProps.value);
+
   return (
     <div
       className={twMerge(

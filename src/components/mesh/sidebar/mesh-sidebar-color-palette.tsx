@@ -9,11 +9,14 @@ import { move } from "@dnd-kit/helpers";
 import { DragDropProvider } from "@dnd-kit/react";
 import { useSortable } from "@dnd-kit/react/sortable";
 import { IconCircleQuestionmark, IconPlus } from "@intentui/icons";
+import { useRef } from "react";
 import { MeshSidebarColorPicker } from "./mesh-sidebar-color-picker";
 
 export const MeshSidebarColorPalette = () => {
   const palette = useMeshStore((state) => state.palette);
+  console.log({ palette });
   const setPalette = useMeshStore((state) => state.setPalette);
+  const isReorderHistorySessionRef = useRef<boolean>(false);
 
   return (
     <div className="space-y-2">
@@ -33,13 +36,27 @@ export const MeshSidebarColorPalette = () => {
         </Tooltip>
       </div>
       <DragDropProvider
-        onDragEnd={(event) => {
-          setPalette(move(palette, event));
+        onDragStart={() => {
+          isReorderHistorySessionRef.current = false;
+        }}
+        onDragMove={(event) => {
+          const current = useMeshStore.getState().palette;
+          setPalette(move(current, event), {
+            history: isReorderHistorySessionRef.current ? "replace" : "push",
+          });
+          isReorderHistorySessionRef.current = true;
+        }}
+        onDragEnd={() => {
+          isReorderHistorySessionRef.current = false;
         }}
       >
         <div className="flex gap-2 flex-wrap">
           {palette.map((item, index) => (
-            <SortableColor key={item.id} color={item} index={index} />
+            <SortableColor
+              key={`${item.id}-${item.color}`}
+              color={item}
+              index={index}
+            />
           ))}
           {palette.length < 10 && (
             <Button
@@ -47,10 +64,13 @@ export const MeshSidebarColorPalette = () => {
               isCircle
               size="sq-sm"
               onPress={() => {
-                setPalette([
-                  ...palette,
-                  { id: crypto.randomUUID(), color: "#ffffff" },
-                ] as RgbHex[]);
+                setPalette(
+                  [
+                    ...palette,
+                    { id: crypto.randomUUID(), color: "#ffffff" },
+                  ] as RgbHex[],
+                  { history: "push" }
+                );
                 trackEvent(
                   "Add Color",
                   {
@@ -77,6 +97,8 @@ type SortableColorProps = {
 const SortableColor = ({ color, index }: SortableColorProps) => {
   const palette = useMeshStore((state) => state.palette);
   const setPalette = useMeshStore((state) => state.setPalette);
+  const lastColorChangeAtRef = useRef<number>(0);
+  // no global side-effects; session handled locally via time-based grouping
 
   const sortable = useSortable({ id: color.id, index });
 
@@ -97,7 +119,12 @@ const SortableColor = ({ color, index }: SortableColorProps) => {
           const value = c.toString("hex");
           const next = [...palette];
           next[index] = { id: color.id, color: value } as RgbHex;
-          setPalette(next as RgbHex[]);
+          const now = Date.now();
+          const isNewSession = now - (lastColorChangeAtRef.current || 0) > 300;
+          setPalette(next as RgbHex[], {
+            history: isNewSession ? "push" : "replace",
+          });
+          lastColorChangeAtRef.current = now;
           trackEvent(
             "Change Color",
             {
@@ -110,7 +137,9 @@ const SortableColor = ({ color, index }: SortableColorProps) => {
         }}
         onRemove={() => {
           if (palette.length === 1) return;
-          setPalette(palette.filter((_, idx) => idx !== index) as RgbHex[]);
+          setPalette(palette.filter((_, idx) => idx !== index) as RgbHex[], {
+            history: "push",
+          });
           trackEvent(
             "Remove Color",
             {

@@ -46,7 +46,7 @@ export const MeshPreviewVerticesPoints = ({ canvasRef, contentRef }: Props) => {
         })
       }
       onEndDragVertex={() => {
-        commitShapesLive({ history: "replace" });
+        commitShapesLive({ history: "push" });
       }}
     />
   );

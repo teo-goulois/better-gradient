@@ -58,7 +58,7 @@ export const MeshPreviewCenterPoint = ({ canvasRef, contentRef }: Props) => {
         }));
       }}
       onEndDragShape={() => {
-        commitShapesLive({ history: "replace" });
+        commitShapesLive({ history: "push" });
       }}
       onMoveShapeUp={moveShapeUp}
       onMoveShapeDown={moveShapeDown}

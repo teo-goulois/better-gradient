@@ -24,6 +24,7 @@ export const MeshSidebarFilter = () => {
   const [spreadPct, setSpreadPct] = useState<number>(100);
   const lastAppliedSpreadRef = useRef<number>(100);
   const commitAttachedRef = useRef<boolean>(false);
+  const historySessionRef = useRef<boolean>(false);
 
   // Ensure we clean any pending handler on unmount
   useEffect(() => {
@@ -47,7 +48,14 @@ export const MeshSidebarFilter = () => {
             onChange={(v) => {
               const value = typeof v === "number" ? v : v[0];
               const mappedValue = value === 0 ? 35 : 35 + (value / 100) * 65;
-              setFilters({ blur: mappedValue });
+              setFilters(
+                { blur: mappedValue },
+                { history: historySessionRef.current ? "replace" : "push" }
+              );
+              historySessionRef.current = true;
+            }}
+            onChangeEnd={() => {
+              historySessionRef.current = false;
             }}
           />
           <Slider
@@ -55,7 +63,14 @@ export const MeshSidebarFilter = () => {
             value={(filters.grain ?? 0) * 100}
             onChange={(v) => {
               const value = typeof v === "number" ? v : v[0];
-              setFilters({ grain: value / 100 });
+              setFilters(
+                { grain: value / 100 },
+                { history: historySessionRef.current ? "replace" : "push" }
+              );
+              historySessionRef.current = true;
+            }}
+            onChangeEnd={() => {
+              historySessionRef.current = false;
             }}
           />
           <Slider
@@ -65,7 +80,14 @@ export const MeshSidebarFilter = () => {
               const value = typeof v === "number" ? v : v[0];
               const next = Math.max(0, Math.min(100, value));
               const opacity = next / 100;
-              setFilters({ opacity: opacity });
+              setFilters(
+                { opacity: opacity },
+                { history: historySessionRef.current ? "replace" : "push" }
+              );
+              historySessionRef.current = true;
+            }}
+            onChangeEnd={() => {
+              historySessionRef.current = false;
             }}
           />
           <Slider
@@ -115,7 +137,7 @@ export const MeshSidebarFilter = () => {
           <Button
             intent="outline"
             onPress={() => {
-              setFilters(DEFAULT_FILTERS);
+              setFilters(DEFAULT_FILTERS, { history: "push" });
               lastAppliedSpreadRef.current = 100;
               setSpreadPct(100);
             }}
