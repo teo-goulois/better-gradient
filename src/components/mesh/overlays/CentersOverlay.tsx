@@ -1,8 +1,12 @@
 import { Button } from "@/components/ui/button";
 import { ColorSwatch } from "@/components/ui/color-swatch";
+import { Label } from "@/components/ui/field";
 import { Separator } from "@/components/ui/separator";
+import { Slider } from "@/components/ui/slider";
+import { Tooltip } from "@/components/ui/tooltip";
+import { useMeshStore } from "@/store/store-mesh";
 import type { BlobShape, RgbHex } from "@/types/types.mesh";
-import { IconArrowDownFill, IconArrowUpFill } from "@intentui/icons";
+import { IconArrowDownFill, IconArrowUpFill, IconTrash } from "@intentui/icons";
 import { memo, useEffect, useMemo, useRef, useState } from "react";
 
 type Props = {
@@ -14,6 +18,10 @@ type Props = {
   onSetShapeFillIndex: (shapeId: string, fillIndex: number) => void;
   onMoveShapeUp: (shapeId: string) => void;
   onMoveShapeDown: (shapeId: string) => void;
+  onSetShapeOpacity: (shapeId: string, opacity: number) => void;
+  onScaleShape: (shapeId: string, factor: number) => void;
+  onRemoveShape: (shapeId: string) => void;
+  onEndDragShape: () => void;
 };
 
 export const CentersOverlay = memo(function CentersOverlay({
@@ -25,10 +33,17 @@ export const CentersOverlay = memo(function CentersOverlay({
   onSetShapeFillIndex,
   onMoveShapeUp,
   onMoveShapeDown,
+  onSetShapeOpacity,
+  onScaleShape,
+  onRemoveShape,
+  onEndDragShape,
 }: Props) {
+  const filter = useMeshStore((state) => state.filters);
   const overlayRef = useRef<HTMLDivElement>(null);
   const [menuFor, setMenuFor] = useState<string | null>(null);
   const [isDragging, setIsDragging] = useState(false);
+  // Track last spread percentage per-shape to apply delta scaling (avoid compounding)
+  const lastSpreadByShapeRef = useRef<Record<string, number>>({});
 
   useEffect(() => {
     const close = () => {
@@ -40,13 +55,16 @@ export const CentersOverlay = memo(function CentersOverlay({
   }, [menuFor, isDragging]);
 
   const centers = useMemo(() => {
-    return shapes.map((s) => ({
-      id: s.id,
-      cx: s.points.reduce((a, b) => a + b.x, 0) / s.points.length,
-      cy: s.points.reduce((a, b) => a + b.y, 0) / s.points.length,
-      fillIndex: s.fillIndex,
-    }));
-  }, [shapes]);
+    return shapes.map((s) => {
+      return {
+        id: s.id,
+        cx: s.points.reduce((a, b) => a + b.x, 0) / s.points.length,
+        cy: s.points.reduce((a, b) => a + b.y, 0) / s.points.length,
+        fillIndex: s.fillIndex,
+        opacity: s.opacity ?? filter.opacity,
+      };
+    });
+  }, [shapes, filter.opacity]);
 
   return (
     <div
@@ -54,7 +72,7 @@ export const CentersOverlay = memo(function CentersOverlay({
       id="centers-overlay"
       className="absolute inset-0 pointer-events-none"
     >
-      {centers.map(({ id, cx, cy, fillIndex }) => {
+      {centers.map(({ id, cx, cy, fillIndex, opacity }) => {
         const left = cx * scale.x;
         const top = cy * scale.y;
         const color = palette[fillIndex] ?? palette[0] ?? "#000000";
@@ -97,6 +115,7 @@ export const CentersOverlay = memo(function CentersOverlay({
                   window.removeEventListener("mousemove", move);
                   window.removeEventListener("mouseup", up);
                   setIsDragging(false);
+                  onEndDragShape();
                 };
                 window.addEventListener("mousemove", move);
                 window.addEventListener("mouseup", up);
@@ -109,58 +128,123 @@ export const CentersOverlay = memo(function CentersOverlay({
             />
             {menuFor === id && (
               <div
-                className="absolute left-3 top-3 p-2 z-50 rounded-md shadow-md min-h-0 bg-white border pointer-events-auto flex gap-1 items-center"
+                className="absolute left-3 top-3 p-2 z-50 rounded-md shadow-md min-h-0 bg-white border pointer-events-auto "
                 onClick={(e) => e.stopPropagation()}
                 onKeyDown={(e) => e.stopPropagation()}
               >
-                {/* Color palette */}
-                <div className="flex gap-1">
-                  {palette.map((c: RgbHex, i: number) => (
-                    <button
-                      type="button"
-                      key={c.color}
-                      className="size-5 rounded-full border"
-                      style={{
-                        background: c.color,
-                        borderColor: "rgba(0,0,0,0.2)",
-                      }}
-                      onClick={() => {
-                        onSetShapeFillIndex(id, i);
-                        setMenuFor(null);
-                      }}
-                      title={c.color}
-                    />
-                  ))}
-                </div>
-                <Separator orientation="vertical" />
-                {/* Layer controls */}
-                <div className="flex gap-1 border-l  pl-2">
-                  <Button
-                    size="sq-xs"
-                    intent="plain"
-                    onPress={() => {
-                      onMoveShapeDown(id);
-                    }}
-                    aria-label="Move layer up"
-                  >
-                    <IconArrowUpFill />
-                  </Button>
+                <div className="flex gap-1 items-center">
+                  {/* Color palette */}
+                  <div className="flex gap-1">
+                    {palette.map((c: RgbHex, i: number) => (
+                      <button
+                        type="button"
+                        key={c.color}
+                        className="size-5 rounded-full border"
+                        style={{
+                          background: c.color,
+                          borderColor: "rgba(0,0,0,0.2)",
+                        }}
+                        onClick={() => {
+                          onSetShapeFillIndex(id, i);
+                          setMenuFor(null);
+                        }}
+                        title={c.color}
+                      />
+                    ))}
+                  </div>
+                  <Separator orientation="vertical" />
 
-                  <Button
-                    size="sq-xs"
-                    intent="plain"
-                    onPress={() => {
-                      onMoveShapeUp(id);
-                    }}
-                    aria-label="Move layer down"
-                  >
-                    <IconArrowDownFill />
-                  </Button>
-                  <div className="h-7 px-2 flex items-center justify-center ">
-                    {/* TODO: Add layer index */}
-                    <span className="text-xs text-muted-fg font-semibold">
-                      {centers.findIndex((c) => c.id === id) + 1}
-                    </span>
+                  <Separator orientation="vertical" />
+                  {/* Layer controls */}
+                  <div className="flex gap-1 border-l  pl-2">
+                    <Button
+                      size="sq-xs"
+                      intent="plain"
+                      onPress={() => {
+                        onMoveShapeDown(id);
+                      }}
+                      aria-label="Move layer up"
+                    >
+                      <IconArrowUpFill />
+                    </Button>
+
+                    <Button
+                      size="sq-xs"
+                      intent="plain"
+                      onPress={() => {
+                        onMoveShapeUp(id);
+                      }}
+                      aria-label="Move layer down"
+                    >
+                      <IconArrowDownFill />
+                    </Button>
+                    <div className="h-7 px-2 flex items-center justify-center ">
+                      <span className="text-xs text-muted-fg font-semibold">
+                        {centers.findIndex((c) => c.id === id) + 1}
+                      </span>
+                    </div>
+                    <Tooltip>
+                      <Button
+                        intent="plain"
+                        size="sq-xs"
+                        onPress={() => {
+                          onRemoveShape(id);
+                          setMenuFor(null);
+                        }}
+                        className="data-hovered:text-danger transition-colors"
+                        aria-label="Remove shape"
+                      >
+                        <IconTrash />
+                      </Button>
+                      <Tooltip.Content intent="inverse">
+                        Remove shape
+                      </Tooltip.Content>
+                    </Tooltip>
+                  </div>
+                  <Separator orientation="vertical" />
+                </div>
+                <Separator orientation="horizontal" className="my-2" />
+                <div className="space-y-2">
+                  {/* Opacity */}
+                  <div className="flex items-center gap-2 px-2 ">
+                    <div className="flex items-center gap-2 w-full">
+                      <Label>Opacity</Label>
+                      <Slider
+                        className="min-w-32 w-full flex-1"
+                        output="tooltip"
+                        aria-label="Opacity"
+                        value={Math.round((opacity ?? 1) * 100)}
+                        onChange={(v) => {
+                          const value = typeof v === "number" ? v : v[0];
+                          const next = Math.max(0, Math.min(100, value));
+                          onSetShapeOpacity(id, next / 100);
+                        }}
+                      />
+                    </div>
+                  </div>
+                  {/* Spread (per-shape) */}
+                  <div className="flex items-center gap-2 px-2 ">
+                    <div className="flex items-center gap-2 w-full">
+                      <Label>Spread</Label>
+                      <Slider
+                        className="min-w-32 w-full flex-1"
+                        output="tooltip"
+                        aria-label="Spread"
+                        value={lastSpreadByShapeRef.current[id] ?? 100}
+                        minValue={25}
+                        maxValue={200}
+                        onChange={(v) => {
+                          const raw = typeof v === "number" ? v : v[0];
+                          const next = Math.max(1, Math.min(1000, raw));
+                          const prev = lastSpreadByShapeRef.current[id] ?? 100;
+                          const delta = next / prev;
+                          if (delta !== 1) {
+                            onScaleShape(id, delta);
+                          }
+                          lastSpreadByShapeRef.current[id] = next;
+                        }}
+                      />
+                    </div>
                   </div>
                 </div>
               </div>

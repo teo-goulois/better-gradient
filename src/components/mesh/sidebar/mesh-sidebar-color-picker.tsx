@@ -48,7 +48,8 @@ export const MeshSidebarColorPicker = ({
 
   ...props
 }: Props) => {
-  const { palette } = useMeshStore();
+  const palette = useMeshStore((state) => state.palette);
+
   const { onChange, ...restProps } = props;
   type OnChange = NonNullable<ColorPickerPrimitiveProps["onChange"]>;
   const throttledOnChange = useMemo(() => {
@@ -60,8 +61,30 @@ export const MeshSidebarColorPicker = ({
   }, [onChange]);
 
   const [value, setValue] = useState(restProps.value);
+
   return (
-    <div className={twMerge("flex flex-col items-start gap-y-1", className)}>
+    <div
+      className={twMerge(
+        "flex flex-col items-start gap-y-1 relative",
+        className
+      )}
+    >
+      {palette.length > 1 && (
+        <Button
+          isCircle
+          size="sq-xxs"
+          intent="secondary"
+          className={twJoin(
+            "size-4",
+            "rounded-full z-10",
+            "absolute -top-1 -right-1 opacity-0 group-hover:opacity-100 transition-opacity"
+          )}
+          onPress={onRemove}
+        >
+          <IconX className="size-2" />
+        </Button>
+      )}
+
       <ColorPickerPrimitive
         {...restProps}
         value={value}
@@ -71,7 +94,21 @@ export const MeshSidebarColorPicker = ({
         }}
       >
         <Popover>
-          <Popover.Trigger className="relative group">
+          <Button
+            isDisabled={isDisabled}
+            size={label ? "md" : "sq-sm"}
+            intent="outline"
+            isCircle
+            className={twJoin(
+              "w-auto *:data-[slot=color-swatch]:size-9",
+              !label && "size-fit",
+              "p-0"
+            )}
+          >
+            <ColorSwatch className="rounded-full" />
+            {label && label}
+          </Button>
+          {/* <Popover.Trigger className="relative group">
             <Button
               isDisabled={isDisabled}
               size={label ? "md" : "sq-sm"}
@@ -86,22 +123,8 @@ export const MeshSidebarColorPicker = ({
               <ColorSwatch className="rounded-full" />
               {label && label}
             </Button>
-            {palette.length > 1 && (
-              <Button
-                isCircle
-                size="sq-xxs"
-                intent="secondary"
-                className={twJoin(
-                  "size-4",
-                  "rounded-full",
-                  "absolute -top-1 -right-1 opacity-0 group-hover:opacity-100 transition-opacity"
-                )}
-                onPress={onRemove}
-              >
-                <IconX className="size-2" />
-              </Button>
-            )}
-          </Popover.Trigger>
+            
+          </Popover.Trigger> */}
           {/* </Popover.Trigger> */}
           <PopoverContent
             className="**:data-[slot=color-area]:w-full **:data-[slot=color-slider]:w-full sm:min-w-min sm:max-w-56 sm:**:data-[slot=color-area]:size-56 *:[[role=dialog]]:p-4 sm:*:[[role=dialog]]:p-3"

@@ -193,3 +193,61 @@ export function generateShapes(args: {
 	}
 	return shapes;
 }
+
+// Shape helpers for contextual insertion
+export function makeRegularPolygonPoints(
+	center: Point,
+	radius: number,
+	sides: number,
+): Point[] {
+	const points: Point[] = [];
+	const safeSides = Math.max(3, Math.floor(sides));
+	for (let i = 0; i < safeSides; i++) {
+		const angle = (i / safeSides) * Math.PI * 2;
+		points.push({
+			x: center.x + Math.cos(angle) * radius,
+			y: center.y + Math.sin(angle) * radius,
+		});
+	}
+	return points;
+}
+
+export function makeCirclePoints(center: Point, radius: number, segments = 24) {
+	return makeRegularPolygonPoints(center, radius, Math.max(8, segments));
+}
+
+export function makeSquarePoints(center: Point, size: number): Point[] {
+	const half = size / 2;
+	return [
+		{ x: center.x - half, y: center.y - half },
+		{ x: center.x + half, y: center.y - half },
+		{ x: center.x + half, y: center.y + half },
+		{ x: center.x - half, y: center.y + half },
+	];
+}
+
+export function makeDiamondPoints(center: Point, size: number): Point[] {
+	const half = size / 2;
+	return [
+		{ x: center.x, y: center.y - half },
+		{ x: center.x + half, y: center.y },
+		{ x: center.x, y: center.y + half },
+		{ x: center.x - half, y: center.y },
+	];
+}
+
+export function makeRandomBlobPoints(
+	seed: string,
+	canvas: CanvasSettings,
+	center: Point,
+): Point[] {
+	const r = prng(`${seed}-ctx`);
+	// Use inside radius config by default
+	const radiusCfg = GEN_CONFIG.insideRadius;
+	return generatePolygon(
+		r,
+		{ w: canvas.width, h: canvas.height },
+		center,
+		radiusCfg,
+	);
+}

@@ -15,6 +15,8 @@ export const DEFAULT_FILTERS: Filters = {
 	blur: 75,
 	grainEnabled: true,
 	grain: 0.65,
+	opacity: 100,
+	spread: 100,
 };
 
 // Generation configuration (tweak here later)

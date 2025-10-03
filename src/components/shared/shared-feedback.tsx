@@ -2,11 +2,9 @@
 
 import { ButtonPrimitive } from "../ui/button";
 
-type Props = {};
-
-export const SharedFeedback = ({}: Props) => {
+export const SharedFeedback = () => {
   return (
-    <div className="absolute bottom-0 left-0">
+    <div className="absolute bottom-0 z-10 left-0">
       <ButtonPrimitive
         className="font-semibold cursor-pointer hover:underline"
         data-tally-open="3NapOQ"

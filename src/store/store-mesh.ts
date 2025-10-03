@@ -22,6 +22,8 @@ import { createJSONStorage, persist } from "zustand/middleware";
 export type MeshState = {
 	palette: RgbHex[];
 	shapes: BlobShape[];
+	// Live editing buffer used during drag operations; not persisted
+	shapesLive?: BlobShape[] | null;
 	filters: Filters;
 	canvas: CanvasSettings;
 	seed: string;
@@ -44,10 +46,24 @@ export type MeshState = {
 
 	// Actions
 	randomize: (opts?: { seed?: string; count?: number }) => void;
-	setPalette: (palette: RgbHex[]) => void;
-	setFilters: (filters: Partial<Filters>) => void;
-	setCanvas: (canvas: Partial<CanvasSettings>) => void;
+	setPalette: (
+		palette: RgbHex[],
+		opts?: { history?: "push" | "replace" | "skip" },
+	) => void;
+	setFilters: (
+		filters: Partial<Filters>,
+		opts?: { history?: "push" | "replace" | "skip" },
+	) => void;
+	setCanvas: (
+		canvas: Partial<CanvasSettings>,
+		opts?: { history?: "push" | "replace" | "skip" },
+	) => void;
 	setShapes: (shapes: BlobShape[]) => void;
+	// Live editing helpers (no history, no persistence)
+	beginShapesLive: () => void;
+	setShapesLive: (shapes: BlobShape[] | null) => void;
+	updateShapeLive: (id: string, updater: (s: BlobShape) => BlobShape) => void;
+	commitShapesLive: (opts?: { history?: "push" | "replace" }) => void;
 	moveShapeUp: (shapeId: string) => void;
 	moveShapeDown: (shapeId: string) => void;
 	shuffleColors: () => void;
@@ -77,6 +93,16 @@ export type MeshState = {
 	setUiContainerSize: (size: ContainerSize) => void;
 	// shapes
 	toggleAspectLock: (locked: boolean) => void;
+	addShapeFromPoints: (
+		points: Point[],
+		opts?: { fillIndex?: number; opacity?: number },
+		// history handling consistent with other actions
+		mode?: { history?: "push" | "replace" | "skip" },
+	) => void;
+	removeShape: (
+		id: string,
+		opts?: { history?: "push" | "replace" | "skip" },
+	) => void;
 	updateShape: (
 		id: string,
 		updater: (s: BlobShape) => BlobShape,
@@ -95,11 +121,17 @@ export type MeshStoreActions = Pick<
 	| "setFilters"
 	| "setCanvas"
 	| "setShapes"
+	| "beginShapesLive"
+	| "setShapesLive"
+	| "updateShapeLive"
+	| "commitShapesLive"
 	| "moveShapeUp"
 	| "moveShapeDown"
 	| "shuffleColors"
 	| "setSelectedShape"
 	| "setUi"
+	| "addShapeFromPoints"
+	| "removeShape"
 	| "updateShape"
 	| "undo"
 	| "redo"
@@ -125,6 +157,7 @@ const initialStateBase: Omit<MeshState, keyof MeshStoreActions> = {
 	canvas: DEFAULT_CANVAS,
 	seed: INITIAL_SEED,
 	shapes: INITIAL_SHAPES,
+	shapesLive: null,
 	selectedShapeId: undefined as string | undefined,
 	frame: undefined,
 	ui: {
@@ -145,25 +178,61 @@ export const useMeshStore = create<MeshState>()(
 		(set, get) => {
 			const commit = (next: Partial<MeshState>, mode: HistoryMode = "push") => {
 				const curr = get();
-				const snapshot = serialize({
+				// Prepare normalized current and next content to dedupe no-op commits
+				const currContent = serialize({
 					palette: curr.palette,
 					shapes: curr.shapes,
 					filters: curr.filters,
 					canvas: curr.canvas,
 					seed: curr.seed,
 					selectedShapeId: curr.selectedShapeId,
-					frame: curr.frame,
 					ui: curr.ui,
 					_past: [],
 					_future: [],
 				});
-				if (mode === "replace" && curr._past.length > 0) {
-					const past = [...curr._past];
-					past[past.length - 1] = snapshot;
-					set({ _past: past, _future: [] });
-				} else {
-					set({ _past: [...curr._past, snapshot], _future: [] });
+				const nextContent = serialize({
+					palette:
+						"palette" in next && next.palette !== undefined
+							? next.palette
+							: curr.palette,
+					shapes:
+						"shapes" in next && next.shapes !== undefined
+							? next.shapes
+							: curr.shapes,
+					filters:
+						"filters" in next && next.filters !== undefined
+							? (next.filters as Filters)
+							: curr.filters,
+					canvas:
+						"canvas" in next && next.canvas !== undefined
+							? (next.canvas as CanvasSettings)
+							: curr.canvas,
+					seed:
+						"seed" in next && next.seed !== undefined
+							? (next.seed as string)
+							: curr.seed,
+					selectedShapeId:
+						"selectedShapeId" in next && next.selectedShapeId !== undefined
+							? next.selectedShapeId
+							: curr.selectedShapeId,
+					ui: curr.ui,
+					_past: [],
+					_future: [],
+				});
+				// If no content change, just set state without touching history
+				if (currContent === nextContent) {
+					set(next);
+					return;
 				}
+				// During replace sessions, don't touch the existing past entry; just clear redo and apply state
+				if (mode === "replace") {
+					set({ _future: [] });
+					set(next);
+					return;
+				}
+				// push: snapshot present into history
+				const snapshot = currContent;
+				set({ _past: [...curr._past, snapshot], _future: [] });
 				set(next);
 			};
 
@@ -184,7 +253,7 @@ export const useMeshStore = create<MeshState>()(
 					});
 					commit({ seed: nextSeed, shapes });
 				},
-				setPalette: (palette) => {
+				setPalette: (palette, opts) => {
 					const curr = get();
 					// clamp shape fill indices in case palette shrunk
 					const clampedShapes = curr.shapes.map((s) => ({
@@ -195,34 +264,74 @@ export const useMeshStore = create<MeshState>()(
 							Math.min(s.fillIndex, Math.max(0, palette.length - 1)),
 						),
 					}));
-					commit({
+					const history = opts?.history ?? "push";
+					const next = {
 						palette,
 						shapes: clampedShapes,
 						canvas: {
 							...curr.canvas,
 							background: palette[0] ?? curr.canvas.background,
 						},
-					});
+					} as Partial<MeshState>;
+					if (history === "skip") set(next);
+					else commit(next, history === "replace" ? "replace" : "push");
 				},
 
-				setFilters: (filters) => {
+				setFilters: (filters, opts) => {
 					const curr = get();
-					commit({
+					const next = {
 						filters: {
 							...curr.filters,
 							...filters,
 							blur: clamp(filters.blur ?? curr.filters.blur, 0, 256),
 							grain: clamp(filters.grain ?? curr.filters.grain, 0, 1),
 						},
-					});
+					} as Partial<MeshState>;
+					const history = opts?.history ?? "push";
+					if (history === "skip") set(next);
+					else commit(next, history === "replace" ? "replace" : "push");
 				},
-				setCanvas: (canvas) => {
+				setCanvas: (canvas, opts) => {
 					const curr = get();
 					const width = clamp(canvas.width ?? curr.canvas.width, 64, 6000);
 					const height = clamp(canvas.height ?? curr.canvas.height, 64, 6000);
-					commit({ canvas: { ...curr.canvas, ...canvas, width, height } });
+					const next = {
+						canvas: { ...curr.canvas, ...canvas, width, height },
+					} as Partial<MeshState>;
+					const history = opts?.history ?? "push";
+					if (history === "skip") set(next);
+					else commit(next, history === "replace" ? "replace" : "push");
 				},
 				setShapes: (shapes) => commit({ shapes }),
+				// Initialize live buffer from committed shapes
+				beginShapesLive: () => {
+					const curr = get();
+					const clone = curr.shapes.map((s) => ({
+						id: s.id,
+						fillIndex: s.fillIndex,
+						opacity: s.opacity,
+						points: s.points.map((p) => ({ x: p.x, y: p.y })),
+					}));
+					set({ shapesLive: clone });
+				},
+				setShapesLive: (shapes) => set({ shapesLive: shapes }),
+				updateShapeLive: (id, updater) => {
+					set((state) => {
+						const curr = state as MeshState;
+						const src = curr.shapesLive ?? curr.shapes;
+						const next = src.map((s) => (s.id === id ? updater(s) : s));
+						return {
+							...state,
+							shapesLive: next,
+						} as Partial<MeshState> as MeshState;
+					});
+				},
+				commitShapesLive: (opts) => {
+					const curr = get();
+					if (!curr.shapesLive) return;
+					const history = opts?.history ?? "push";
+					commit({ shapes: curr.shapesLive, shapesLive: null }, history);
+				},
 				moveShapeUp: (shapeId) => {
 					const curr = get();
 					const index = curr.shapes.findIndex((s) => s.id === shapeId);
@@ -403,6 +512,50 @@ export const useMeshStore = create<MeshState>()(
 								: curr.frame,
 						};
 					}),
+				addShapeFromPoints: (points, opts, mode) => {
+					const curr = get();
+					const history = mode?.history ?? "push";
+					// pick palette index with slight downweight for background (index 0)
+					const r = prng(`${curr.seed}-add-${Date.now()}-${curr._past.length}`);
+					const paletteLen = Math.max(1, curr.palette.length);
+					let fillIndex = Math.max(
+						0,
+						Math.min(opts?.fillIndex ?? 0, paletteLen - 1),
+					);
+					if (opts?.fillIndex === undefined) {
+						if (paletteLen === 1) fillIndex = 0;
+						else {
+							const weights: number[] = new Array(paletteLen).fill(1);
+							weights[0] = 0.5;
+							const sum = weights.reduce((a, b) => a + b, 0);
+							const target = r.float(0, sum);
+							let acc = 0;
+							for (let idx = 0; idx < paletteLen; idx++) {
+								acc += weights[idx];
+								if (target <= acc) {
+									fillIndex = idx;
+									break;
+								}
+							}
+						}
+					}
+					const shape: BlobShape = {
+						id: `blob_${Math.random().toString(36).slice(2, 10)}`,
+						points: points.map((p) => ({ x: p.x, y: p.y })),
+						fillIndex,
+						opacity: opts?.opacity,
+					};
+					const next = { shapes: [...curr.shapes, shape] };
+					if (history === "skip") set(next);
+					else commit(next, history === "replace" ? "replace" : "push");
+				},
+				removeShape: (id, opts) => {
+					const curr = get();
+					const shapes = curr.shapes.filter((s) => s.id !== id);
+					const history = opts?.history ?? "push";
+					if (history === "skip") set({ shapes });
+					else commit({ shapes }, history === "replace" ? "replace" : "push");
+				},
 				updateShape: (id, updater, opts) => {
 					const curr = get();
 					const shapes = curr.shapes.map((s) => (s.id === id ? updater(s) : s));
@@ -419,6 +572,7 @@ export const useMeshStore = create<MeshState>()(
 					const prev = curr._past.at(-1);
 					if (!prev) return;
 					const rest = curr._past.slice(0, -1);
+					// Save present; ui will be ignored on restore to preserve current zoom
 					const present = serialize({
 						palette: curr.palette,
 						shapes: curr.shapes,
@@ -426,14 +580,16 @@ export const useMeshStore = create<MeshState>()(
 						canvas: curr.canvas,
 						seed: curr.seed,
 						selectedShapeId: curr.selectedShapeId,
-						frame: curr.frame,
 						ui: curr.ui,
 						_past: [],
 						_future: [],
 					});
 					const parsed = deserialize(prev);
 					set({
+						// Restore history snapshot for content, but keep current frame/ui
 						...parsed,
+						frame: curr.frame,
+						ui: curr.ui,
 						_past: rest,
 						_future: [present, ...curr._future],
 					} as Partial<MeshState> as MeshState);
@@ -443,6 +599,7 @@ export const useMeshStore = create<MeshState>()(
 					const next = curr._future.at(0);
 					if (!next) return;
 					const future = curr._future.slice(1);
+					// Save present; ui will be ignored on restore to preserve current zoom
 					const present = serialize({
 						palette: curr.palette,
 						shapes: curr.shapes,
@@ -450,14 +607,16 @@ export const useMeshStore = create<MeshState>()(
 						canvas: curr.canvas,
 						seed: curr.seed,
 						selectedShapeId: curr.selectedShapeId,
-						frame: curr.frame,
 						ui: curr.ui,
 						_past: [],
 						_future: [],
 					});
 					const parsed = deserialize(next);
 					set({
+						// Restore history snapshot for content, but keep current frame/ui
 						...parsed,
+						frame: curr.frame,
+						ui: curr.ui,
 						_past: [...curr._past, present],
 						_future: future,
 					} as Partial<MeshState> as MeshState);

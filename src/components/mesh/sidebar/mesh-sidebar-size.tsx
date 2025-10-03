@@ -32,6 +32,7 @@ const CANVAS_PRESETS = [
 export const MeshSidebarSize = () => {
   // ===== HOOKS =====
   const { saveFrame, frame } = useFrameContext();
+
   const ui = useMeshStore((s) => s.ui);
   const canvas = useMeshStore((s) => s.canvas);
   const setCanvas = useMeshStore((s) => s.setCanvas);
@@ -132,7 +133,7 @@ export const MeshSidebarSize = () => {
 
     // Update state
     saveFrame({ width: newFrameWidth, height: newFrameHeight });
-    setCanvas(newCanvasDimensions);
+    setCanvas(newCanvasDimensions, { history: "replace" });
   };
   const updateHeight = (newHeight: number) => {
     if (!isValidState()) return;
@@ -161,7 +162,7 @@ export const MeshSidebarSize = () => {
 
     // Update state
     saveFrame({ width: newFrameWidth, height: newFrameHeight });
-    setCanvas(newCanvasDimensions);
+    setCanvas(newCanvasDimensions, { history: "replace" });
   };
 
   const applyPreset = (
@@ -196,11 +197,17 @@ export const MeshSidebarSize = () => {
         x: centerX,
         y: centerY,
       });
-      setCanvas({ width: presetWidth, height: presetHeight });
-      setUi({ maintainAspectRatio: true });
+      setCanvas(
+        { width: presetWidth, height: presetHeight },
+        { history: "push" }
+      );
+      setUi({ maintainAspectRatio: true }, { history: "replace" });
     } else {
       // Free-form adjustment: only update canvas dimensions
-      setCanvas({ width: newFrameWidth, height: newFrameHeight });
+      setCanvas(
+        { width: newFrameWidth, height: newFrameHeight },
+        { history: "replace" }
+      );
     }
   };
 

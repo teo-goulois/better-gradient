@@ -8,6 +8,7 @@ type Props = {
   palette: RgbHex[];
   onBeginDragVertex: (shapeId: string) => void;
   onUpdateVertex: (shapeId: string, vertexIndex: number, point: Point) => void;
+  onEndDragVertex: () => void;
 };
 
 export const VerticesOverlay = memo(function VerticesOverlay({
@@ -17,6 +18,7 @@ export const VerticesOverlay = memo(function VerticesOverlay({
   palette,
   onBeginDragVertex,
   onUpdateVertex,
+  onEndDragVertex,
 }: Props) {
   const overlayRef = useRef<HTMLDivElement>(null);
 
@@ -34,6 +36,19 @@ export const VerticesOverlay = memo(function VerticesOverlay({
         }}
       >
         <title>Vertices Overlay</title>
+
+        <defs>
+          <filter id="smallShadow" x="-10%" y="-10%" width="120%" height="120%">
+            <feDropShadow
+              dx="1"
+              dy="1"
+              stdDeviation=".5"
+              floodColor="black"
+              floodOpacity="0.1"
+            />
+          </filter>
+        </defs>
+
         {shapes.map((s) => {
           const shapeColor =
             palette[s.fillIndex]?.color || palette[0]?.color || "#000000";
@@ -51,18 +66,22 @@ export const VerticesOverlay = memo(function VerticesOverlay({
                 strokeWidth="2"
                 strokeOpacity="1"
                 strokeDasharray="3 3"
+                filter="url(#smallShadow)"
               />
             );
           });
         })}
       </svg>
       {/* Vertex points */}
-      <div ref={overlayRef} className="absolute inset-0 pointer-events-none">
+      <div
+        ref={overlayRef}
+        className="absolute inset-0 pointer-events-none shadow"
+      >
         {shapes.map((s) => {
           const shapeColor =
             palette[s.fillIndex]?.color || palette[0]?.color || "#000000";
           return (
-            <div key={s.id} className="contents">
+            <div key={s.id} className="contents shadow">
               {s.points.map((p, idx) => {
                 const left = p.x * scale.x;
                 const top = p.y * scale.y;
@@ -70,7 +89,7 @@ export const VerticesOverlay = memo(function VerticesOverlay({
                   <div
                     key={`${s.id}-vertex-${idx}`}
                     data-handle="true"
-                    className="absolute -translate-x-1/2 -translate-y-1/2 rounded-full bg-white shadow-md"
+                    className="absolute -translate-x-1/2 -translate-y-1/2 rounded-full bg-white shadow-md overflow-hidden"
                     style={{
                       left,
                       top,
@@ -79,7 +98,7 @@ export const VerticesOverlay = memo(function VerticesOverlay({
                       cursor: "grab",
                       pointerEvents: "auto",
                       border: `2px solid ${shapeColor}`,
-                      boxShadow: "0 0 0 1px rgba(255, 255, 255, 0.8)",
+                      //boxShadow: "0 0 0 1px rgba(255, 255, 255, 0.8)",
                     }}
                     onMouseDown={(e) => {
                       e.preventDefault();
@@ -107,6 +126,7 @@ export const VerticesOverlay = memo(function VerticesOverlay({
                       const up = () => {
                         window.removeEventListener("mousemove", move);
                         window.removeEventListener("mouseup", up);
+                        onEndDragVertex();
                       };
                       window.addEventListener("mousemove", move);
                       window.addEventListener("mouseup", up);

@@ -13,7 +13,9 @@ import { MeshSidebarColorPalette } from "./mesh-sidebar-color-palette";
 import { MeshSidebarPresetSelector } from "./mesh-sidebar-preset-selector";
 
 export const MeshSidebarColor = () => {
-  const { ui, setUi } = useMeshStore();
+  const ui = useMeshStore((state) => state.ui);
+  const setUi = useMeshStore((state) => state.setUi);
+
   return (
     <div>
       <Disclosure defaultExpanded>
@@ -48,6 +50,8 @@ export const MeshSidebarColor = () => {
                 <ul className="list-disc list-inside">
                   <li>Change the index of the color</li>
                   <li>Change the color</li>
+                  <li>Change the spread</li>
+                  <li>Change the opacity</li>
                 </ul>
               </Tooltip.Content>
             </Tooltip>
