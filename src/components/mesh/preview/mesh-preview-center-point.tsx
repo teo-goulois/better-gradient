@@ -26,7 +26,7 @@ export const MeshPreviewCenterPoint = ({ canvasRef, contentRef }: Props) => {
   const { frame } = useFrameContext();
   const { canvas } = useMeshDrawing({ canvasRef });
 
-  if (!(ui.showVertices && frame?.width && frame?.height)) {
+  if (!(ui.showCenters && frame?.width && frame?.height)) {
     return null;
   }
 
