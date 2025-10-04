@@ -19,6 +19,7 @@ type Props = {
   onMoveShapeUp: (shapeId: string) => void;
   onMoveShapeDown: (shapeId: string) => void;
   onSetShapeOpacity: (shapeId: string, opacity: number) => void;
+  onSetShapeBlur: (shapeId: string, blur: number) => void;
   onScaleShape: (shapeId: string, factor: number) => void;
   onRemoveShape: (shapeId: string) => void;
   onEndDragShape: () => void;
@@ -35,6 +36,7 @@ export const CentersOverlay = memo(function CentersOverlay({
   onMoveShapeDown,
   onSetShapeOpacity,
   onScaleShape,
+  onSetShapeBlur,
   onRemoveShape,
   onEndDragShape,
 }: Props) {
@@ -62,6 +64,7 @@ export const CentersOverlay = memo(function CentersOverlay({
         cy: s.points.reduce((a, b) => a + b.y, 0) / s.points.length,
         fillIndex: s.fillIndex,
         opacity: s.opacity ?? filter.opacity,
+        blur: s.blur,
       };
     });
   }, [shapes, filter.opacity]);
@@ -72,7 +75,7 @@ export const CentersOverlay = memo(function CentersOverlay({
       id="centers-overlay"
       className="absolute inset-0 pointer-events-none"
     >
-      {centers.map(({ id, cx, cy, fillIndex, opacity }) => {
+      {centers.map(({ id, cx, cy, fillIndex, opacity, blur }) => {
         const left = cx * scale.x;
         const top = cy * scale.y;
         const color = palette[fillIndex] ?? palette[0] ?? "#000000";
@@ -218,6 +221,31 @@ export const CentersOverlay = memo(function CentersOverlay({
                           const value = typeof v === "number" ? v : v[0];
                           const next = Math.max(0, Math.min(100, value));
                           onSetShapeOpacity(id, next / 100);
+                        }}
+                        onChangeEnd={() => {
+                          onEndDragShape();
+                        }}
+                      />
+                    </div>
+                  </div>
+                  {/* Blur (per-shape) */}
+                  <div className="flex items-center gap-2 px-2 ">
+                    <div className="flex items-center gap-2 w-full">
+                      <Label>Blur</Label>
+                      <Slider
+                        className="min-w-32 w-full flex-1"
+                        output="tooltip"
+                        aria-label="Blur"
+                        value={Math.round(blur ?? filter.blur)}
+                        minValue={0}
+                        maxValue={175}
+                        onChange={(v) => {
+                          const value = typeof v === "number" ? v : v[0];
+                          const next = Math.max(0, Math.min(175, value));
+                          onSetShapeBlur(id, next);
+                        }}
+                        onChangeEnd={() => {
+                          onEndDragShape();
                         }}
                       />
                     </div>

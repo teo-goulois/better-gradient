@@ -11,6 +11,7 @@ export type BlobShape = {
 	points: Point[];
 	fillIndex: number; // index in palette (includes background at index 0)
 	opacity?: number; // 0..1 (default 1)
+	blur?: number; // px override; falls back to global filters.blur when undefined
 };
 
 export type Filters = {

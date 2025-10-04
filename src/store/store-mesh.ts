@@ -310,6 +310,7 @@ export const useMeshStore = create<MeshState>()(
 						id: s.id,
 						fillIndex: s.fillIndex,
 						opacity: s.opacity,
+						blur: s.blur,
 						points: s.points.map((p) => ({ x: p.x, y: p.y })),
 					}));
 					set({ shapesLive: clone });
@@ -544,6 +545,7 @@ export const useMeshStore = create<MeshState>()(
 						points: points.map((p) => ({ x: p.x, y: p.y })),
 						fillIndex,
 						opacity: opts?.opacity,
+						blur: undefined,
 					};
 					const next = { shapes: [...curr.shapes, shape] };
 					if (history === "skip") set(next);
