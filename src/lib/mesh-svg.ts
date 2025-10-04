@@ -97,17 +97,45 @@ export function svgStringFromState(args: {
 		`<rect width="${wCanvas}" height="${hCanvas}" fill="${canvas.background.color}"/>`,
 	);
 
-	// Shapes under blur
-	svgParts.push(`<g filter="url(#blur)">`);
+	// Shapes under blur: support per-shape blur override by grouping shapes by blur value
+	// Base group for shapes using global blur
+	const shapesByBlur: Record<number, BlobShape[]> = {};
 	for (const s of shapes) {
-		// Shapes can use any entry of the palette, including background at index 0
-		const color = palette[s.fillIndex].color ?? palette[0].color ?? "#000000";
-		const opacity = Math.max(0, Math.min(s.opacity ?? filters.opacity, 1));
-		svgParts.push(
-			`<path d="${pathDataFromPoints(s.points)}" fill="${color}" fill-opacity="${opacity}"/>`,
-		);
+		const b = Math.max(0, Math.min(s.blur ?? blur, 256));
+		if (!shapesByBlur[b]) shapesByBlur[b] = [];
+		shapesByBlur[b].push(s);
 	}
-	svgParts.push("</g>");
+
+	const blurIdsByValue: Record<number, string> = {};
+	// Ensure a filter exists for each blur value used
+	for (const bStr of Object.keys(shapesByBlur)) {
+		const b = Number(bStr);
+		const id = b === blur ? "blur" : `blur_${b}`;
+		blurIdsByValue[b] = id;
+		if (id !== "blur") {
+			// Additional blur filter definition
+			svgParts.splice(
+				// insert before </defs>
+				svgParts.lastIndexOf("</defs>"),
+				0,
+				`<filter id="${id}" x="${filterX}" y="${filterY}" width="${filterW}" height="${filterH}" filterUnits="userSpaceOnUse"><feGaussianBlur stdDeviation="${b}"/></filter>`,
+			);
+		}
+	}
+
+	for (const [bStr, list] of Object.entries(shapesByBlur)) {
+		const b = Number(bStr);
+		const id = blurIdsByValue[b];
+		svgParts.push(`<g filter="url(#${id})">`);
+		for (const s of list) {
+			const color = palette[s.fillIndex].color ?? palette[0].color ?? "#000000";
+			const opacity = Math.max(0, Math.min(s.opacity ?? filters.opacity, 1));
+			svgParts.push(
+				`<path d="${pathDataFromPoints(s.points)}" fill="${color}" fill-opacity="${opacity}"/>`,
+			);
+		}
+		svgParts.push("</g>");
+	}
 
 	// Optional vertices overlay (drawn on top)
 	if (includeVertices) {

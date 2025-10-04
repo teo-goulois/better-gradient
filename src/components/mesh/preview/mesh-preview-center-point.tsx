@@ -20,7 +20,6 @@ export const MeshPreviewCenterPoint = ({ canvasRef, contentRef }: Props) => {
   const moveShapeUp = useMeshStore((s) => s.moveShapeUp);
   const moveShapeDown = useMeshStore((s) => s.moveShapeDown);
   const removeShape = useMeshStore((s) => s.removeShape);
-  const updateShape = useMeshStore((s) => s.updateShape);
   const setShapes = useMeshStore((s) => s.setShapes);
 
   const { frame } = useFrameContext();
@@ -62,9 +61,14 @@ export const MeshPreviewCenterPoint = ({ canvasRef, contentRef }: Props) => {
       }}
       onMoveShapeUp={moveShapeUp}
       onMoveShapeDown={moveShapeDown}
-      onSetShapeOpacity={(shapeId, opacity) =>
-        updateShape(shapeId, (old) => ({ ...old, opacity }))
-      }
+      onSetShapeOpacity={(shapeId, opacity) => {
+        if (!useMeshStore.getState().shapesLive) beginShapesLive();
+        updateShapeLive(shapeId, (old) => ({ ...old, opacity }));
+      }}
+      onSetShapeBlur={(shapeId, blur) => {
+        if (!useMeshStore.getState().shapesLive) beginShapesLive();
+        updateShapeLive(shapeId, (old) => ({ ...old, blur }));
+      }}
       onScaleShape={(shapeId, factor) =>
         updateShapeLive(shapeId, (old) => {
           // Scale points around the centroid
