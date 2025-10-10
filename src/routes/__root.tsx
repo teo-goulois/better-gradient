@@ -21,11 +21,11 @@ interface MyRouterContext {
 }
 
 const seoConfig = {
-  title: "Better Gradient - Free Mesh Gradient Generator",
+  title: "Better Gradient - Free Mesh Gradient Generator & Maker",
   description:
-    "Create stunning mesh gradients for free. Design elegant blurred-shape backgrounds for UI, websites, and creative projects. No signup required",
+    "Free mesh gradient generator - Create stunning blur gradient backgrounds for websites, UI design, and creative projects. No signup required. Export to PNG, SVG, or CSS instantly.",
   keywords:
-    "gradient, background generator, design tool, gradient editor, css gradients, visual design",
+    "gradient generator, mesh gradient generator, gradient maker, css gradient generator, gradient background generator, mesh gradient, gradient tool, gradient creator, free gradient generator, blur gradient generator, gradient design tool",
   image: "https://better-gradient.com/og-image.png",
   url: "https://better-gradient.com",
   type: "website",

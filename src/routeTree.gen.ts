@@ -14,8 +14,13 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as ManageGradientsRouteImport } from './routes/manage-gradients'
 import { Route as EditorRouteImport } from './routes/editor'
 import { Route as DiscoveryRouteImport } from './routes/discovery'
+import { Route as PagesRouteRouteImport } from './routes/_pages/route'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ShareStateRouteImport } from './routes/share.$state'
+import { Route as PagesResourcesRouteImport } from './routes/_pages/resources'
+import { Route as PagesGuideRouteImport } from './routes/_pages/guide'
+import { Route as PagesGalleryRouteImport } from './routes/_pages/gallery'
+import { Route as PagesBlogRouteImport } from './routes/_pages/blog'
 import { ServerRoute as SitemapDotxmlServerRouteImport } from './routes/sitemap[.]xml'
 import { ServerRoute as RobotsDottxtServerRouteImport } from './routes/robots[.]txt'
 
@@ -36,6 +41,10 @@ const DiscoveryRoute = DiscoveryRouteImport.update({
   path: '/discovery',
   getParentRoute: () => rootRouteImport,
 } as any)
+const PagesRouteRoute = PagesRouteRouteImport.update({
+  id: '/_pages',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
@@ -45,6 +54,26 @@ const ShareStateRoute = ShareStateRouteImport.update({
   id: '/share/$state',
   path: '/share/$state',
   getParentRoute: () => rootRouteImport,
+} as any)
+const PagesResourcesRoute = PagesResourcesRouteImport.update({
+  id: '/resources',
+  path: '/resources',
+  getParentRoute: () => PagesRouteRoute,
+} as any)
+const PagesGuideRoute = PagesGuideRouteImport.update({
+  id: '/guide',
+  path: '/guide',
+  getParentRoute: () => PagesRouteRoute,
+} as any)
+const PagesGalleryRoute = PagesGalleryRouteImport.update({
+  id: '/gallery',
+  path: '/gallery',
+  getParentRoute: () => PagesRouteRoute,
+} as any)
+const PagesBlogRoute = PagesBlogRouteImport.update({
+  id: '/blog',
+  path: '/blog',
+  getParentRoute: () => PagesRouteRoute,
 } as any)
 const SitemapDotxmlServerRoute = SitemapDotxmlServerRouteImport.update({
   id: '/sitemap.xml',
@@ -62,6 +91,10 @@ export interface FileRoutesByFullPath {
   '/discovery': typeof DiscoveryRoute
   '/editor': typeof EditorRoute
   '/manage-gradients': typeof ManageGradientsRoute
+  '/blog': typeof PagesBlogRoute
+  '/gallery': typeof PagesGalleryRoute
+  '/guide': typeof PagesGuideRoute
+  '/resources': typeof PagesResourcesRoute
   '/share/$state': typeof ShareStateRoute
 }
 export interface FileRoutesByTo {
@@ -69,14 +102,23 @@ export interface FileRoutesByTo {
   '/discovery': typeof DiscoveryRoute
   '/editor': typeof EditorRoute
   '/manage-gradients': typeof ManageGradientsRoute
+  '/blog': typeof PagesBlogRoute
+  '/gallery': typeof PagesGalleryRoute
+  '/guide': typeof PagesGuideRoute
+  '/resources': typeof PagesResourcesRoute
   '/share/$state': typeof ShareStateRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/_pages': typeof PagesRouteRouteWithChildren
   '/discovery': typeof DiscoveryRoute
   '/editor': typeof EditorRoute
   '/manage-gradients': typeof ManageGradientsRoute
+  '/_pages/blog': typeof PagesBlogRoute
+  '/_pages/gallery': typeof PagesGalleryRoute
+  '/_pages/guide': typeof PagesGuideRoute
+  '/_pages/resources': typeof PagesResourcesRoute
   '/share/$state': typeof ShareStateRoute
 }
 export interface FileRouteTypes {
@@ -86,20 +128,39 @@ export interface FileRouteTypes {
     | '/discovery'
     | '/editor'
     | '/manage-gradients'
+    | '/blog'
+    | '/gallery'
+    | '/guide'
+    | '/resources'
     | '/share/$state'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/discovery' | '/editor' | '/manage-gradients' | '/share/$state'
-  id:
-    | '__root__'
+  to:
     | '/'
     | '/discovery'
     | '/editor'
     | '/manage-gradients'
+    | '/blog'
+    | '/gallery'
+    | '/guide'
+    | '/resources'
+    | '/share/$state'
+  id:
+    | '__root__'
+    | '/'
+    | '/_pages'
+    | '/discovery'
+    | '/editor'
+    | '/manage-gradients'
+    | '/_pages/blog'
+    | '/_pages/gallery'
+    | '/_pages/guide'
+    | '/_pages/resources'
     | '/share/$state'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  PagesRouteRoute: typeof PagesRouteRouteWithChildren
   DiscoveryRoute: typeof DiscoveryRoute
   EditorRoute: typeof EditorRoute
   ManageGradientsRoute: typeof ManageGradientsRoute
@@ -154,6 +215,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DiscoveryRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_pages': {
+      id: '/_pages'
+      path: ''
+      fullPath: ''
+      preLoaderRoute: typeof PagesRouteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -167,6 +235,34 @@ declare module '@tanstack/react-router' {
       fullPath: '/share/$state'
       preLoaderRoute: typeof ShareStateRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/_pages/resources': {
+      id: '/_pages/resources'
+      path: '/resources'
+      fullPath: '/resources'
+      preLoaderRoute: typeof PagesResourcesRouteImport
+      parentRoute: typeof PagesRouteRoute
+    }
+    '/_pages/guide': {
+      id: '/_pages/guide'
+      path: '/guide'
+      fullPath: '/guide'
+      preLoaderRoute: typeof PagesGuideRouteImport
+      parentRoute: typeof PagesRouteRoute
+    }
+    '/_pages/gallery': {
+      id: '/_pages/gallery'
+      path: '/gallery'
+      fullPath: '/gallery'
+      preLoaderRoute: typeof PagesGalleryRouteImport
+      parentRoute: typeof PagesRouteRoute
+    }
+    '/_pages/blog': {
+      id: '/_pages/blog'
+      path: '/blog'
+      fullPath: '/blog'
+      preLoaderRoute: typeof PagesBlogRouteImport
+      parentRoute: typeof PagesRouteRoute
     }
   }
 }
@@ -189,8 +285,27 @@ declare module '@tanstack/react-start/server' {
   }
 }
 
+interface PagesRouteRouteChildren {
+  PagesBlogRoute: typeof PagesBlogRoute
+  PagesGalleryRoute: typeof PagesGalleryRoute
+  PagesGuideRoute: typeof PagesGuideRoute
+  PagesResourcesRoute: typeof PagesResourcesRoute
+}
+
+const PagesRouteRouteChildren: PagesRouteRouteChildren = {
+  PagesBlogRoute: PagesBlogRoute,
+  PagesGalleryRoute: PagesGalleryRoute,
+  PagesGuideRoute: PagesGuideRoute,
+  PagesResourcesRoute: PagesResourcesRoute,
+}
+
+const PagesRouteRouteWithChildren = PagesRouteRoute._addFileChildren(
+  PagesRouteRouteChildren,
+)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  PagesRouteRoute: PagesRouteRouteWithChildren,
   DiscoveryRoute: DiscoveryRoute,
   EditorRoute: EditorRoute,
   ManageGradientsRoute: ManageGradientsRoute,

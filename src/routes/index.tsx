@@ -1,13 +1,19 @@
+import { FAQ } from "@/components/sections/FAQ";
+import { Features } from "@/components/sections/Features";
+import { HowItWorks } from "@/components/sections/HowItWorks";
+import { UseCases } from "@/components/sections/UseCases";
+import { SharedFooter } from "@/components/shared/shared-footer";
 import { trackEvent } from "@/lib/tracking";
+import { IconArrowDownFill } from "@intentui/icons";
 import { createFileRoute } from "@tanstack/react-router";
 import { Link } from "@tanstack/react-router";
 
 const structuredData = {
   "@context": "https://schema.org",
   "@type": "WebApplication",
-  name: "Better Gradient - Beautiful Gradient Generator",
+  name: "Better Gradient - Free Mesh Gradient Generator & Maker",
   description:
-    "Create stunning gradients with our intuitive editor. Design beautiful backgrounds, export in high quality, and bring your creative vision to life.",
+    "Create stunning mesh gradients for free. Professional gradient generator for web design, UI/UX, and creative projects. No signup required, export to PNG, SVG, or CSS.",
   url: "https://better-gradient.com",
   applicationCategory: "DesignApplication",
   operatingSystem: "Web Browser",
@@ -21,12 +27,61 @@ const structuredData = {
     name: "Better Gradient",
   },
   featureList: [
-    "Intuitive gradient editor",
-    "Real-time preview",
-    "High quality export",
+    "Free mesh gradient generator",
+    "No signup required",
+    "Real-time gradient preview",
+    "Export to PNG, SVG, CSS",
     "Multiple export formats",
     "Color customization",
-    "Undo/redo functionality",
+    "Modern mesh gradients",
+    "Blur gradient controls",
+  ],
+};
+
+const faqStructuredData = {
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  mainEntity: [
+    {
+      "@type": "Question",
+      name: "What are mesh gradients?",
+      acceptedAnswer: {
+        "@type": "Answer",
+        text: "Mesh gradients are a modern design technique that creates smooth, organic color transitions by blending multiple colored shapes with blur effects. Unlike linear or radial gradients, mesh gradients produce more natural, flowing color patterns perfect for contemporary UI design and backgrounds.",
+      },
+    },
+    {
+      "@type": "Question",
+      name: "How do I use gradients in CSS?",
+      acceptedAnswer: {
+        "@type": "Answer",
+        text: "You can use our gradients in CSS by either exporting as CSS code (which gives you a complete background property) or as an SVG that can be used as a background-image. Our CSS export provides optimized code ready to paste into your stylesheets.",
+      },
+    },
+    {
+      "@type": "Question",
+      name: "Can I use these gradients commercially?",
+      acceptedAnswer: {
+        "@type": "Answer",
+        text: "Yes! All gradients created with Better Gradient can be used freely in both personal and commercial projects. There are no attribution requirements or licensing restrictions.",
+      },
+    },
+    {
+      "@type": "Question",
+      name: "What export formats are supported?",
+      acceptedAnswer: {
+        "@type": "Answer",
+        text: "Better Gradient supports PNG (raster images with transparency), SVG (scalable vector graphics), and CSS code export. PNG is perfect for images and graphics, SVG works great for web and maintains quality at any size, while CSS export lets you implement gradients directly in code.",
+      },
+    },
+    {
+      "@type": "Question",
+      name: "What's the difference between mesh and linear gradients?",
+      acceptedAnswer: {
+        "@type": "Answer",
+        text: "Linear gradients transition colors in a straight line, while mesh gradients blend multiple color points with blur effects to create organic, flowing patterns. Mesh gradients offer more visual depth and natural-looking color transitions, making them ideal for modern, sophisticated designs.",
+      },
+    },
   ],
 };
 
@@ -37,7 +92,12 @@ export const Route = createFileRoute("/")({
       {
         name: "description",
         content:
-          "Create stunning blurred mesh gradients with our intuitive editor. Design beautiful backgrounds, export in high quality, and bring your creative vision to life.",
+          "Free mesh gradient generator - Create stunning blur gradient backgrounds for websites, UI design, and creative projects. No signup required. Export to PNG, SVG, or CSS instantly.",
+      },
+      {
+        name: "keywords",
+        content:
+          "gradient generator, mesh gradient generator, gradient maker, css gradient generator, gradient background generator, mesh gradient, gradient tool, free gradient generator, blur gradient generator, gradient creator",
       },
     ],
     links: [
@@ -65,106 +125,58 @@ function App() {
         // biome-ignore lint/security/noDangerouslySetInnerHtml: <explanation>
         dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
       />
-      <main className="flex-1 w-full bg-bg relative overflow-hidden">
-        <div className="container mx-auto px-6 py-28 z-10 relative h-full flex items-center justify-center min-h-[calc(100dvh-4.25rem)]">
-          <div className="max-w-3xl mx-auto text-center">
-            <h1 className="mt-6 font-nohemi text-5xl md:text-6xl font-semibold tracking-tight text-neutral-900">
-              Create subtle, modern mesh gradients
-            </h1>
-            <p className="mt-6 text-lg leading-relaxed text-neutral-600">
-              Design elegant blurred-shape mesh gradients with a clear, focused
-              editor. Perfect for backgrounds, UI elements, and creative
-              projects.
-            </p>
-            <div className="mt-10  ">
-              <Link
-                to={"/editor"}
-                onClick={() => trackEvent("Navigate to Editor")}
-                className="inline-flex items-center gap-3 relative overflow-hidden rounded-full  text-white px-8 py-4 text-lg font-medium ease-in-out duration-150 group hover:scale-105 "
-              >
-                <img
-                  src="/gradients/gradient-1.webp"
-                  alt=""
-                  className="h-full w-full object-cover -z-10 absolute top-0 left-0"
-                  loading="eager"
-                />
-                <span className="relative z-10 font-nohemi font-semibold">
-                  Open Editor
-                </span>
-              </Link>
-              <p className="mt-3 text-sm text-neutral-500">
-                No signup required • Free to use
+      <script
+        type="application/ld+json"
+        // biome-ignore lint/security/noDangerouslySetInnerHtml: <explanation>
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqStructuredData) }}
+      />
+      <main className="flex-1 w-full bg-bg">
+        {/* Hero Section */}
+        <div className="relative overflow-hidden">
+          <div className="container mx-auto px-6 py-28 z-10 relative h-full flex items-center justify-center min-h-[calc(100dvh-4.25rem)]">
+            <div className="max-w-3xl mx-auto text-center">
+              <h1 className="mt-6 font-nohemi text-5xl md:text-6xl font-semibold tracking-tight text-neutral-900">
+                Free Mesh Gradient Generator
+              </h1>
+              <p className="mt-6 text-lg leading-relaxed text-neutral-600">
+                Create stunning mesh gradients for free. Design elegant blur
+                gradient backgrounds for websites, UI design, and creative
+                projects. No signup required.
               </p>
-
-              {/* <div className="mt-6">
+              <div className="mt-10">
                 <Link
-                  to="/created"
-                  className="text-sm underline text-neutral-700 hover:text-black"
+                  to={"/editor"}
+                  onClick={() => trackEvent("Navigate to Editor")}
+                  className="inline-flex items-center gap-3 relative overflow-hidden rounded-full text-white px-8 py-4 text-lg font-medium ease-in-out duration-150 group hover:scale-105"
                 >
-                  See created gradients
+                  <img
+                    src="/gradients/gradient-1.webp"
+                    alt="Gradient background example"
+                    className="h-full w-full object-cover -z-10 absolute top-0 left-0"
+                    loading="eager"
+                  />
+                  <span className="relative z-10 font-nohemi font-semibold">
+                    Open Gradient Editor
+                  </span>
                 </Link>
-              </div> */}
+                <p className="mt-3 text-sm text-neutral-500">
+                  No signup required • 100% free • Export to PNG, SVG, CSS
+                </p>
+              </div>
+              <div className="absolute bottom-0 left-0 right-0 flex justify-center">
+                <IconArrowDownFill className="size-10 text-neutral-500" />
+              </div>
             </div>
           </div>
         </div>
-      </main>
-      <footer className="text-center  text-sm text-muted-fg/50  fixed bottom-0 left-0 right-0 pb-4">
-        <div className="flex flex-col justify-between container mx-auto gap-8 sm:flex-row sm:items-center">
-          <h2 className="text-sm font-medium">2025 Better Gradient</h2>
-          <nav
-            aria-labelledby="social-icons-heading"
-            className="flex items-center gap-4 "
-          >
-            <p className="text-base sr-only" id="social-icons-heading">
-              Follow us on social media
-            </p>
-            <a
-              className=" text-sm font-medium  hover:text-blue-600 dark:hover:text-blue-300"
-              href="https://x.com/teo_goulois"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                className="icon icon-tabler-layout-brand-x size-4"
-              >
-                <title>X</title>
-                <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                <path d="M4 4l11.733 16h4.267l-11.733 -16z" />
-                <path d="M4 20l6.768 -6.768m2.46 -2.46l6.772 -6.772" />
-              </svg>
-            </a>
 
-            {/* <a
-              className="text-base font-medium hover:text-blue-500  dark:hover:text-blue-400"
-              href="https://github.com/teo-goulois/better-gradient"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                className="icon icon-tabler-layout-brand-github size-4"
-              >
-                <title>Github</title>
-                <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                <path d="M9 19c-4.3 1.4 -4.3 -2.5 -6 -3m12 5v-3.5c0 -1 .1 -1.4 -.5 -2c2.8 -.3 5.5 -1.4 5.5 -6a4.6 4.6 0 0 0 -1.3 -3.2a4.2 4.2 0 0 0 -.1 -3.2s-1.1 -.3 -3.5 1.3a12.3 12.3 0 0 0 -6.2 0c-2.4 -1.6 -3.5 -1.3 -3.5 -1.3a4.2 4.2 0 0 0 -.1 3.2a4.6 4.6 0 0 0 -1.3 3.2c0 4.6 2.7 5.7 5.5 6c-.6 .6 -.6 1.2 -.5 2v3.5" />
-              </svg>
-            </a> */}
-          </nav>
-        </div>
-      </footer>
+        {/* Content Sections */}
+        <HowItWorks />
+        <UseCases />
+        <Features />
+        <FAQ />
+      </main>
+      <SharedFooter />
     </>
   );
 }
