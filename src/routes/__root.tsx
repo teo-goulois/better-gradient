@@ -1,4 +1,4 @@
-import { TanstackDevtools } from "@tanstack/react-devtools";
+import { TanStackDevtools } from "@tanstack/react-devtools";
 import {
   HeadContent,
   Scripts,
@@ -20,6 +20,18 @@ interface MyRouterContext {
   queryClient: QueryClient;
 }
 
+const seoConfig = {
+  title: "Better Gradient - Free Mesh Gradient Generator",
+  description:
+    "Create stunning mesh gradients for free. Design elegant blurred-shape backgrounds for UI, websites, and creative projects. No signup required",
+  keywords:
+    "gradient, background generator, design tool, gradient editor, css gradients, visual design",
+  image: "https://better-gradient.com/og-image.png",
+  url: "https://better-gradient.com",
+  type: "website",
+  canonical: "https://better-gradient.com",
+};
+
 export const Route = createRootRouteWithContext<MyRouterContext>()({
   head: () => ({
     meta: [
@@ -31,21 +43,19 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
         content: "width=device-width, initial-scale=1",
       },
       {
-        title: "Create Beautiful Gradients",
+        title: seoConfig.title,
       },
       {
         name: "description",
-        content:
-          "Create stunning gradients with our intuitive editor. Design beautiful backgrounds, export in high quality, and bring your creative vision to life.",
+        content: seoConfig.description,
       },
       {
         name: "keywords",
-        content:
-          "gradient, background generator, design tool, gradient editor, css gradients, visual design",
+        content: seoConfig.keywords,
       },
       {
         name: "author",
-        content: "Better Gradient",
+        content: "Téo Goulois",
       },
       {
         name: "robots",
@@ -54,12 +64,11 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
       // Open Graph meta tags
       {
         property: "og:title",
-        content: "Better Gradient - Beautiful Gradient Generator",
+        content: seoConfig.title,
       },
       {
         property: "og:description",
-        content:
-          "Create stunning  gradients with our intuitive editor. Design beautiful backgrounds, export in high quality, and bring your creative vision to life.",
+        content: seoConfig.description,
       },
       {
         property: "og:type",
@@ -67,11 +76,11 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
       },
       {
         property: "og:url",
-        content: "https://better-gradient.com",
+        content: seoConfig.url,
       },
       {
         property: "og:image",
-        content: "https://better-gradient.com/og-image.png",
+        content: seoConfig.image,
       },
       {
         property: "og:site_name",
@@ -84,16 +93,19 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
       },
       {
         name: "twitter:title",
-        content: "Better Gradient - Beautiful Gradient Generator",
+        content: seoConfig.title,
       },
       {
         name: "twitter:description",
-        content:
-          "Create stunning blurred mesh gradients with our intuitive editor. Design beautiful backgrounds, export in high quality, and bring your creative vision to life.",
+        content: seoConfig.description,
       },
       {
         name: "twitter:image",
-        content: "https://better-gradient.com/og-image.png",
+        content: seoConfig.image,
+      },
+      {
+        name: "twitter:url",
+        content: seoConfig.url,
       },
       // Additional SEO meta tags
       {
@@ -205,7 +217,7 @@ function RootDocument({ children }: { children: React.ReactNode }) {
       </head>
       <body className="min-h-screen flex flex-col overscroll-none">
         {children}
-        <TanstackDevtools
+        <TanStackDevtools
           config={{
             hideUntilHover: true,
             position: "bottom-left",
