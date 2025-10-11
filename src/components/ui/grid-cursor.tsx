@@ -1,10 +1,14 @@
-export function GridCursor() {
+export function GridCursor({ offset = 0.5 }: { offset?: number }) {
   return (
     <>
-      {/* Top-left cursor - offset by 0.5px to center on gap */}
+      {/* Top-left cursor - offset by 0 to center on gap */}
       <svg
         className="absolute w-2.5 h-2.5 opacity-0 group-hover:opacity-100 transition-opacity z-50 pointer-events-none"
-        style={{ top: '-0.5px', left: '-0.5px', transform: 'translate(-50%, -50%)' }}
+        style={{
+          top: `-${offset}px`,
+          left: `-${offset}px`,
+          transform: "translate(-50%, -50%)",
+        }}
         viewBox="0 0 10 10"
         fill="none"
       >
@@ -17,10 +21,14 @@ export function GridCursor() {
         />
       </svg>
 
-      {/* Top-right cursor - offset by 0.5px to center on gap */}
+      {/* Top-right cursor - offset by 0 to center on gap */}
       <svg
         className="absolute w-2.5 h-2.5 opacity-0 group-hover:opacity-100 transition-opacity z-50 pointer-events-none"
-        style={{ top: '-0.5px', right: '-0.5px', transform: 'translate(50%, -50%)' }}
+        style={{
+          top: `-${offset}px`,
+          right: `-${offset}px`,
+          transform: "translate(50%, -50%)",
+        }}
         viewBox="0 0 10 10"
         fill="none"
       >
@@ -33,10 +41,14 @@ export function GridCursor() {
         />
       </svg>
 
-      {/* Bottom-left cursor - offset by 0.5px to center on gap */}
+      {/* Bottom-left cursor - offset by 0 to center on gap */}
       <svg
         className="absolute w-2.5 h-2.5 opacity-0 group-hover:opacity-100 transition-opacity z-50 pointer-events-none"
-        style={{ bottom: '-0.5px', left: '-0.5px', transform: 'translate(-50%, 50%)' }}
+        style={{
+          bottom: `-${offset}px`,
+          left: `-${offset}px`,
+          transform: "translate(-50%, 50%)",
+        }}
         viewBox="0 0 10 10"
         fill="none"
       >
@@ -49,10 +61,14 @@ export function GridCursor() {
         />
       </svg>
 
-      {/* Bottom-right cursor - offset by 0.5px to center on gap */}
+      {/* Bottom-right cursor - offset by 0 to center on gap */}
       <svg
         className="absolute w-2.5 h-2.5 opacity-0 group-hover:opacity-100 transition-opacity z-50 pointer-events-none"
-        style={{ bottom: '-0.5px', right: '-0.5px', transform: 'translate(50%, 50%)' }}
+        style={{
+          bottom: `-${offset}px`,
+          right: `-${offset}px`,
+          transform: "translate(50%, 50%)",
+        }}
         viewBox="0 0 10 10"
         fill="none"
       >

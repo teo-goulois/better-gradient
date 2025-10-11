@@ -1,4 +1,5 @@
 import { CallToAction } from "@/components/shared/call-to-action";
+import { SharedBetterGradientTypo } from "@/components/shared/shared-better-gradient-typo";
 import { SharedFooter } from "@/components/shared/shared-footer";
 import { DottedBackground } from "@/components/ui/dotted-background";
 import { GridCursor } from "@/components/ui/grid-cursor";
@@ -36,8 +37,8 @@ function GuidePage() {
               How to Create Mesh Gradients
             </h1>
             <p className="mt-4 text-lg text-neutral-600">
-              A complete guide to using Better Gradient and implementing
-              gradients in your projects
+              A complete guide to using <SharedBetterGradientTypo /> and
+              implementing gradients in your projects
             </p>
           </div>
 
@@ -57,10 +58,10 @@ function GuidePage() {
                 <GridCursor />
 
                 <p className="text-neutral-600 leading-relaxed mb-6">
-                  Better Gradient is a free mesh gradient generator that helps
-                  you create beautiful, modern backgrounds without any design
-                  experience. No account needed - just open the editor and start
-                  creating.
+                  <SharedBetterGradientTypo /> is a free mesh gradient generator
+                  that helps you create beautiful, modern backgrounds without
+                  any design experience. No account needed - just open the
+                  editor and start creating.
                 </p>
                 <Link
                   to="/editor"
@@ -92,6 +93,15 @@ function GuidePage() {
                   <h3 className="font-nohemi text-lg font-semibold text-neutral-900 mb-3">
                     Choose Your Colors
                   </h3>
+                  <video
+                    className="w-full border border-neutral-200 mb-4"
+                    autoPlay
+                    loop
+                    muted
+                    playsInline
+                  >
+                    <source src="/video/example-v1.mp4" type="video/mp4" />
+                  </video>
                   <p className="text-sm text-neutral-600 leading-relaxed">
                     Start by selecting colors from the color palette. Click on
                     any shape to change its color, or use the color picker to
@@ -110,6 +120,15 @@ function GuidePage() {
                   <h3 className="font-nohemi text-lg font-semibold text-neutral-900 mb-3">
                     Position Your Shapes
                   </h3>
+                  <video
+                    className="w-full border border-neutral-200 mb-4"
+                    autoPlay
+                    loop
+                    muted
+                    playsInline
+                  >
+                    <source src="/video/step-2-position.mp4" type="video/mp4" />
+                  </video>
                   <p className="text-sm text-neutral-600 leading-relaxed">
                     Drag shapes around the canvas to create your desired
                     gradient pattern. The shapes will automatically blend
@@ -128,6 +147,15 @@ function GuidePage() {
                   <h3 className="font-nohemi text-lg font-semibold text-neutral-900 mb-3">
                     Adjust Blur and Settings
                   </h3>
+                  <video
+                    className="w-full border border-neutral-200 mb-4"
+                    autoPlay
+                    loop
+                    muted
+                    playsInline
+                  >
+                    <source src="/video/step-3-blur.mp4" type="video/mp4" />
+                  </video>
                   <p className="text-sm text-neutral-600 leading-relaxed">
                     Fine-tune the blur intensity to control how soft your
                     gradient appears. You can also adjust the canvas size to
@@ -146,6 +174,15 @@ function GuidePage() {
                   <h3 className="font-nohemi text-lg font-semibold text-neutral-900 mb-3">
                     Export Your Gradient
                   </h3>
+                  <video
+                    className="w-full border border-neutral-200 mb-4"
+                    autoPlay
+                    loop
+                    muted
+                    playsInline
+                  >
+                    <source src="/video/step-4-export.mp4" type="video/mp4" />
+                  </video>
                   <p className="text-sm text-neutral-600 leading-relaxed">
                     When you're happy with your gradient, export it in your
                     preferred format: PNG for images, SVG for scalable graphics,

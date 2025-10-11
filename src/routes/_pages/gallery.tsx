@@ -86,14 +86,14 @@ function GalleryPage() {
                   params={{ state: gradient.share }}
                   className="group"
                 >
-                  <div className="bg-white  shadow-xs group relative transition-all overflow-hidden">
-                    <GridCursor />
+                  <div className="bg-white border border-neutral-200 group relative transition-all overflow-hidden">
+                    <GridCursor offset={0} />
                     <div className="aspect-[4/3] overflow-hidden">
                       {previewDataUrl ? (
                         <img
                           src={previewDataUrl}
                           alt={`Mesh gradient with ${gradient.shapesCount} shapes and ${gradient.colorsCount} colors`}
-                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                          className="w-full  h-full object-cover group-hover:scale-105 transition-transform duration-300"
                           loading="lazy"
                           decoding="async"
                         />
@@ -103,7 +103,7 @@ function GalleryPage() {
                         </div>
                       )}
                     </div>
-                    <div className="p-4">
+                    <div className="p-4 border-t border-neutral-200">
                       <div className="flex items-center justify-between text-sm text-neutral-600">
                         <span>
                           {gradient.shapesCount} shapes • {gradient.colorsCount}{" "}
