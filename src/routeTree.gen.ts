@@ -15,12 +15,13 @@ import { Route as ManageGradientsRouteImport } from './routes/manage-gradients'
 import { Route as EditorRouteImport } from './routes/editor'
 import { Route as DiscoveryRouteImport } from './routes/discovery'
 import { Route as PagesRouteRouteImport } from './routes/_pages/route'
-import { Route as IndexRouteImport } from './routes/index'
+import { Route as PagesIndexRouteImport } from './routes/_pages/index'
 import { Route as ShareStateRouteImport } from './routes/share.$state'
 import { Route as PagesResourcesRouteImport } from './routes/_pages/resources'
 import { Route as PagesGuideRouteImport } from './routes/_pages/guide'
 import { Route as PagesGalleryRouteImport } from './routes/_pages/gallery'
-import { Route as PagesBlogRouteImport } from './routes/_pages/blog'
+import { Route as PagesBlogIndexRouteImport } from './routes/_pages/blog/index'
+import { Route as PagesBlogSlugRouteImport } from './routes/_pages/blog/$slug'
 import { ServerRoute as SitemapDotxmlServerRouteImport } from './routes/sitemap[.]xml'
 import { ServerRoute as RobotsDottxtServerRouteImport } from './routes/robots[.]txt'
 
@@ -45,10 +46,10 @@ const PagesRouteRoute = PagesRouteRouteImport.update({
   id: '/_pages',
   getParentRoute: () => rootRouteImport,
 } as any)
-const IndexRoute = IndexRouteImport.update({
+const PagesIndexRoute = PagesIndexRouteImport.update({
   id: '/',
   path: '/',
-  getParentRoute: () => rootRouteImport,
+  getParentRoute: () => PagesRouteRoute,
 } as any)
 const ShareStateRoute = ShareStateRouteImport.update({
   id: '/share/$state',
@@ -70,9 +71,14 @@ const PagesGalleryRoute = PagesGalleryRouteImport.update({
   path: '/gallery',
   getParentRoute: () => PagesRouteRoute,
 } as any)
-const PagesBlogRoute = PagesBlogRouteImport.update({
-  id: '/blog',
-  path: '/blog',
+const PagesBlogIndexRoute = PagesBlogIndexRouteImport.update({
+  id: '/blog/',
+  path: '/blog/',
+  getParentRoute: () => PagesRouteRoute,
+} as any)
+const PagesBlogSlugRoute = PagesBlogSlugRouteImport.update({
+  id: '/blog/$slug',
+  path: '/blog/$slug',
   getParentRoute: () => PagesRouteRoute,
 } as any)
 const SitemapDotxmlServerRoute = SitemapDotxmlServerRouteImport.update({
@@ -87,79 +93,84 @@ const RobotsDottxtServerRoute = RobotsDottxtServerRouteImport.update({
 } as any)
 
 export interface FileRoutesByFullPath {
-  '/': typeof IndexRoute
   '/discovery': typeof DiscoveryRoute
   '/editor': typeof EditorRoute
   '/manage-gradients': typeof ManageGradientsRoute
-  '/blog': typeof PagesBlogRoute
   '/gallery': typeof PagesGalleryRoute
   '/guide': typeof PagesGuideRoute
   '/resources': typeof PagesResourcesRoute
   '/share/$state': typeof ShareStateRoute
+  '/': typeof PagesIndexRoute
+  '/blog/$slug': typeof PagesBlogSlugRoute
+  '/blog': typeof PagesBlogIndexRoute
 }
 export interface FileRoutesByTo {
-  '/': typeof IndexRoute
   '/discovery': typeof DiscoveryRoute
   '/editor': typeof EditorRoute
   '/manage-gradients': typeof ManageGradientsRoute
-  '/blog': typeof PagesBlogRoute
   '/gallery': typeof PagesGalleryRoute
   '/guide': typeof PagesGuideRoute
   '/resources': typeof PagesResourcesRoute
   '/share/$state': typeof ShareStateRoute
+  '/': typeof PagesIndexRoute
+  '/blog/$slug': typeof PagesBlogSlugRoute
+  '/blog': typeof PagesBlogIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
-  '/': typeof IndexRoute
   '/_pages': typeof PagesRouteRouteWithChildren
   '/discovery': typeof DiscoveryRoute
   '/editor': typeof EditorRoute
   '/manage-gradients': typeof ManageGradientsRoute
-  '/_pages/blog': typeof PagesBlogRoute
   '/_pages/gallery': typeof PagesGalleryRoute
   '/_pages/guide': typeof PagesGuideRoute
   '/_pages/resources': typeof PagesResourcesRoute
   '/share/$state': typeof ShareStateRoute
+  '/_pages/': typeof PagesIndexRoute
+  '/_pages/blog/$slug': typeof PagesBlogSlugRoute
+  '/_pages/blog/': typeof PagesBlogIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
-    | '/'
     | '/discovery'
     | '/editor'
     | '/manage-gradients'
-    | '/blog'
     | '/gallery'
     | '/guide'
     | '/resources'
     | '/share/$state'
+    | '/'
+    | '/blog/$slug'
+    | '/blog'
   fileRoutesByTo: FileRoutesByTo
   to:
-    | '/'
     | '/discovery'
     | '/editor'
     | '/manage-gradients'
-    | '/blog'
     | '/gallery'
     | '/guide'
     | '/resources'
     | '/share/$state'
+    | '/'
+    | '/blog/$slug'
+    | '/blog'
   id:
     | '__root__'
-    | '/'
     | '/_pages'
     | '/discovery'
     | '/editor'
     | '/manage-gradients'
-    | '/_pages/blog'
     | '/_pages/gallery'
     | '/_pages/guide'
     | '/_pages/resources'
     | '/share/$state'
+    | '/_pages/'
+    | '/_pages/blog/$slug'
+    | '/_pages/blog/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
-  IndexRoute: typeof IndexRoute
   PagesRouteRoute: typeof PagesRouteRouteWithChildren
   DiscoveryRoute: typeof DiscoveryRoute
   EditorRoute: typeof EditorRoute
@@ -222,12 +233,12 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PagesRouteRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/': {
-      id: '/'
+    '/_pages/': {
+      id: '/_pages/'
       path: '/'
       fullPath: '/'
-      preLoaderRoute: typeof IndexRouteImport
-      parentRoute: typeof rootRouteImport
+      preLoaderRoute: typeof PagesIndexRouteImport
+      parentRoute: typeof PagesRouteRoute
     }
     '/share/$state': {
       id: '/share/$state'
@@ -257,11 +268,18 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PagesGalleryRouteImport
       parentRoute: typeof PagesRouteRoute
     }
-    '/_pages/blog': {
-      id: '/_pages/blog'
+    '/_pages/blog/': {
+      id: '/_pages/blog/'
       path: '/blog'
       fullPath: '/blog'
-      preLoaderRoute: typeof PagesBlogRouteImport
+      preLoaderRoute: typeof PagesBlogIndexRouteImport
+      parentRoute: typeof PagesRouteRoute
+    }
+    '/_pages/blog/$slug': {
+      id: '/_pages/blog/$slug'
+      path: '/blog/$slug'
+      fullPath: '/blog/$slug'
+      preLoaderRoute: typeof PagesBlogSlugRouteImport
       parentRoute: typeof PagesRouteRoute
     }
   }
@@ -286,17 +304,21 @@ declare module '@tanstack/react-start/server' {
 }
 
 interface PagesRouteRouteChildren {
-  PagesBlogRoute: typeof PagesBlogRoute
   PagesGalleryRoute: typeof PagesGalleryRoute
   PagesGuideRoute: typeof PagesGuideRoute
   PagesResourcesRoute: typeof PagesResourcesRoute
+  PagesIndexRoute: typeof PagesIndexRoute
+  PagesBlogSlugRoute: typeof PagesBlogSlugRoute
+  PagesBlogIndexRoute: typeof PagesBlogIndexRoute
 }
 
 const PagesRouteRouteChildren: PagesRouteRouteChildren = {
-  PagesBlogRoute: PagesBlogRoute,
   PagesGalleryRoute: PagesGalleryRoute,
   PagesGuideRoute: PagesGuideRoute,
   PagesResourcesRoute: PagesResourcesRoute,
+  PagesIndexRoute: PagesIndexRoute,
+  PagesBlogSlugRoute: PagesBlogSlugRoute,
+  PagesBlogIndexRoute: PagesBlogIndexRoute,
 }
 
 const PagesRouteRouteWithChildren = PagesRouteRoute._addFileChildren(
@@ -304,7 +326,6 @@ const PagesRouteRouteWithChildren = PagesRouteRoute._addFileChildren(
 )
 
 const rootRouteChildren: RootRouteChildren = {
-  IndexRoute: IndexRoute,
   PagesRouteRoute: PagesRouteRouteWithChildren,
   DiscoveryRoute: DiscoveryRoute,
   EditorRoute: EditorRoute,

@@ -1,9 +1,10 @@
 export function GridCursor() {
   return (
     <>
-      {/* Top-left cursor */}
+      {/* Top-left cursor - offset by 0.5px to center on gap */}
       <svg
-        className="absolute top-0 left-0 w-2.5 h-2.5 -translate-x-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity z-50"
+        className="absolute w-2.5 h-2.5 opacity-0 group-hover:opacity-100 transition-opacity z-50 pointer-events-none"
+        style={{ top: '-0.5px', left: '-0.5px', transform: 'translate(-50%, -50%)' }}
         viewBox="0 0 10 10"
         fill="none"
       >
@@ -16,9 +17,10 @@ export function GridCursor() {
         />
       </svg>
 
-      {/* Top-right cursor */}
+      {/* Top-right cursor - offset by 0.5px to center on gap */}
       <svg
-        className="absolute top-0 right-0 w-2.5 h-2.5 translate-x-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity z-50"
+        className="absolute w-2.5 h-2.5 opacity-0 group-hover:opacity-100 transition-opacity z-50 pointer-events-none"
+        style={{ top: '-0.5px', right: '-0.5px', transform: 'translate(50%, -50%)' }}
         viewBox="0 0 10 10"
         fill="none"
       >
@@ -31,9 +33,10 @@ export function GridCursor() {
         />
       </svg>
 
-      {/* Bottom-left cursor */}
+      {/* Bottom-left cursor - offset by 0.5px to center on gap */}
       <svg
-        className="absolute bottom-0 left-0 w-2.5 h-2.5 -translate-x-1/2 translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity z-50"
+        className="absolute w-2.5 h-2.5 opacity-0 group-hover:opacity-100 transition-opacity z-50 pointer-events-none"
+        style={{ bottom: '-0.5px', left: '-0.5px', transform: 'translate(-50%, 50%)' }}
         viewBox="0 0 10 10"
         fill="none"
       >
@@ -46,9 +49,10 @@ export function GridCursor() {
         />
       </svg>
 
-      {/* Bottom-right cursor */}
+      {/* Bottom-right cursor - offset by 0.5px to center on gap */}
       <svg
-        className="absolute bottom-0 right-0 w-2.5 h-2.5 translate-x-1/2 translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity z-50"
+        className="absolute w-2.5 h-2.5 opacity-0 group-hover:opacity-100 transition-opacity z-50 pointer-events-none"
+        style={{ bottom: '-0.5px', right: '-0.5px', transform: 'translate(50%, 50%)' }}
         viewBox="0 0 10 10"
         fill="none"
       >

@@ -1,297 +1,296 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 @plugin "tailwindcss-react-aria-components";
+@plugin "@tailwindcss/typography";
 
 @custom-variant dark (&:is(.dark *));
 
 body {
-  @apply m-0;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen",
-    "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue",
-    sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+	@apply m-0;
+	font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen",
+		"Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue",
+		sans-serif;
+	-webkit-font-smoothing: antialiased;
+	-moz-osx-font-smoothing: grayscale;
 }
 
 code {
-  font-family: source-code-pro, Menlo, Monaco, Consolas, "Courier New",
-    monospace;
+	font-family: source-code-pro, Menlo, Monaco, Consolas, "Courier New",
+		monospace;
 }
 
 @theme inline {
-  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
-  --font-mono: "Geist Mono", 'ui-monospace', 'SFMono-Regular', 'Menlo', 'Monaco', 'Consolas', '"Liberation Mono"', '"Courier New"', 'monospace';
-  --font-nohemi: "Nohemi", ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
-  --color-border: var(--border);
-  --color-input: var(--input);
-  --color-ring: var(--ring);
-  --color-bg: var(--bg);
-  --color-fg: var(--fg);
-  --color-primary: var(--primary);
-  --color-primary-fg: var(--primary-fg);
-  --color-secondary: var(--secondary);
-  --color-secondary-fg: var(--secondary-fg);
-  --color-accent: var(--accent);
-  --color-accent-fg: var(--accent-fg);
-  --color-success: var(--success);
-  --color-success-fg: var(--success-fg);
-  --color-danger: var(--danger);
-  --color-danger-fg: var(--danger-fg);
-  --color-warning: var(--warning);
-  --color-warning-fg: var(--warning-fg);
-  --color-muted: var(--muted);
-  --color-muted-fg: var(--muted-fg);
-  --color-overlay: var(--overlay);
-  --color-overlay-fg: var(--overlay-fg);
-  --color-navbar: var(--navbar);
-  --color-navbar-fg: var(--navbar-fg);
-  --color-sidebar: var(--sidebar);
-  --color-sidebar-fg: var(--sidebar-fg);
-  --color-chart-1: var(--chart-1);
-  --color-chart-2: var(--chart-2);
-  --color-chart-3: var(--chart-3);
-  --color-chart-4: var(--chart-4);
-  --color-chart-5: var(--chart-5);
-  --radius-4xl: var(--radius-4xl);
-  --radius-3xl: var(--radius-3xl);
-  --radius-2xl: var(--radius-2xl);
-  --radius-xl: var(--radius-xl);
-  --radius-md: var(--radius-md);
-  --radius-sm: var(--radius-sm);
-  --radius-xs: var(--radius-xs);
-  --radius-lg: var(--radius-lg);
+	--font-sans: "Inter", ui-sans-serif, system-ui, sans-serif,
+		"Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+	--font-mono: "Geist Mono", "ui-monospace", "SFMono-Regular", "Menlo", "Monaco",
+		"Consolas", '"Liberation Mono"', '"Courier New"', "monospace";
+	--font-nohemi: "Nohemi", ui-sans-serif, system-ui, sans-serif,
+		"Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+	--color-border: var(--border);
+	--color-input: var(--input);
+	--color-ring: var(--ring);
+	--color-bg: var(--bg);
+	--color-fg: var(--fg);
+	--color-primary: var(--primary);
+	--color-primary-fg: var(--primary-fg);
+	--color-secondary: var(--secondary);
+	--color-secondary-fg: var(--secondary-fg);
+	--color-accent: var(--accent);
+	--color-accent-fg: var(--accent-fg);
+	--color-success: var(--success);
+	--color-success-fg: var(--success-fg);
+	--color-danger: var(--danger);
+	--color-danger-fg: var(--danger-fg);
+	--color-warning: var(--warning);
+	--color-warning-fg: var(--warning-fg);
+	--color-muted: var(--muted);
+	--color-muted-fg: var(--muted-fg);
+	--color-overlay: var(--overlay);
+	--color-overlay-fg: var(--overlay-fg);
+	--color-navbar: var(--navbar);
+	--color-navbar-fg: var(--navbar-fg);
+	--color-sidebar: var(--sidebar);
+	--color-sidebar-fg: var(--sidebar-fg);
+	--color-chart-1: var(--chart-1);
+	--color-chart-2: var(--chart-2);
+	--color-chart-3: var(--chart-3);
+	--color-chart-4: var(--chart-4);
+	--color-chart-5: var(--chart-5);
+	--radius-4xl: var(--radius-4xl);
+	--radius-3xl: var(--radius-3xl);
+	--radius-2xl: var(--radius-2xl);
+	--radius-xl: var(--radius-xl);
+	--radius-md: var(--radius-md);
+	--radius-sm: var(--radius-sm);
+	--radius-xs: var(--radius-xs);
+	--radius-lg: var(--radius-lg);
 }
 
 :root {
-  --bg: oklch(1 0 0);
-  --fg: oklch(0.141 0.005 285.823);
-  --primary: oklch(0.546 0.245 262.881);
-  --primary-fg: oklch(1 0 0);
-  --secondary: oklch(0.92 0.004 286.32);
-  --secondary-fg: oklch(0.141 0.005 285.823);
-  --overlay: oklch(1 0 0);
-  --overlay-fg: oklch(0.141 0.005 285.823);
-  --accent: oklch(0.546 0.245 262.881);
-  --accent-fg: oklch(1 0 0);
-  --muted: oklch(0.967 0.001 286.375);
-  --muted-fg: oklch(0.552 0.016 285.938);
-  --success: oklch(0.596 0.145 163.225);
-  --success-fg: oklch(1 0 0);
-  --warning: oklch(0.828 0.189 84.429);
-  --warning-fg: oklch(0.279 0.077 45.635);
-  --danger: oklch(0.577 0.245 27.325);
-  --danger-fg: oklch(0.971 0.013 17.38);
-  --border: oklch(0.911 0.006 286.286);
-  --input: oklch(0.871 0.006 286.286);
-  --ring: oklch(0.546 0.245 262.881);
-  --navbar: oklch(0.967 0.001 286.375);
-  --navbar-fg: oklch(0.141 0.005 285.823);
-  --sidebar: oklch(0.967 0.001 286.375);
-  --sidebar-fg: oklch(0.141 0.005 285.823);
-  --chart-1: oklch(0.546 0.245 262.881);
-  --chart-2: oklch(0.707 0.165 254.624);
-  --chart-3: oklch(0.809 0.105 251.813);
-  --chart-4: oklch(0.882 0.059 254.128);
-  --chart-5: oklch(0.932 0.032 255.585);
-  --radius-lg: 0.5rem;
-  --radius-xs: calc(var(--radius-lg) * 0.5);
-  --radius-sm: calc(var(--radius-lg) * 0.75);
-  --radius-md: calc(var(--radius-lg) * 0.9);
-  --radius-xl: calc(var(--radius-lg) * 1.25);
-  --radius-2xl: calc(var(--radius-lg) * 1.5);
-  --radius-3xl: calc(var(--radius-lg) * 2);
-  --radius-4xl: calc(var(--radius-lg) * 3);
+	--bg: oklch(1 0 0);
+	--fg: oklch(0.141 0.005 285.823);
+	--primary: oklch(0.546 0.245 262.881);
+	--primary-fg: oklch(1 0 0);
+	--secondary: oklch(0.92 0.004 286.32);
+	--secondary-fg: oklch(0.141 0.005 285.823);
+	--overlay: oklch(1 0 0);
+	--overlay-fg: oklch(0.141 0.005 285.823);
+	--accent: oklch(0.546 0.245 262.881);
+	--accent-fg: oklch(1 0 0);
+	--muted: oklch(0.967 0.001 286.375);
+	--muted-fg: oklch(0.552 0.016 285.938);
+	--success: oklch(0.596 0.145 163.225);
+	--success-fg: oklch(1 0 0);
+	--warning: oklch(0.828 0.189 84.429);
+	--warning-fg: oklch(0.279 0.077 45.635);
+	--danger: oklch(0.577 0.245 27.325);
+	--danger-fg: oklch(0.971 0.013 17.38);
+	--border: oklch(0.911 0.006 286.286);
+	--input: oklch(0.871 0.006 286.286);
+	--ring: oklch(0.546 0.245 262.881);
+	--navbar: oklch(0.967 0.001 286.375);
+	--navbar-fg: oklch(0.141 0.005 285.823);
+	--sidebar: oklch(0.967 0.001 286.375);
+	--sidebar-fg: oklch(0.141 0.005 285.823);
+	--chart-1: oklch(0.546 0.245 262.881);
+	--chart-2: oklch(0.707 0.165 254.624);
+	--chart-3: oklch(0.809 0.105 251.813);
+	--chart-4: oklch(0.882 0.059 254.128);
+	--chart-5: oklch(0.932 0.032 255.585);
+	--radius-lg: 0.5rem;
+	--radius-xs: calc(var(--radius-lg) * 0.5);
+	--radius-sm: calc(var(--radius-lg) * 0.75);
+	--radius-md: calc(var(--radius-lg) * 0.9);
+	--radius-xl: calc(var(--radius-lg) * 1.25);
+	--radius-2xl: calc(var(--radius-lg) * 1.5);
+	--radius-3xl: calc(var(--radius-lg) * 2);
+	--radius-4xl: calc(var(--radius-lg) * 3);
 }
 
 .dark {
-  --bg: oklch(0.091 0.005 285.823);
-  --fg: oklch(0.985 0 0);
-  --primary: oklch(0.546 0.245 262.881);
-  --primary-fg: oklch(1 0 0);
-  --secondary: oklch(0.244 0.006 286.033);
-  --secondary-fg: oklch(0.985 0 0);
-  --accent: oklch(0.546 0.245 262.881);
-  --accent-fg: oklch(1 0 0);
-  --muted: oklch(0.21 0.006 285.885);
-  --muted-fg: oklch(0.705 0.015 286.067);
-  --overlay: oklch(0.170 0.006 285.885);
-  --overlay-fg: oklch(0.985 0 0);
-  --success: oklch(0.596 0.145 163.225);
-  --success-fg: oklch(1 0 0);
-  --warning: oklch(0.828 0.189 84.429);
-  --warning-fg: oklch(0.279 0.077 45.635);
-  --danger: oklch(0.577 0.245 27.325);
-  --danger-fg: oklch(0.971 0.013 17.38);
-  --border: oklch(0.270 0.013 285.805);
-  --input: oklch(0.320 0.013 285.805);
-  --ring: oklch(0.546 0.245 262.881);
-  --navbar: oklch(0.170 0.006 285.885);
-  --navbar-fg: oklch(0.985 0 0);
-  --sidebar: oklch(0.160 0.006 285.885);
-  --sidebar-fg: oklch(0.985 0 0);
-  --chart-1: oklch(0.488 0.243 264.376);
-  --chart-2: oklch(0.623 0.214 259.815);
-  --chart-3: oklch(0.707 0.165 254.624);
-  --chart-4: oklch(0.809 0.105 251.813);
-  --chart-5: oklch(0.882 0.059 254.128);
+	--bg: oklch(0.091 0.005 285.823);
+	--fg: oklch(0.985 0 0);
+	--primary: oklch(0.546 0.245 262.881);
+	--primary-fg: oklch(1 0 0);
+	--secondary: oklch(0.244 0.006 286.033);
+	--secondary-fg: oklch(0.985 0 0);
+	--accent: oklch(0.546 0.245 262.881);
+	--accent-fg: oklch(1 0 0);
+	--muted: oklch(0.21 0.006 285.885);
+	--muted-fg: oklch(0.705 0.015 286.067);
+	--overlay: oklch(0.17 0.006 285.885);
+	--overlay-fg: oklch(0.985 0 0);
+	--success: oklch(0.596 0.145 163.225);
+	--success-fg: oklch(1 0 0);
+	--warning: oklch(0.828 0.189 84.429);
+	--warning-fg: oklch(0.279 0.077 45.635);
+	--danger: oklch(0.577 0.245 27.325);
+	--danger-fg: oklch(0.971 0.013 17.38);
+	--border: oklch(0.27 0.013 285.805);
+	--input: oklch(0.32 0.013 285.805);
+	--ring: oklch(0.546 0.245 262.881);
+	--navbar: oklch(0.17 0.006 285.885);
+	--navbar-fg: oklch(0.985 0 0);
+	--sidebar: oklch(0.16 0.006 285.885);
+	--sidebar-fg: oklch(0.985 0 0);
+	--chart-1: oklch(0.488 0.243 264.376);
+	--chart-2: oklch(0.623 0.214 259.815);
+	--chart-3: oklch(0.707 0.165 254.624);
+	--chart-4: oklch(0.809 0.105 251.813);
+	--chart-5: oklch(0.882 0.059 254.128);
 }
 
 @layer base {
-  *, ::after, ::before, ::backdrop, ::file-selector-button {
-    border-color: var(--border, currentColor);
-  }
-  * {
-    scrollbar-width: thin;
-    scrollbar-color: var(--border) transparent;
-  }
-  html {
-    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
-    font-variation-settings: normal;
-    scroll-behavior: smooth;
-    height: 100%;
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
-    -webkit-tap-highlight-color: transparent;
-  }
-  body {
-    background-color: var(--bg);
-    color: var(--fg);
-  }
-  ::-webkit-scrollbar {
-    width: 4px;
-  }
-  ::-webkit-scrollbar-track {
-    background: transparent;
-  }
-  ::-webkit-scrollbar-thumb {
-    background: var(--border);
-    border-radius: 4px;
-  }
+	*,
+	::after,
+	::before,
+	::backdrop,
+	::file-selector-button {
+		border-color: var(--border, currentColor);
+	}
+	* {
+		scrollbar-width: thin;
+		scrollbar-color: var(--border) transparent;
+	}
+	html {
+		font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+		font-variation-settings: normal;
+		scroll-behavior: smooth;
+		height: 100%;
+		-webkit-font-smoothing: antialiased;
+		-moz-osx-font-smoothing: grayscale;
+		-webkit-tap-highlight-color: transparent;
+	}
+	body {
+		background-color: var(--bg);
+		color: var(--fg);
+	}
+	::-webkit-scrollbar {
+		width: 4px;
+	}
+	::-webkit-scrollbar-track {
+		background: transparent;
+	}
+	::-webkit-scrollbar-thumb {
+		background: var(--border);
+		border-radius: 4px;
+	}
 }
-
 
 /* Nohemi Thin */
 @font-face {
-  font-family: "Nohemi";
-  src:
-    local("Nohemi Thin"),
-    url("/Nohemi/Nohemi-Thin-BF6438cc577ef3b.otf") format("opentype"),
-    url("/Nohemi/Nohemi-Thin-BF6438cc57e2011.woff") format("woff"),
-    url("/Nohemi/Nohemi-Thin-BF6438cc5896c67.ttf") format("truetype");
-  font-weight: 100;
-  font-style: normal;
-  font-display: swap;
+	font-family: "Nohemi";
+	src: local("Nohemi Thin"), url("/Nohemi/Nohemi-Thin-BF6438cc577ef3b.otf")
+		format("opentype"), url("/Nohemi/Nohemi-Thin-BF6438cc57e2011.woff")
+		format("woff"), url("/Nohemi/Nohemi-Thin-BF6438cc5896c67.ttf")
+		format("truetype");
+	font-weight: 100;
+	font-style: normal;
+	font-display: swap;
 }
 
 /* Nohemi Extra Light */
 @font-face {
-  font-family: "Nohemi";
-  src:
-    local("Nohemi ExtraLight"),
-    url("/Nohemi/Nohemi-ExtraLight-BF6438cc57e06d5.otf") format("opentype"),
-    url("/Nohemi/Nohemi-ExtraLight-BF6438cc581502c.woff") format("woff"),
-    url("/Nohemi/Nohemi-ExtraLight-BF6438cc58a2634.ttf") format("truetype");
-  font-weight: 200;
-  font-style: normal;
-  font-display: swap;
+	font-family: "Nohemi";
+	src: local("Nohemi ExtraLight"),
+		url("/Nohemi/Nohemi-ExtraLight-BF6438cc57e06d5.otf") format("opentype"),
+		url("/Nohemi/Nohemi-ExtraLight-BF6438cc581502c.woff") format("woff"),
+		url("/Nohemi/Nohemi-ExtraLight-BF6438cc58a2634.ttf") format("truetype");
+	font-weight: 200;
+	font-style: normal;
+	font-display: swap;
 }
 
 /* Nohemi Light */
 @font-face {
-  font-family: "Nohemi";
-  src:
-    local("Nohemi Light"),
-    url("/Nohemi/Nohemi-Light-BF6438cc583f70b.otf") format("opentype"),
-    url("/Nohemi/Nohemi-Light-BF6438cc5702321.woff") format("woff"),
-    url("/Nohemi/Nohemi-Light-BF6438cc5899919.ttf") format("truetype");
-  font-weight: 300;
-  font-style: normal;
-  font-display: swap;
+	font-family: "Nohemi";
+	src: local("Nohemi Light"), url("/Nohemi/Nohemi-Light-BF6438cc583f70b.otf")
+		format("opentype"), url("/Nohemi/Nohemi-Light-BF6438cc5702321.woff")
+		format("woff"), url("/Nohemi/Nohemi-Light-BF6438cc5899919.ttf")
+		format("truetype");
+	font-weight: 300;
+	font-style: normal;
+	font-display: swap;
 }
 
 /* Nohemi Regular */
 @font-face {
-  font-family: "Nohemi";
-  src:
-    local("Nohemi"),
-    url("/Nohemi/Nohemi-Regular-BF6438cc58b98fc.otf") format("opentype"),
-    url("/Nohemi/Nohemi-Regular-BF6438cc579d934.woff") format("woff"),
-    url("/Nohemi/Nohemi-Regular-BF6438cc4d0e493.ttf") format("truetype");
-  font-weight: 400;
-  font-style: normal;
-  font-display: swap;
+	font-family: "Nohemi";
+	src: local("Nohemi"), url("/Nohemi/Nohemi-Regular-BF6438cc58b98fc.otf")
+		format("opentype"), url("/Nohemi/Nohemi-Regular-BF6438cc579d934.woff")
+		format("woff"), url("/Nohemi/Nohemi-Regular-BF6438cc4d0e493.ttf")
+		format("truetype");
+	font-weight: 400;
+	font-style: normal;
+	font-display: swap;
 }
 
 /* Nohemi Medium */
 @font-face {
-  font-family: "Nohemi";
-  src:
-    local("Nohemi Medium"),
-    url("/Nohemi/Nohemi-Medium-BF6438cc581a509.otf") format("opentype"),
-    url("/Nohemi/Nohemi-Medium-BF6438cc57ddecd.woff") format("woff"),
-    url("/Nohemi/Nohemi-Medium-BF6438cc5883899.ttf") format("truetype");
-  font-weight: 500;
-  font-style: normal;
-  font-display: swap;
+	font-family: "Nohemi";
+	src: local("Nohemi Medium"), url("/Nohemi/Nohemi-Medium-BF6438cc581a509.otf")
+		format("opentype"), url("/Nohemi/Nohemi-Medium-BF6438cc57ddecd.woff")
+		format("woff"), url("/Nohemi/Nohemi-Medium-BF6438cc5883899.ttf")
+		format("truetype");
+	font-weight: 500;
+	font-style: normal;
+	font-display: swap;
 }
 
 /* Nohemi Semi Bold */
 @font-face {
-  font-family: "Nohemi";
-  src:
-    local("Nohemi SemiBold"),
-    url("/Nohemi/Nohemi-SemiBold-BF6438cc588b5e5.otf") format("opentype"),
-    url("/Nohemi/Nohemi-SemiBold-BF6438cc57db2ff.woff") format("woff"),
-    url("/Nohemi/Nohemi-SemiBold-BF6438cc588a48a.ttf") format("truetype");
-  font-weight: 600;
-  font-style: normal;
-  font-display: swap;
+	font-family: "Nohemi";
+	src: local("Nohemi SemiBold"),
+		url("/Nohemi/Nohemi-SemiBold-BF6438cc588b5e5.otf") format("opentype"),
+		url("/Nohemi/Nohemi-SemiBold-BF6438cc57db2ff.woff") format("woff"),
+		url("/Nohemi/Nohemi-SemiBold-BF6438cc588a48a.ttf") format("truetype");
+	font-weight: 600;
+	font-style: normal;
+	font-display: swap;
 }
 
 /* Nohemi Bold */
 @font-face {
-  font-family: "Nohemi";
-  src:
-    local("Nohemi Bold"),
-    url("/Nohemi/Nohemi-Bold-BF6438cc5812315.otf") format("opentype"),
-    url("/Nohemi/Nohemi-Bold-BF6438cc577b524.woff") format("woff"),
-    url("/Nohemi/Nohemi-Bold-BF6438cc587b5b5.ttf") format("truetype");
-  font-weight: 700;
-  font-style: normal;
-  font-display: swap;
+	font-family: "Nohemi";
+	src: local("Nohemi Bold"), url("/Nohemi/Nohemi-Bold-BF6438cc5812315.otf")
+		format("opentype"), url("/Nohemi/Nohemi-Bold-BF6438cc577b524.woff")
+		format("woff"), url("/Nohemi/Nohemi-Bold-BF6438cc587b5b5.ttf")
+		format("truetype");
+	font-weight: 700;
+	font-style: normal;
+	font-display: swap;
 }
 
 /* Nohemi Extra Bold */
 @font-face {
-  font-family: "Nohemi";
-  src:
-    local("Nohemi ExtraBold"),
-    url("/Nohemi/Nohemi-ExtraBold-BF6438cc58a4c3c.otf") format("opentype"),
-    url("/Nohemi/Nohemi-ExtraBold-BF6438cc5761ae2.woff") format("woff"),
-    url("/Nohemi/Nohemi-ExtraBold-BF6438cc5881baf.ttf") format("truetype");
-  font-weight: 800;
-  font-style: normal;
-  font-display: swap;
+	font-family: "Nohemi";
+	src: local("Nohemi ExtraBold"),
+		url("/Nohemi/Nohemi-ExtraBold-BF6438cc58a4c3c.otf") format("opentype"),
+		url("/Nohemi/Nohemi-ExtraBold-BF6438cc5761ae2.woff") format("woff"),
+		url("/Nohemi/Nohemi-ExtraBold-BF6438cc5881baf.ttf") format("truetype");
+	font-weight: 800;
+	font-style: normal;
+	font-display: swap;
 }
 
 /* Nohemi Black */
 @font-face {
-  font-family: "Nohemi";
-  src:
-    local("Nohemi Black"),
-    url("/Nohemi/Nohemi-Black-BF6438cc5874bd2.otf") format("opentype"),
-    url("/Nohemi/Nohemi-Black-BF6438cc565e67b.woff") format("woff"),
-    url("/Nohemi/Nohemi-Black-BF6438cc58744d4.ttf") format("truetype");
-  font-weight: 900;
-  font-style: normal;
-  font-display: swap;
+	font-family: "Nohemi";
+	src: local("Nohemi Black"), url("/Nohemi/Nohemi-Black-BF6438cc5874bd2.otf")
+		format("opentype"), url("/Nohemi/Nohemi-Black-BF6438cc565e67b.woff")
+		format("woff"), url("/Nohemi/Nohemi-Black-BF6438cc58744d4.ttf")
+		format("truetype");
+	font-weight: 900;
+	font-style: normal;
+	font-display: swap;
 }
 
 /* Nohemi Variable Font */
 @font-face {
-  font-family: "Nohemi VF";
-  src: url("/Nohemi/Nohemi-VF-BF6438cc58ad63d.ttf") format("truetype-variations");
-  font-weight: 100 900;
-  font-style: normal;
-  font-display: swap;
+	font-family: "Nohemi VF";
+	src: url("/Nohemi/Nohemi-VF-BF6438cc58ad63d.ttf")
+		format("truetype-variations");
+	font-weight: 100 900;
+	font-style: normal;
+	font-display: swap;
 }

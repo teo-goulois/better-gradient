@@ -1,5 +1,6 @@
 import { SharedFooter } from "@/components/shared/shared-footer";
-import { Outlet, createFileRoute } from "@tanstack/react-router";
+import { SharedNavbar } from "@/components/shared/shared-navbar";
+import { Link, Outlet, createFileRoute } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/_pages")({
   component: RouteComponent,
@@ -8,6 +9,7 @@ export const Route = createFileRoute("/_pages")({
 function RouteComponent() {
   return (
     <div>
+      <SharedNavbar />
       <Outlet />
       <SharedFooter />
     </div>

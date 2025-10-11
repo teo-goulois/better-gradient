@@ -85,7 +85,7 @@ const faqStructuredData = {
   ],
 };
 
-export const Route = createFileRoute("/")({
+export const Route = createFileRoute("/_pages/")({
   component: App,
   head: () => ({
     meta: [
@@ -133,7 +133,7 @@ function App() {
       <main className="flex-1 w-full bg-bg">
         {/* Hero Section */}
         <div className="relative overflow-hidden">
-          <div className="container mx-auto px-6 py-28 z-10 relative h-full flex items-center justify-center min-h-[calc(100dvh-4.25rem)]">
+          <div className="container mx-auto px-6 pb-24 z-10 relative h-full flex items-center justify-center min-h-[calc(100dvh-4.25rem)]">
             <div className="max-w-3xl mx-auto text-center">
               <h1 className="mt-6 font-nohemi text-5xl md:text-6xl font-semibold tracking-tight text-neutral-900">
                 Free Mesh Gradient Generator
@@ -163,7 +163,7 @@ function App() {
                   No signup required • 100% free • Export to PNG, SVG, CSS
                 </p>
               </div>
-              <div className="absolute bottom-0 left-0 right-0 flex justify-center">
+              <div className="absolute bottom-24 left-0 right-0 flex justify-center">
                 <IconArrowDownFill className="size-10 text-neutral-500" />
               </div>
             </div>
@@ -176,7 +176,6 @@ function App() {
         <Features />
         <FAQ />
       </main>
-      <SharedFooter />
     </>
   );
 }
