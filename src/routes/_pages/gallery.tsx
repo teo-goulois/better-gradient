@@ -35,7 +35,7 @@ function GalleryPage() {
 
   return (
     <div className="flex-1 w-full min-h-screen bg-bg">
-      <div className="container mx-auto px-6 py-16">
+      <div className="container max-w-5xl mx-auto px-6 py-16">
         {/* Header */}
         <div className="max-w-3xl mx-auto text-center mb-16">
           <h1 className="font-nohemi text-5xl font-semibold tracking-tight text-neutral-900">

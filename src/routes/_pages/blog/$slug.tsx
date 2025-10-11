@@ -1,5 +1,6 @@
 import { Prose } from "@/components/shared/shared-prose";
 import { DottedBackground } from "@/components/ui/dotted-background";
+import { Separator } from "@/components/ui/separator";
 import { getSinglePost } from "@/lib/actions/action.query";
 import { Link, createFileRoute } from "@tanstack/react-router";
 
@@ -45,9 +46,9 @@ function RouteComponent() {
     <main className="flex-1 w-full bg-white relative">
       <DottedBackground />
 
-      <article className="container mx-auto px-6 py-12 relative z-10">
+      <article className="container max-w-5xl mx-auto py-12 relative z-10">
         {/* Back to Blog */}
-        <div className="max-w-4xl mx-auto mb-8">
+        <div className=" mb-8">
           <Link
             to="/blog"
             className="text-sm text-neutral-600 hover:text-neutral-900 transition-colors inline-flex items-center gap-2"
@@ -70,78 +71,76 @@ function RouteComponent() {
           </Link>
         </div>
 
-        {/* Cover Image */}
-        {post.coverImage && (
-          <div className="max-w-4xl mx-auto mb-12">
-            <img
-              src={post.coverImage}
-              alt={post.title}
-              className="w-full h-[400px] object-cover border border-neutral-200"
-            />
-          </div>
-        )}
-
         {/* Article Header */}
-        <header className="max-w-4xl mx-auto mb-12">
-          {/* Category & Tags */}
-          <div className="flex items-center gap-2 mb-6 flex-wrap">
-            {/* {post.category && (
-              <span className="text-xs px-3 py-1 border border-neutral-200 text-neutral-700 font-medium font-mono">
-                {post.category.name}
-              </span>
-            )} */}
-            {post.tags &&
-              post.tags.length > 0 &&
-              post.tags.map((tag) => (
-                <span
-                  key={tag.id}
-                  className="text-xs px-3 py-1 bg-neutral-100 text-neutral-600 font-medium font-mono"
-                >
-                  {tag.name}
-                </span>
-              ))}
-          </div>
-
-          {/* Title */}
-          <h1 className="font-nohemi text-5xl font-semibold tracking-tight text-neutral-900 mb-6">
+        <header className="max-w-5xl mx-auto mb-12 space-y-6">
+          <h1 className="font-nohemi text-4xl md:text-5xl font-semibold tracking-tight">
             {post.title}
           </h1>
-
-          {/* Description 
-          {post.description && (
-            <p className="text-lg text-neutral-600 mb-8 leading-relaxed">
-              {post.description}
-            </p>
+          {/* Cover Image */}
+          {post.coverImage && (
+            <div className="max-w-5xl mx-auto mb-8 relative overflow-hidden rounded-lg border border-neutral-200">
+              <div className="absolute inset-0 easing-gradient pointer-events-none" />
+              <img
+                src={post.coverImage}
+                alt={post.title}
+                className="w-full h-[400px] object-cover"
+              />
+            </div>
           )}
-*/}
-          {/* Meta Info */}
-          {/*  <div className="flex items-center gap-6 pt-6 border-t border-neutral-200">
-            {post.authors && post.authors.length > 0 && (
+          <div className="flex justify-between items-center">
+            {/* Category & Tags */}
+            <div className="flex items-center gap-2 flex-wrap">
+              {post.category && (
+                <span className="text-xs px-3 py-1 border border-neutral-200 text-neutral-700 font-medium font-mono">
+                  {post.category.name}
+                </span>
+              )}
+              {post.tags &&
+                post.tags.length > 0 &&
+                post.tags.map((tag) => (
+                  <span
+                    key={tag.id}
+                    className="text-xs px-3 py-1 bg-neutral-100 text-neutral-600 font-medium font-mono"
+                  >
+                    {tag.name}
+                  </span>
+                ))}
+            </div>
+            {/* Meta Info */}
+            <div className="flex items-center  gap-3 ">
               <div className="flex items-center gap-3">
-                {post.authors[0].image && (
-                  <img
-                    src={post.authors[0].image}
-                    alt={post.authors[0].name}
-                    className="w-10 h-10 rounded-full border border-neutral-200"
-                  />
+                {post.authors && post.authors.length > 0 && (
+                  <div className="flex items-center gap-1.5">
+                    {post.authors[0].image && (
+                      <img
+                        src={post.authors[0].image}
+                        alt={post.authors[0].name}
+                        className="size-6 rounded-full border border-neutral-200"
+                      />
+                    )}
+                    <div>
+                      <p className="text-sm font-medium text-neutral-900">
+                        {post.authors[0].name}
+                      </p>
+                    </div>
+                  </div>
                 )}
-                <div>
-                  <p className="text-sm font-medium text-neutral-900">
-                    {post.authors[0].name}
-                  </p>
-                  {post.publishedAt && (
-                    <time className="text-xs text-neutral-500">
-                      {new Date(post.publishedAt).toLocaleDateString("en-US", {
-                        month: "long",
-                        day: "numeric",
-                        year: "numeric",
-                      })}
-                    </time>
-                  )}
-                </div>
               </div>
-            )}
-          </div> */}
+              <Separator
+                orientation="vertical"
+                className="self-stretch h-auto"
+              />
+              {post.publishedAt && (
+                <time className="text-xs text-neutral-500">
+                  {new Date(post.publishedAt).toLocaleDateString("en-US", {
+                    month: "long",
+                    day: "numeric",
+                    year: "numeric",
+                  })}
+                </time>
+              )}
+            </div>
+          </div>
         </header>
 
         {/* Article Content */}

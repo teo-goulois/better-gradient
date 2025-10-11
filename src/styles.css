@@ -294,3 +294,16 @@ code {
 	font-style: normal;
 	font-display: swap;
 }
+.prose {
+	h1,
+	h2,
+	h3,
+	h4,
+	h5,
+	h6 {
+		@apply font-nohemi;
+	}
+}
+.easing-gradient {
+	background: linear-gradient(to top, rgba(0, 0, 0, 0.35), transparent 60%);
+}

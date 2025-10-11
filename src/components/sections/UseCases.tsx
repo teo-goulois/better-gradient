@@ -39,7 +39,7 @@ export function UseCases() {
     <section className=" bg-white relative">
       <DottedBackground />
 
-      <div className="container max-w-6xl mx-auto px-6 pt-12 py-24 relative z-10">
+      <div className="container max-w-5xl mx-auto  pt-12 py-24 relative z-10">
         <div className="max-w-3xl mr-auto text-left mb-10">
           <h2 className="font-nohemi text-3xl font-semibold tracking-tight text-neutral-900">
             Use Cases
