@@ -30,7 +30,7 @@ const structuredData = {
     "Free mesh gradient generator",
     "No signup required",
     "Real-time gradient preview",
-    "Export to PNG, SVG, CSS",
+    "Export to PNG, Webp, SVG, CSS",
     "Multiple export formats",
     "Color customization",
     "Modern mesh gradients",
@@ -92,7 +92,7 @@ export const Route = createFileRoute("/_pages/")({
       {
         name: "description",
         content:
-          "Free mesh gradient generator - Create stunning blur gradient backgrounds for websites, UI design, and creative projects. No signup required. Export to PNG, SVG, or CSS instantly.",
+          "Free mesh gradient generator - Create stunning blur gradient backgrounds for websites, UI design, and creative projects. No signup required. Export to PNG, Webp, SVG, or CSS instantly.",
       },
       {
         name: "keywords",
@@ -160,7 +160,7 @@ function App() {
                   </span>
                 </Link>
                 <p className="mt-3 text-sm text-neutral-500">
-                  No signup required • 100% free • Export to PNG, SVG, CSS
+                  No signup required • 100% free • Export to PNG, Webp, SVG, CSS
                 </p>
               </div>
               <div className="absolute bottom-24 left-0 right-0 flex justify-center">
