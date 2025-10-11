@@ -208,3 +208,41 @@ export async function svgToPngDataUrl(
 	ctx.drawImage(img, 0, 0, width, height);
 	return canvas.toDataURL("image/png");
 }
+
+export async function svgToWebpDataUrl(
+	svg: string,
+	scaleOrSize: number | { width: number; height: number; scale?: number } = 1,
+	quality = 0.95,
+): Promise<string> {
+	const img = new Image();
+	const url = svgDataUrl(svg);
+	await new Promise<void>((resolve, reject) => {
+		img.onload = () => resolve();
+		img.onerror = (e) => reject(e);
+		img.src = url;
+	});
+
+	let width: number;
+	let height: number;
+	let scale = 1;
+	if (typeof scaleOrSize === "number") {
+		scale = scaleOrSize;
+		width = Math.max(1, Math.round((img.width || 1) * scale));
+		height = Math.max(1, Math.round((img.height || 1) * scale));
+	} else {
+		scale = scaleOrSize.scale ?? 1;
+		width = Math.max(1, Math.round(scaleOrSize.width * scale));
+		height = Math.max(1, Math.round(scaleOrSize.height * scale));
+	}
+	const canvas = document.createElement("canvas");
+	canvas.width = width;
+	canvas.height = height;
+	const ctx = canvas.getContext("2d");
+	if (!ctx) {
+		return canvas.toDataURL("image/webp", quality);
+	}
+	ctx.imageSmoothingEnabled = true;
+	ctx.imageSmoothingQuality = "high";
+	ctx.drawImage(img, 0, 0, width, height);
+	return canvas.toDataURL("image/webp", quality);
+}
