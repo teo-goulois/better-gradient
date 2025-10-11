@@ -5,6 +5,7 @@ import { DottedBackground } from "@/components/ui/dotted-background";
 import { GridCursor } from "@/components/ui/grid-cursor";
 import { createFileRoute } from "@tanstack/react-router";
 import { Link } from "@tanstack/react-router";
+import { useRef } from "react";
 
 export const Route = createFileRoute("/_pages/guide")({
   head: () => ({
@@ -23,6 +24,71 @@ export const Route = createFileRoute("/_pages/guide")({
   }),
   component: GuidePage,
 });
+
+let currentlyPlayingVideo: HTMLVideoElement | null = null;
+
+function TutorialStep({
+  stepNumber,
+  title,
+  videoSrc,
+  description,
+}: {
+  stepNumber: string;
+  title: string;
+  videoSrc: string;
+  description: string;
+}) {
+  const videoRef = useRef<HTMLVideoElement>(null);
+
+  const handleMouseEnter = () => {
+    if (currentlyPlayingVideo && currentlyPlayingVideo !== videoRef.current) {
+      currentlyPlayingVideo.pause();
+      currentlyPlayingVideo.currentTime = 0;
+    }
+
+    if (videoRef.current) {
+      videoRef.current.play();
+      currentlyPlayingVideo = videoRef.current;
+    }
+  };
+
+  const handleMouseLeave = () => {
+    if (videoRef.current) {
+      videoRef.current.pause();
+      videoRef.current.currentTime = 0;
+    }
+    if (currentlyPlayingVideo === videoRef.current) {
+      currentlyPlayingVideo = null;
+    }
+  };
+
+  return (
+    <div
+      className="bg-white p-8 relative group hover:bg-neutral-50 transition-all duration-300"
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
+    >
+      <GridCursor />
+
+      <div className="text-sm font-mono text-neutral-400 mb-4 group-hover:text-neutral-900 transition-colors">
+        {stepNumber}
+      </div>
+      <h3 className="font-nohemi text-lg font-semibold text-neutral-900 mb-3">
+        {title}
+      </h3>
+      <video
+        ref={videoRef}
+        className="w-full border border-neutral-200 mb-4"
+        loop
+        muted
+        playsInline
+      >
+        <source src={videoSrc} type="video/mp4" />
+      </video>
+      <p className="text-sm text-neutral-600 leading-relaxed">{description}</p>
+    </div>
+  );
+}
 
 function GuidePage() {
   return (
@@ -83,112 +149,30 @@ function GuidePage() {
                 </p>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-px bg-neutral-200 border border-neutral-200 relative">
-                {/* Step 1 */}
-                <div className="bg-white p-8 relative group hover:bg-neutral-50 transition-all duration-300">
-                  <GridCursor />
-
-                  <div className="text-sm font-mono text-neutral-400 mb-4 group-hover:text-neutral-900 transition-colors">
-                    01
-                  </div>
-                  <h3 className="font-nohemi text-lg font-semibold text-neutral-900 mb-3">
-                    Choose Your Colors
-                  </h3>
-                  <video
-                    className="w-full border border-neutral-200 mb-4"
-                    autoPlay
-                    loop
-                    muted
-                    playsInline
-                  >
-                    <source src="/video/example-v1.mp4" type="video/mp4" />
-                  </video>
-                  <p className="text-sm text-neutral-600 leading-relaxed">
-                    Start by selecting colors from the color palette. Click on
-                    any shape to change its color, or use the color picker to
-                    create custom colors. You can add or remove shapes to adjust
-                    the complexity of your gradient.
-                  </p>
-                </div>
-
-                {/* Step 2 */}
-                <div className="bg-white p-8 relative group hover:bg-neutral-50 transition-all duration-300">
-                  <GridCursor />
-
-                  <div className="text-sm font-mono text-neutral-400 mb-4 group-hover:text-neutral-900 transition-colors">
-                    02
-                  </div>
-                  <h3 className="font-nohemi text-lg font-semibold text-neutral-900 mb-3">
-                    Position Your Shapes
-                  </h3>
-                  <video
-                    className="w-full border border-neutral-200 mb-4"
-                    autoPlay
-                    loop
-                    muted
-                    playsInline
-                  >
-                    <source src="/video/step-2-position.mp4" type="video/mp4" />
-                  </video>
-                  <p className="text-sm text-neutral-600 leading-relaxed">
-                    Drag shapes around the canvas to create your desired
-                    gradient pattern. The shapes will automatically blend
-                    together to create smooth color transitions. Experiment with
-                    different positions to find the perfect composition.
-                  </p>
-                </div>
-
-                {/* Step 3 */}
-                <div className="bg-white p-8 relative group hover:bg-neutral-50 transition-all duration-300">
-                  <GridCursor />
-
-                  <div className="text-sm font-mono text-neutral-400 mb-4 group-hover:text-neutral-900 transition-colors">
-                    03
-                  </div>
-                  <h3 className="font-nohemi text-lg font-semibold text-neutral-900 mb-3">
-                    Adjust Blur and Settings
-                  </h3>
-                  <video
-                    className="w-full border border-neutral-200 mb-4"
-                    autoPlay
-                    loop
-                    muted
-                    playsInline
-                  >
-                    <source src="/video/step-3-blur.mp4" type="video/mp4" />
-                  </video>
-                  <p className="text-sm text-neutral-600 leading-relaxed">
-                    Fine-tune the blur intensity to control how soft your
-                    gradient appears. You can also adjust the canvas size to
-                    match your project requirements. Use the sidebar controls to
-                    perfect your design.
-                  </p>
-                </div>
-
-                {/* Step 4 */}
-                <div className="bg-white p-8 relative group hover:bg-neutral-50 transition-all duration-300">
-                  <GridCursor />
-
-                  <div className="text-sm font-mono text-neutral-400 mb-4 group-hover:text-neutral-900 transition-colors">
-                    04
-                  </div>
-                  <h3 className="font-nohemi text-lg font-semibold text-neutral-900 mb-3">
-                    Export Your Gradient
-                  </h3>
-                  <video
-                    className="w-full border border-neutral-200 mb-4"
-                    autoPlay
-                    loop
-                    muted
-                    playsInline
-                  >
-                    <source src="/video/step-4-export.mp4" type="video/mp4" />
-                  </video>
-                  <p className="text-sm text-neutral-600 leading-relaxed">
-                    When you're happy with your gradient, export it in your
-                    preferred format: PNG for images, SVG for scalable graphics,
-                    or copy the CSS code to use directly in your stylesheets.
-                  </p>
-                </div>
+                <TutorialStep
+                  stepNumber="01"
+                  title="Choose Your Colors"
+                  videoSrc="/video/step-1-colors.mp4"
+                  description="Start by selecting colors from the color palette. Right click on any shape to change its color, or use the color picker to create custom colors. You can add or remove shapes to adjust the complexity of your gradient by either right clicking."
+                />
+                <TutorialStep
+                  stepNumber="02"
+                  title="Position Your Shapes"
+                  videoSrc="/video/step-2-position.mp4"
+                  description="Drag shapes around the canvas to create your desired gradient pattern. The shapes will automatically blend together to create smooth color transitions. Experiment with different positions to find the perfect composition. Tip: you can update single shape properties by right clicking."
+                />
+                <TutorialStep
+                  stepNumber="03"
+                  title="Adjust Blur and Settings"
+                  videoSrc="/video/step-3-blur.mp4"
+                  description="Fine-tune the blur, grain and opacity intensity to control how soft your gradient appears. You can also adjust the canvas size to match your project requirements. Use the sidebar controls to perfect your design."
+                />
+                <TutorialStep
+                  stepNumber="04"
+                  title="Export Your Gradient"
+                  videoSrc="/video/step-4-export.mp4"
+                  description="When you're happy with your gradient, export it in your preferred format: PNG for images, SVG for scalable graphics, or copy the CSS code to use directly in your stylesheets."
+                />
               </div>
             </section>
 
@@ -202,7 +186,7 @@ function GuidePage() {
                   Choose the right format for your project needs
                 </p>
               </div>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-px bg-neutral-200 border border-neutral-200 relative">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-px bg-neutral-200 border border-neutral-200 relative">
                 <div className="bg-white p-8 relative group hover:bg-neutral-50 transition-all duration-300">
                   <GridCursor />
 
@@ -214,6 +198,20 @@ function GuidePage() {
                     presentations. PNG files are raster images that work
                     everywhere but have a fixed size. Choose PNG when you need a
                     simple image file.
+                  </p>
+                </div>
+
+                <div className="bg-white p-8 relative group hover:bg-neutral-50 transition-all duration-300">
+                  <GridCursor />
+
+                  <h3 className="font-nohemi text-lg font-semibold text-neutral-900 mb-2">
+                    WebP Export
+                  </h3>
+                  <p className="text-sm text-neutral-600 leading-relaxed">
+                    Best for: Web optimization, modern browsers, faster loading.
+                    WebP files offer better compression than PNG with similar
+                    quality, resulting in smaller file sizes. Ideal for web
+                    performance.
                   </p>
                 </div>
 

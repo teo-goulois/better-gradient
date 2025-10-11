@@ -27,7 +27,7 @@ export function HowItWorks() {
     <section className=" bg-white relative">
       <DottedBackground />
 
-      <div className="container mx-auto px-6 py-24 relative z-10">
+      <div className="container mx-auto max-w-5xl px-6 py-24 relative z-10">
         <div className="max-w-3xl mx-auto text-center mb-10">
           <h2 className="font-nohemi text-3xl font-semibold tracking-tight text-neutral-900">
             How It Works

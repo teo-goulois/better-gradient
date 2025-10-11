@@ -46,7 +46,7 @@ function RouteComponent() {
     <main className="flex-1 w-full bg-white relative">
       <DottedBackground />
 
-      <article className="container max-w-5xl mx-auto py-12 relative z-10">
+      <article className="container px-6 max-w-5xl mx-auto py-12 relative z-10">
         {/* Back to Blog */}
         <div className=" mb-8">
           <Link
