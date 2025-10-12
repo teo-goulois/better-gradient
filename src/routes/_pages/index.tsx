@@ -2,9 +2,11 @@ import { FAQ } from "@/components/sections/FAQ";
 import { Features } from "@/components/sections/Features";
 import { HowItWorks } from "@/components/sections/HowItWorks";
 import { UseCases } from "@/components/sections/UseCases";
-import { SharedFooter } from "@/components/shared/shared-footer";
+import { env } from "@/env";
+import { getTotalExportsFromDbQueryOptions } from "@/lib/actions/actions.gradient";
 import { trackEvent } from "@/lib/tracking";
 import { IconArrowDownFill } from "@intentui/icons";
+import { useSuspenseQuery } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
 import { Link } from "@tanstack/react-router";
 
@@ -115,9 +117,15 @@ export const Route = createFileRoute("/_pages/")({
       },
     ],
   }),
+  loader: async ({ context }) => {
+    context.queryClient.ensureQueryData(getTotalExportsFromDbQueryOptions());
+  },
 });
 
 function App() {
+  const { data } = useSuspenseQuery(getTotalExportsFromDbQueryOptions());
+  const exportCount = data?.count || 0;
+
   return (
     <>
       <script
@@ -135,6 +143,25 @@ function App() {
         <div className="relative overflow-hidden">
           <div className="container mx-auto px-6 pb-24 z-10 relative h-full flex items-center justify-center min-h-[calc(100dvh-4.25rem)]">
             <div className="max-w-3xl mx-auto text-center">
+              {env.VITE_PH_ENABLED === "true" && (
+                <a
+                  href="https://www.producthunt.com/products/better-gradient?embed=true&utm_source=badge-featured&utm_medium=badge&utm_source=badge-better&#0045;gradient"
+                  // biome-ignore lint/a11y/noBlankTarget: <explanation>
+                  target="_blank"
+                  className="mx-auto w-fit inline-flex"
+                >
+                  <img
+                    src="https://api.producthunt.com/widgets/embed-image/v1/featured.svg?post_id=1025627&theme=light&t=1760257473357"
+                    alt="Better&#0032;Gradient - Free&#0032;Mesh&#0032;Gradient&#0032;Generator&#0032;&#0038;&#0032;Maker | Product Hunt"
+                    style={{
+                      width: "250px",
+                      height: "54px",
+                    }}
+                    width="250"
+                    height="54"
+                  />
+                </a>
+              )}
               <h1 className="mt-6 font-nohemi text-5xl md:text-6xl font-semibold tracking-tight text-neutral-900">
                 Free Mesh Gradient Generator
               </h1>
@@ -159,10 +186,72 @@ function App() {
                     Open Gradient Editor
                   </span>
                 </Link>
-                <p className="mt-3 text-sm text-neutral-500">
-                  No signup required • 100% free • Export to PNG, Webp, SVG, CSS
+                <div className="text-sm text-neutral-500 space-y-1.5">
+                  <p className="mt-3 ">
+                    No signup required • 100% free • Export to PNG, Webp, SVG,
+                    CSS
+                  </p>
+                  {exportCount > 0 && (
+                    <p className="">
+                      And more than <b>{exportCount.toLocaleString()}+</b>{" "}
+                      gradients exported
+                    </p>
+                  )}
+                </div>
+              </div>
+
+              {/* Reassurance Section */}
+              <div className="mt-16 flex flex-col items-center gap-4">
+                <a
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  href="https://x.com/Teo_Goulois/status/1969792686858338525"
+                  className="flex items-center gap-2"
+                >
+                  <div className="flex -space-x-2">
+                    <img
+                      src="/x-like/megh.jpg"
+                      alt="User"
+                      className="w-10 h-10 rounded-full border-2 border-white"
+                    />
+                    <img
+                      src="/x-like/bennesh.png"
+                      alt="User"
+                      className="w-10 h-10 rounded-full border-2 border-white"
+                    />
+                    <img
+                      src="/x-like/benergetic.jpg"
+                      alt="User"
+                      className="w-10 h-10 rounded-full border-2 border-white"
+                    />
+                    <img
+                      src="/x-like/devongovett.jpg"
+                      alt="User"
+                      className="w-10 h-10 rounded-full border-2 border-white"
+                    />
+                    <img
+                      src="/x-like/shatertsavsar.jpg"
+                      alt="User"
+                      className="w-10 h-10 rounded-full border-2 border-white"
+                    />
+                    <span className="size-10 text-xs flex items-center justify-center font-semibold rounded-full border-2 border-white bg-neutral-200">
+                      +600
+                    </span>
+                  </div>
+                </a>
+                <p className="text-lg text-neutral-600">
+                  Already loved by{" "}
+                  <a
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    href="https://x.com/Teo_Goulois/status/1969792686858338525"
+                    className="text-neutral-900 font-semibold"
+                  >
+                    +600 people
+                  </a>
                 </p>
               </div>
+
               <div className="absolute bottom-24 left-0 right-0 flex justify-center">
                 <IconArrowDownFill className="size-10 text-neutral-500" />
               </div>

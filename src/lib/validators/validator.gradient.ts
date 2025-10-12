@@ -2,7 +2,7 @@ import z from "zod";
 
 export const saveGradientValidator = z.object({
 	share: z.string(),
-	format: z.enum(["png", "svg", "css", "share"]),
+	format: z.enum(["png", "svg", "css", "share", "webp"]),
 	width: z.number(),
 	height: z.number(),
 	shapesCount: z.number(),

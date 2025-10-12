@@ -1,6 +1,6 @@
 import { queryOptions } from "@tanstack/react-query";
 import { createServerFn } from "@tanstack/react-start";
-import { eq } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
 import { db } from "../db";
 import { createdGradientsTable } from "../db/schema";
 import {
@@ -10,6 +10,27 @@ import {
 	saveGradientValidator,
 	updateGradientValidator,
 } from "../validators/validator.gradient";
+
+export const getTotalExportsFromDb = createServerFn({
+	method: "GET",
+	response: "data",
+}).handler(async () => {
+	// Count total number of export format entries across all gradients
+	const result = await db
+		.select({
+			count: sql<number>`count(*)`.as("count"),
+		})
+		.from(createdGradientsTable);
+
+	return { count: result[0]?.count || 0 };
+});
+
+export const getTotalExportsFromDbQueryOptions = () =>
+	queryOptions({
+		queryKey: ["getTotalExportsFromDbQueryOptions"],
+		queryFn: () => getTotalExportsFromDb(),
+		refetchInterval: 1000 * 60 * 5, // 5 minutes
+	});
 
 export const getPublicGradientsFromDb = createServerFn({
 	method: "GET", // HTTP method to use
