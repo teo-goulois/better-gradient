@@ -16,8 +16,6 @@ function RouteComponent() {
   const data = Route.useLoaderData();
   const { post } = data || {};
 
-  console.log({ post });
-
   if (!post) {
     return (
       <main className="flex-1 w-full bg-white relative min-h-screen">
