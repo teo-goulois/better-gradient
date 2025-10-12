@@ -143,7 +143,7 @@ function App() {
         <div className="relative overflow-hidden">
           <div className="container mx-auto px-6 pb-24 z-10 relative h-full flex items-center justify-center min-h-[calc(100dvh-4.25rem)]">
             <div className="max-w-3xl mx-auto text-center">
-              {env.VITE_PH_ENABLED && (
+              {env.VITE_PH_ENABLED === "true" && (
                 <a
                   href="https://www.producthunt.com/products/better-gradient?embed=true&utm_source=badge-featured&utm_medium=badge&utm_source=badge-better&#0045;gradient"
                   // biome-ignore lint/a11y/noBlankTarget: <explanation>

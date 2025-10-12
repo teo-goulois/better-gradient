@@ -72,7 +72,7 @@ export const MeshPreview = () => {
           <MeshActions />
           <SharedFeedback />
           <MeshUndo />
-          {env.VITE_PH_ENABLED && (
+          {env.VITE_PH_ENABLED === "true" && (
             <a
               href="https://www.producthunt.com/products/better-gradient?embed=true&utm_source=badge-featured&utm_medium=badge&utm_source=badge-better&#0045;gradient"
               // biome-ignore lint/a11y/noBlankTarget: <explanation>

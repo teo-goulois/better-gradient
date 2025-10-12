@@ -1,3 +1,4 @@
+import { envServer } from "@/env-server";
 import type {
 	MarbleAuthorList,
 	MarbleCategoryList,
@@ -8,8 +9,8 @@ import type {
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 
-const url = process.env.MARBLE_API_URL;
-const key = process.env.MARBLE_WORKSPACE_KEY;
+const url = envServer.MARBLE_API_URL;
+const key = envServer.MARBLE_WORKSPACE_KEY;
 
 export const getPosts = createServerFn().handler(async () => {
 	try {
