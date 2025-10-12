@@ -2,7 +2,7 @@ import { FAQ } from "@/components/sections/FAQ";
 import { Features } from "@/components/sections/Features";
 import { HowItWorks } from "@/components/sections/HowItWorks";
 import { UseCases } from "@/components/sections/UseCases";
-import { SharedFooter } from "@/components/shared/shared-footer";
+import { env } from "@/env";
 import { getTotalExportsFromDbQueryOptions } from "@/lib/actions/actions.gradient";
 import { trackEvent } from "@/lib/tracking";
 import { IconArrowDownFill } from "@intentui/icons";
@@ -140,6 +140,25 @@ function App() {
         <div className="relative overflow-hidden">
           <div className="container mx-auto px-6 pb-24 z-10 relative h-full flex items-center justify-center min-h-[calc(100dvh-4.25rem)]">
             <div className="max-w-3xl mx-auto text-center">
+              {(env.VITE_PH_ENABLED ?? true) && (
+                <a
+                  href="https://www.producthunt.com/products/better-gradient?embed=true&utm_source=badge-featured&utm_medium=badge&utm_source=badge-better&#0045;gradient"
+                  // biome-ignore lint/a11y/noBlankTarget: <explanation>
+                  target="_blank"
+                  className="mx-auto w-fit inline-flex"
+                >
+                  <img
+                    src="https://api.producthunt.com/widgets/embed-image/v1/featured.svg?post_id=1025627&theme=light&t=1760257473357"
+                    alt="Better&#0032;Gradient - Free&#0032;Mesh&#0032;Gradient&#0032;Generator&#0032;&#0038;&#0032;Maker | Product Hunt"
+                    style={{
+                      width: "250px",
+                      height: "54px",
+                    }}
+                    width="250"
+                    height="54"
+                  />
+                </a>
+              )}
               <h1 className="mt-6 font-nohemi text-5xl md:text-6xl font-semibold tracking-tight text-neutral-900">
                 Free Mesh Gradient Generator
               </h1>
