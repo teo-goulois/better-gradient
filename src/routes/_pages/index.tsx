@@ -117,6 +117,9 @@ export const Route = createFileRoute("/_pages/")({
       },
     ],
   }),
+  loader: async ({ context }) => {
+    context.queryClient.ensureQueryData(getTotalExportsFromDbQueryOptions());
+  },
 });
 
 function App() {
