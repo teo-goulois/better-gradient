@@ -3,8 +3,10 @@ import { Features } from "@/components/sections/Features";
 import { HowItWorks } from "@/components/sections/HowItWorks";
 import { UseCases } from "@/components/sections/UseCases";
 import { SharedFooter } from "@/components/shared/shared-footer";
+import { getTotalExportsFromDbQueryOptions } from "@/lib/actions/actions.gradient";
 import { trackEvent } from "@/lib/tracking";
 import { IconArrowDownFill } from "@intentui/icons";
+import { useSuspenseQuery } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
 import { Link } from "@tanstack/react-router";
 
@@ -118,6 +120,9 @@ export const Route = createFileRoute("/_pages/")({
 });
 
 function App() {
+  const { data } = useSuspenseQuery(getTotalExportsFromDbQueryOptions());
+  const exportCount = data?.count || 0;
+
   return (
     <>
       <script
@@ -159,10 +164,72 @@ function App() {
                     Open Gradient Editor
                   </span>
                 </Link>
-                <p className="mt-3 text-sm text-neutral-500">
-                  No signup required • 100% free • Export to PNG, Webp, SVG, CSS
+                <div className="text-sm text-neutral-500 space-y-1.5">
+                  <p className="mt-3 ">
+                    No signup required • 100% free • Export to PNG, Webp, SVG,
+                    CSS
+                  </p>
+                  {exportCount > 0 && (
+                    <p className="">
+                      And more than <b>{exportCount.toLocaleString()}+</b>{" "}
+                      gradients exported
+                    </p>
+                  )}
+                </div>
+              </div>
+
+              {/* Reassurance Section */}
+              <div className="mt-16 flex flex-col items-center gap-4">
+                <a
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  href="https://x.com/Teo_Goulois/status/1969792686858338525"
+                  className="flex items-center gap-2"
+                >
+                  <div className="flex -space-x-2">
+                    <img
+                      src="/x-like/megh.jpg"
+                      alt="User"
+                      className="w-10 h-10 rounded-full border-2 border-white"
+                    />
+                    <img
+                      src="/x-like/bennesh.png"
+                      alt="User"
+                      className="w-10 h-10 rounded-full border-2 border-white"
+                    />
+                    <img
+                      src="/x-like/benergetic.jpg"
+                      alt="User"
+                      className="w-10 h-10 rounded-full border-2 border-white"
+                    />
+                    <img
+                      src="/x-like/devongovett.jpg"
+                      alt="User"
+                      className="w-10 h-10 rounded-full border-2 border-white"
+                    />
+                    <img
+                      src="/x-like/shatertsavsar.jpg"
+                      alt="User"
+                      className="w-10 h-10 rounded-full border-2 border-white"
+                    />
+                    <span className="size-10 text-xs flex items-center justify-center font-semibold rounded-full border-2 border-white bg-neutral-200">
+                      +600
+                    </span>
+                  </div>
+                </a>
+                <p className="text-lg text-neutral-600">
+                  Already loved by{" "}
+                  <a
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    href="https://x.com/Teo_Goulois/status/1969792686858338525"
+                    className="text-neutral-900 font-semibold"
+                  >
+                    +600 people
+                  </a>
                 </p>
               </div>
+
               <div className="absolute bottom-24 left-0 right-0 flex justify-center">
                 <IconArrowDownFill className="size-10 text-neutral-500" />
               </div>
