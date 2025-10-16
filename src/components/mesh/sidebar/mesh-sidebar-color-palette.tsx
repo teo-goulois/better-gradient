@@ -51,11 +51,7 @@ export const MeshSidebarColorPalette = () => {
       >
         <div className="flex gap-2 flex-wrap">
           {palette.map((item, index) => (
-            <SortableColor
-              key={`${item.id}-${item.color}`}
-              color={item}
-              index={index}
-            />
+            <SortableColor key={item.id} color={item} index={index} />
           ))}
           {palette.length < 10 && (
             <Button
@@ -109,7 +105,7 @@ const SortableColor = ({ color, index }: SortableColorProps) => {
   return (
     <div
       ref={sortable.ref}
-      //style={style}
+      style={style}
       className="flex items-center gap-1 relative group transition-opacity duration-200 cursor-grab active:cursor-grabbing "
     >
       <MeshSidebarColorPicker

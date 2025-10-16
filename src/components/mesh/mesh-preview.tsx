@@ -1,5 +1,6 @@
 "use client";
 
+import { env } from "@/env";
 import { useContainerSize } from "@/hooks/mesh/use-container-size";
 import { useFrameOnMount } from "@/hooks/mesh/use-frame-on-mount";
 import { useMeshFrame } from "@/hooks/mesh/use-mesh-frame";
@@ -71,7 +72,25 @@ export const MeshPreview = () => {
           <MeshActions />
           <SharedFeedback />
           <MeshUndo />
-
+          {env.VITE_PH_ENABLED === "true" && (
+            <a
+              href="https://www.producthunt.com/products/better-gradient?embed=true&utm_source=badge-featured&utm_medium=badge&utm_source=badge-better&#0045;gradient"
+              // biome-ignore lint/a11y/noBlankTarget: <explanation>
+              target="_blank"
+              className="absolute bottom-0 z-10 right-0"
+            >
+              <img
+                src="https://api.producthunt.com/widgets/embed-image/v1/featured.svg?post_id=1025627&theme=light&t=1760257473357"
+                alt="Better&#0032;Gradient - Free&#0032;Mesh&#0032;Gradient&#0032;Generator&#0032;&#0038;&#0032;Maker | Product Hunt"
+                style={{
+                  width: "250px",
+                  height: "54px",
+                }}
+                width="250"
+                height="54"
+              />
+            </a>
+          )}
           <ContextMenu.Trigger
             onContextMenu={(e) => {
               e.preventDefault();

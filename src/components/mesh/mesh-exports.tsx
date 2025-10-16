@@ -4,18 +4,17 @@ import {
   svgDataUrl,
   svgStringFromState,
   svgToPngDataUrl,
+  svgToWebpDataUrl,
 } from "@/lib/mesh-svg";
 import { trackEvent } from "@/lib/tracking";
 import { useMeshStore } from "@/store/store-mesh";
 import { IconCheck, IconDownload, IconGalleryFill } from "@intentui/icons";
-import { toPng } from "html-to-image";
 import type { SVGProps } from "react";
 import { useState } from "react";
 import { twJoin } from "tailwind-merge";
 import { Button, ButtonPrimitive } from "../ui/button";
 import { Popover } from "../ui/popover";
 import { Separator } from "../ui/separator";
-import { useFrameContext } from "./frame/frame-context";
 
 type Props = {
   outerRef: { current: HTMLDivElement | null };
@@ -40,7 +39,7 @@ export const MeshExports = ({ outerRef, contentRef }: Props) => {
     }, 1500);
   };
 
-  const persist = async (format: "png" | "svg" | "css" | "share") => {
+  const persist = async (format: "png" | "webp" | "svg" | "css" | "share") => {
     const width = contentRef?.current?.clientWidth ?? canvas.width;
     const height = contentRef?.current?.clientHeight ?? canvas.height;
     const share = toShareString();
@@ -86,6 +85,38 @@ export const MeshExports = ({ outerRef, contentRef }: Props) => {
       colors_count: palette.length,
     });
     persist("png");
+  };
+
+  const downloadWebp = async () => {
+    const w = canvas.width;
+    const h = canvas.height;
+    const outputSize = {
+      width: w,
+      height: h,
+    };
+    const svg = svgStringFromState({
+      canvas,
+      shapes,
+      palette,
+      filters,
+      outputSize,
+    });
+    const url = await svgToWebpDataUrl(svg, {
+      ...outputSize,
+      scale: 1,
+    });
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "mesh.webp";
+    a.click();
+    showFeedback("webp");
+    trackEvent("Export WebP", {
+      width: w,
+      height: h,
+      shapes_count: shapes.length,
+      colors_count: palette.length,
+    });
+    persist("webp");
   };
 
   const downloadSvg = () => {
@@ -191,6 +222,35 @@ export const MeshExports = ({ outerRef, contentRef }: Props) => {
                       {feedbackStates.png ? "Downloaded!" : "PNG"}
                     </p>
                     <p className="text-sm text-muted-fg">for web</p>
+                  </div>
+                </ButtonPrimitive>
+                <ButtonPrimitive
+                  onPress={downloadWebp}
+                  className={twJoin(
+                    "flex gap-3 items-center px-3 py-2 rounded-lg cursor-pointer transition-all duration-200",
+                    "data-[hovered=true]:bg-blue-500/10",
+                    feedbackStates.webp && "bg-blue-500/20 scale-[0.98]"
+                  )}
+                >
+                  <div
+                    className={twJoin(
+                      "rounded-full p-1.5 transition-all duration-200",
+                      feedbackStates.webp
+                        ? "bg-blue-500/30 text-blue-500"
+                        : "bg-blue-500/20 text-blue-500"
+                    )}
+                  >
+                    {feedbackStates.webp ? (
+                      <IconCheck className="size-6" />
+                    ) : (
+                      <IconGalleryFill className="size-6" />
+                    )}
+                  </div>
+                  <div className="flex flex-col gap-0 items-start">
+                    <p className="font-semibold">
+                      {feedbackStates.webp ? "Downloaded!" : "WebP"}
+                    </p>
+                    <p className="text-sm text-muted-fg">smaller size</p>
                   </div>
                 </ButtonPrimitive>
                 <ButtonPrimitive

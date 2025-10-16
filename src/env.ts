@@ -11,8 +11,9 @@ export const env = createEnv({
 	clientPrefix: "VITE_",
 
 	client: {
-		VITE_SERVER_URL: z.string().url().optional(),
+		VITE_SERVER_URL: z.url().optional(),
 		VITE_APP_TITLE: z.string().min(1).optional(),
+		VITE_PH_ENABLED: z.string().optional(),
 	},
 
 	/**
@@ -34,5 +35,5 @@ export const env = createEnv({
 	 * In order to solve these issues, we recommend that all new projects
 	 * explicitly specify this option as true.
 	 */
-	emptyStringAsUndefined: true,
+	emptyStringAsUndefined: false,
 });
