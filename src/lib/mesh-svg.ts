@@ -4,6 +4,7 @@ import type {
 	Filters,
 	Point,
 	RgbHex,
+	TextElement,
 } from "@/types/types.mesh";
 
 // Convert points to SVG path data
@@ -29,11 +30,12 @@ export function svgStringFromState(args: {
 	shapes: BlobShape[];
 	palette: RgbHex[];
 	filters: Filters;
+	texts?: TextElement[];
 	outputSize?: { width: number; height: number };
 	includeVertices?: boolean;
 	vertexSizePx?: number;
 }): string {
-	const { canvas, shapes, palette, filters } = args;
+	const { canvas, shapes, palette, filters, texts = [] } = args;
 
 	const blur = Math.max(0, Math.min(filters.blur, 256));
 
@@ -148,6 +150,136 @@ export function svgStringFromState(args: {
 		svgParts.push(
 			`<rect width="${wCanvas}" height="${hCanvas}" fill="#FFFFFF" filter="url(#grain)" opacity="${opacity}"/>`,
 		);
+	}
+
+	// Render text elements on top of everything
+	for (const text of texts) {
+		const {
+			id,
+			content,
+			x,
+			y,
+			fontSize,
+			fontFamily,
+			fontWeight,
+			textAlign,
+			color,
+			opacity,
+			stroke,
+			shadow,
+			maxWidth,
+		} = text;
+
+		// Build text element attributes
+		// Match SVG text positioning to HTML: use fontSize * 0.85 as baseline offset
+		const baselineOffset = fontSize * 0.85;
+		const attrs: string[] = [
+			`x="${x}"`,
+			`y="${y + baselineOffset}"`,
+			`font-size="${fontSize}"`,
+			`font-family="${fontFamily.includes(" ") ? `'${fontFamily}'` : fontFamily}"`,
+			`font-weight="${fontWeight}"`,
+			`text-anchor="${textAlign === "center" ? "middle" : textAlign === "right" ? "end" : "start"}"`,
+			`fill="${color}"`,
+			`opacity="${opacity}"`,
+		];
+
+		// Add stroke if defined
+		if (stroke) {
+			attrs.push(`stroke="${stroke.color}"`);
+			attrs.push(`stroke-width="${stroke.width}"`);
+		}
+
+		// Add shadow filter if defined
+		let filterId: string | undefined;
+		if (shadow) {
+			filterId = `text-shadow-${id}`;
+			const { offsetX, offsetY, blur, color: shadowColor } = shadow;
+			// Insert shadow filter definition before </defs>
+			const shadowFilter = `<filter id="${filterId}" x="-50%" y="-50%" width="200%" height="200%">
+				<feGaussianBlur in="SourceAlpha" stdDeviation="${blur}" />
+				<feOffset dx="${offsetX}" dy="${offsetY}" result="offsetblur" />
+				<feFlood flood-color="${shadowColor}" />
+				<feComposite in2="offsetblur" operator="in" />
+				<feMerge>
+					<feMergeNode />
+					<feMergeNode in="SourceGraphic" />
+				</feMerge>
+			</filter>`;
+			svgParts.splice(svgParts.lastIndexOf("</defs>"), 0, shadowFilter);
+			attrs.push(`filter="url(#${filterId})"`);
+		}
+
+		// Handle text with maxWidth - wrap text manually
+		let lines: string[];
+		if (maxWidth) {
+			// Simple word wrapping approximation for SVG
+			// Using average character width estimation: fontSize * 0.6
+			const avgCharWidth = fontSize * 0.6;
+			const maxCharsPerLine = Math.floor(maxWidth / avgCharWidth);
+
+			lines = [];
+			const paragraphs = content.split("\n");
+
+			for (const paragraph of paragraphs) {
+				if (paragraph.length <= maxCharsPerLine) {
+					lines.push(paragraph);
+				} else {
+					// Break paragraph into words and wrap
+					const words = paragraph.split(" ");
+					let currentLine = "";
+
+					for (const word of words) {
+						const testLine = currentLine ? `${currentLine} ${word}` : word;
+
+						if (testLine.length <= maxCharsPerLine) {
+							currentLine = testLine;
+						} else {
+							if (currentLine) {
+								lines.push(currentLine);
+							}
+							currentLine = word;
+						}
+					}
+
+					if (currentLine) {
+						lines.push(currentLine);
+					}
+				}
+			}
+		} else {
+			// No maxWidth - split by newlines only
+			lines = content.split("\n");
+		}
+
+		const lineHeight = fontSize * 1.2; // Match CSS line-height: normal
+
+		if (lines.length === 1) {
+			// Single line - simple text element
+			const escapedContent = lines[0]
+				.replace(/&/g, "&amp;")
+				.replace(/</g, "&lt;")
+				.replace(/>/g, "&gt;")
+				.replace(/"/g, "&quot;")
+				.replace(/'/g, "&apos;");
+			svgParts.push(`<text ${attrs.join(" ")}>${escapedContent}</text>`);
+		} else {
+			// Multiple lines - use tspan for each line
+			svgParts.push(`<text ${attrs.join(" ")}>`);
+			lines.forEach((line, index) => {
+				const escapedLine = line
+					.replace(/&/g, "&amp;")
+					.replace(/</g, "&lt;")
+					.replace(/>/g, "&gt;")
+					.replace(/"/g, "&quot;")
+					.replace(/'/g, "&apos;");
+				const dy = index === 0 ? "0" : lineHeight;
+				svgParts.push(
+					`<tspan x="${x}" dy="${dy}">${escapedLine || " "}</tspan>`,
+				);
+			});
+			svgParts.push("</text>");
+		}
 	}
 
 	svgParts.push("</svg>");

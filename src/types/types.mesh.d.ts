@@ -37,3 +37,27 @@ export type FrameRect = {
 };
 
 export type ContainerSize = { width: number; height: number };
+
+export type TextElement = {
+	id: string;
+	content: string;
+	x: number;
+	y: number;
+	fontSize: number;
+	fontFamily: string;
+	fontWeight: "normal" | "bold" | "100" | "200" | "300" | "400" | "500" | "600" | "700" | "800" | "900";
+	textAlign: "left" | "center" | "right";
+	color: string; // hex color
+	opacity: number; // 0..1
+	maxWidth?: number; // optional max width for text wrapping
+	stroke?: {
+		color: string;
+		width: number;
+	};
+	shadow?: {
+		offsetX: number;
+		offsetY: number;
+		blur: number;
+		color: string;
+	};
+};

@@ -22,6 +22,7 @@ import { MeshActions } from "./mesh-actions";
 import { MeshExports } from "./mesh-exports";
 import { MeshUndo } from "./mesh-undo";
 import { MeshPreviewPoints } from "./preview/mesh-preview-points";
+import { MeshTextOverlay } from "./mesh-text-overlay";
 
 export const MeshPreview = () => {
   const isMounted = useIsMounted();
@@ -137,6 +138,7 @@ export const MeshPreview = () => {
             </ContextMenu>
 
             <MeshPreviewPoints canvasRef={canvasRef} contentRef={contentRef} />
+            <MeshTextOverlay contentRef={contentRef} />
           </div>
         </div>
       </ContextMenu>
@@ -162,6 +164,8 @@ const ContextContent = ({
   const setShapes = useMeshStore((s) => s.setShapes);
   const canvasSettings = useMeshStore((s) => s.canvas);
   const addShapeFromPoints = useMeshStore((s) => s.addShapeFromPoints);
+  const addText = useMeshStore((s) => s.addText);
+  const palette = useMeshStore((s) => s.palette);
 
   return (
     <ContextMenu.Content
@@ -189,6 +193,18 @@ const ContextContent = ({
           addShapeFromPoints(makeSquarePoints(center, base));
         } else if (k === "shape-diamond") {
           addShapeFromPoints(makeDiamondPoints(center, base));
+        } else if (k === "add-text") {
+          addText({
+            content: "Your Text Here",
+            x: center.x,
+            y: center.y,
+            fontSize: 64,
+            fontFamily: "Inter",
+            fontWeight: "bold",
+            textAlign: "center",
+            color: palette[1]?.color || "#000000",
+            opacity: 1,
+          });
         }
       }}
     >
@@ -204,6 +220,9 @@ const ContextContent = ({
         </ContextMenu.Item>
         <ContextMenu.Item id="shape-diamond">
           <ContextMenu.Label>Diamond</ContextMenu.Label>
+        </ContextMenu.Item>
+        <ContextMenu.Item id="add-text">
+          <ContextMenu.Label>Add Text</ContextMenu.Label>
         </ContextMenu.Item>
       </ContextMenu.Section>
       <ContextMenu.Separator />

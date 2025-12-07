@@ -307,3 +307,7 @@ code {
 .easing-gradient {
 	background: linear-gradient(to top, rgba(0, 0, 0, 0.35), transparent 60%);
 }
+
+.filtered {
+	filter: url(#filter);
+}

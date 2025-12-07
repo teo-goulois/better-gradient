@@ -15,6 +15,7 @@ import type {
 	FrameRect,
 	Point,
 	RgbHex,
+	TextElement,
 } from "@/types/types.mesh";
 import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
@@ -24,10 +25,12 @@ export type MeshState = {
 	shapes: BlobShape[];
 	// Live editing buffer used during drag operations; not persisted
 	shapesLive?: BlobShape[] | null;
+	texts: TextElement[];
 	filters: Filters;
 	canvas: CanvasSettings;
 	seed: string;
 	selectedShapeId?: string;
+	selectedTextId?: string;
 	frame?: FrameRect;
 	ui: {
 		container?: ContainerSize;
@@ -108,6 +111,21 @@ export type MeshState = {
 		updater: (s: BlobShape) => BlobShape,
 		opts?: { history?: "push" | "replace" | "skip" },
 	) => void;
+	// text actions
+	addText: (
+		text: Omit<TextElement, "id">,
+		opts?: { history?: "push" | "replace" | "skip" },
+	) => void;
+	updateText: (
+		id: string,
+		updater: (t: TextElement) => TextElement,
+		opts?: { history?: "push" | "replace" | "skip" },
+	) => void;
+	removeText: (
+		id: string,
+		opts?: { history?: "push" | "replace" | "skip" },
+	) => void;
+	setSelectedText: (id?: string) => void;
 	undo: () => void;
 	redo: () => void;
 	toShareString: () => string;
@@ -133,6 +151,10 @@ export type MeshStoreActions = Pick<
 	| "addShapeFromPoints"
 	| "removeShape"
 	| "updateShape"
+	| "addText"
+	| "updateText"
+	| "removeText"
+	| "setSelectedText"
 	| "undo"
 	| "redo"
 	| "toShareString"
@@ -158,7 +180,9 @@ const initialStateBase: Omit<MeshState, keyof MeshStoreActions> = {
 	seed: INITIAL_SEED,
 	shapes: INITIAL_SHAPES,
 	shapesLive: null,
+	texts: [],
 	selectedShapeId: undefined as string | undefined,
+	selectedTextId: undefined as string | undefined,
 	frame: undefined,
 	ui: {
 		container: undefined,
@@ -182,10 +206,12 @@ export const useMeshStore = create<MeshState>()(
 				const currContent = serialize({
 					palette: curr.palette,
 					shapes: curr.shapes,
+					texts: curr.texts,
 					filters: curr.filters,
 					canvas: curr.canvas,
 					seed: curr.seed,
 					selectedShapeId: curr.selectedShapeId,
+					selectedTextId: curr.selectedTextId,
 					ui: curr.ui,
 					_past: [],
 					_future: [],
@@ -199,6 +225,10 @@ export const useMeshStore = create<MeshState>()(
 						"shapes" in next && next.shapes !== undefined
 							? next.shapes
 							: curr.shapes,
+					texts:
+						"texts" in next && next.texts !== undefined
+							? next.texts
+							: curr.texts,
 					filters:
 						"filters" in next && next.filters !== undefined
 							? (next.filters as Filters)
@@ -215,6 +245,10 @@ export const useMeshStore = create<MeshState>()(
 						"selectedShapeId" in next && next.selectedShapeId !== undefined
 							? next.selectedShapeId
 							: curr.selectedShapeId,
+					selectedTextId:
+						"selectedTextId" in next && next.selectedTextId !== undefined
+							? next.selectedTextId
+							: curr.selectedTextId,
 					ui: curr.ui,
 					_past: [],
 					_future: [],
@@ -568,6 +602,42 @@ export const useMeshStore = create<MeshState>()(
 						commit({ shapes }, history === "replace" ? "replace" : "push");
 					}
 				},
+				// text actions
+				addText: (text, opts) => {
+					const curr = get();
+					const newText: TextElement = {
+						...text,
+						id: `text_${Math.random().toString(36).slice(2, 10)}`,
+					};
+					const texts = [...curr.texts, newText];
+					const history = opts?.history ?? "push";
+					if (history === "skip") {
+						set({ texts });
+					} else {
+						commit({ texts }, history === "replace" ? "replace" : "push");
+					}
+				},
+				updateText: (id, updater, opts) => {
+					const curr = get();
+					const texts = curr.texts.map((t) => (t.id === id ? updater(t) : t));
+					const history = opts?.history ?? "push";
+					if (history === "skip") {
+						set({ texts });
+					} else {
+						commit({ texts }, history === "replace" ? "replace" : "push");
+					}
+				},
+				removeText: (id, opts) => {
+					const curr = get();
+					const texts = curr.texts.filter((t) => t.id !== id);
+					const history = opts?.history ?? "push";
+					if (history === "skip") {
+						set({ texts });
+					} else {
+						commit({ texts }, history === "replace" ? "replace" : "push");
+					}
+				},
+				setSelectedText: (id) => set({ selectedTextId: id }),
 				undo: () => {
 					const curr = get();
 
@@ -578,10 +648,12 @@ export const useMeshStore = create<MeshState>()(
 					const present = serialize({
 						palette: curr.palette,
 						shapes: curr.shapes,
+						texts: curr.texts,
 						filters: curr.filters,
 						canvas: curr.canvas,
 						seed: curr.seed,
 						selectedShapeId: curr.selectedShapeId,
+						selectedTextId: curr.selectedTextId,
 						ui: curr.ui,
 						_past: [],
 						_future: [],
@@ -605,10 +677,12 @@ export const useMeshStore = create<MeshState>()(
 					const present = serialize({
 						palette: curr.palette,
 						shapes: curr.shapes,
+						texts: curr.texts,
 						filters: curr.filters,
 						canvas: curr.canvas,
 						seed: curr.seed,
 						selectedShapeId: curr.selectedShapeId,
+						selectedTextId: curr.selectedTextId,
 						ui: curr.ui,
 						_past: [],
 						_future: [],
@@ -628,10 +702,12 @@ export const useMeshStore = create<MeshState>()(
 					const json = serialize({
 						palette: curr.palette,
 						shapes: curr.shapes,
+						texts: curr.texts,
 						filters: curr.filters,
 						canvas: curr.canvas,
 						seed: curr.seed,
 						selectedShapeId: undefined,
+						selectedTextId: undefined,
 						frame: curr.frame,
 						ui: curr.ui,
 						_past: [],
@@ -662,6 +738,7 @@ export const useMeshStore = create<MeshState>()(
 			partialize: (state) => ({
 				palette: state.palette,
 				shapes: state.shapes,
+				texts: state.texts,
 				filters: state.filters,
 				canvas: state.canvas,
 				seed: state.seed,

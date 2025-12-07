@@ -24,6 +24,7 @@ type Props = {
 export const MeshExports = ({ outerRef, contentRef }: Props) => {
   const canvas = useMeshStore((state) => state.canvas);
   const shapes = useMeshStore((state) => state.shapes);
+  const texts = useMeshStore((state) => state.texts);
   const palette = useMeshStore((state) => state.palette);
   const filters = useMeshStore((state) => state.filters);
   const toShareString = useMeshStore((state) => state.toShareString);
@@ -65,6 +66,7 @@ export const MeshExports = ({ outerRef, contentRef }: Props) => {
     const svg = svgStringFromState({
       canvas,
       shapes,
+      texts,
       palette,
       filters,
       outputSize,
@@ -97,6 +99,7 @@ export const MeshExports = ({ outerRef, contentRef }: Props) => {
     const svg = svgStringFromState({
       canvas,
       shapes,
+      texts,
       palette,
       filters,
       outputSize,
@@ -125,6 +128,7 @@ export const MeshExports = ({ outerRef, contentRef }: Props) => {
     const svg = svgStringFromState({
       canvas,
       shapes,
+      texts,
       palette,
       filters,
       outputSize: { width, height },
@@ -152,6 +156,7 @@ export const MeshExports = ({ outerRef, contentRef }: Props) => {
     const svg = svgStringFromState({
       canvas,
       shapes,
+      texts,
       palette,
       filters,
       outputSize: { width, height },

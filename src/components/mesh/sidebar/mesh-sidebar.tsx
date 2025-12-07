@@ -6,6 +6,8 @@ import { Link } from "@tanstack/react-router";
 import { MeshSidebarColor } from "./mesh-sidebar-color";
 import { MeshSidebarFilter } from "./mesh-sidebar-filter";
 import { MeshSidebarSize } from "./mesh-sidebar-size";
+import { MeshSidebarText } from "./mesh-sidebar-text";
+import { MeshSidebarTextStyle } from "./mesh-sidebar-text-style";
 
 export const MeshSidebar = () => {
   return (
@@ -21,6 +23,8 @@ export const MeshSidebar = () => {
         <MeshSidebarColor />
         <MeshSidebarFilter />
         <MeshSidebarSize />
+        <MeshSidebarText />
+        <MeshSidebarTextStyle />
       </div>
     </ScrollArea>
   );
