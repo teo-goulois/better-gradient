@@ -23,5 +23,9 @@ export const GEN_CONFIG = {
 	insideFraction: 4 / 6, // for 6 shapes => 4 inside, rest outside
 	insideRadius: { min: 0.3, max: 0.55 },
 	outsideRadius: { min: 0.34, max: 0.62 },
+	// Default shape generation
+	defaultShapeVertexCount: 12,
+	// Make outside shapes slightly larger relative to the frame
+	outsideSizeMultiplier: 1.2,
 	maxPlacementTries: 300,
 };

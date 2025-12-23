@@ -8,6 +8,8 @@ type Props = {
   palette: RgbHex[];
   onBeginDragVertex: (shapeId: string) => void;
   onUpdateVertex: (shapeId: string, vertexIndex: number, point: Point) => void;
+  onAddVertex: (shapeId: string, afterIndex: number, point: Point) => void;
+  onRemoveVertex: (shapeId: string, vertexIndex: number) => void;
 };
 
 export const VerticesOverlay = memo(function VerticesOverlay({
@@ -17,6 +19,8 @@ export const VerticesOverlay = memo(function VerticesOverlay({
   palette,
   onBeginDragVertex,
   onUpdateVertex,
+  onAddVertex,
+  onRemoveVertex,
 }: Props) {
   const overlayRef = useRef<HTMLDivElement>(null);
 
@@ -81,6 +85,11 @@ export const VerticesOverlay = memo(function VerticesOverlay({
                       border: `2px solid ${shapeColor}`,
                       boxShadow: "0 0 0 1px rgba(255, 255, 255, 0.8)",
                     }}
+                    onContextMenu={(e) => {
+                      e.preventDefault();
+                      if (s.points.length <= 3) return; // keep at least triangle
+                      onRemoveVertex(s.id, idx);
+                    }}
                     onMouseDown={(e) => {
                       e.preventDefault();
                       onBeginDragVertex(s.id);
@@ -111,6 +120,32 @@ export const VerticesOverlay = memo(function VerticesOverlay({
                       window.addEventListener("mousemove", move);
                       window.addEventListener("mouseup", up);
                     }}
+                  />
+                );
+              })}
+              {/* Edge right-click to add a new vertex */}
+              {s.points.map((p, idx) => {
+                const nextIdx = (idx + 1) % s.points.length;
+                const nextP = s.points[nextIdx];
+                const mid = { x: (p.x + nextP.x) / 2, y: (p.y + nextP.y) / 2 };
+                const left = mid.x * scale.x;
+                const top = mid.y * scale.y;
+                return (
+                  <div
+                    key={`${s.id}-edge-${idx}`}
+                    className="absolute -translate-x-1/2 -translate-y-1/2"
+                    style={{
+                      left,
+                      top,
+                      width: 12,
+                      height: 12,
+                      pointerEvents: "auto",
+                    }}
+                    onContextMenu={(e) => {
+                      e.preventDefault();
+                      onAddVertex(s.id, idx, mid);
+                    }}
+                    title="Right-click to add point"
                   />
                 );
               })}

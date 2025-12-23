@@ -114,9 +114,11 @@ export type MeshStoreActions = Pick<
 
 // Default initial content so the preview renders immediately on first load
 const INITIAL_PALETTE = [
-	{ id: crypto.randomUUID(), color: "#6d1d82" },
-	{ id: crypto.randomUUID(), color: "#ef4444" },
 	{ id: crypto.randomUUID(), color: "#ffffff" },
+	{ id: crypto.randomUUID(), color: "#FCB055" },
+	{ id: crypto.randomUUID(), color: "#FB847C" },
+	{ id: crypto.randomUUID(), color: "#B6B8FD" },
+	{ id: crypto.randomUUID(), color: "#FCB055" },
 ] as RgbHex[];
 
 const INITIAL_SEED = "seed-1";

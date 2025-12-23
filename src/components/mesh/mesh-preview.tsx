@@ -97,6 +97,21 @@ export const MeshPreview = () => {
                   return { ...old, points: np };
                 })
               }
+              onAddVertex={(shapeId, afterIndex, point) =>
+                updateShape(shapeId, (old) => {
+                  const np = [...old.points];
+                  np.splice(afterIndex + 1, 0, point);
+                  return { ...old, points: np };
+                })
+              }
+              onRemoveVertex={(shapeId, vertexIndex) =>
+                updateShape(shapeId, (old) => {
+                  if (old.points.length <= 3) return old;
+                  const np = [...old.points];
+                  np.splice(vertexIndex, 1);
+                  return { ...old, points: np };
+                })
+              }
             />
           )}
 

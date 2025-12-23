@@ -46,20 +46,36 @@ export function generatePolygon(
 	const cx = center?.x ?? rng.float(bounds.w * 0.0, bounds.w * 1.0);
 	const cy = center?.y ?? rng.float(bounds.h * 0.0, bounds.h * 1.0);
 	const points: Point[] = [];
-	const vertexCount = rng.int(6, 10);
+	const vertexCount = GEN_CONFIG.defaultShapeVertexCount ?? 12;
 	const minScale = Math.max(0.05, radiusScale?.min ?? 0.3);
 	const maxScale = Math.max(minScale, radiusScale?.max ?? 0.55);
-	const baseRadius =
-		Math.min(bounds.w, bounds.h) * rng.float(minScale, maxScale);
+	const baseRadius = Math.min(bounds.w, bounds.h) * ((minScale + maxScale) / 2);
 	for (let i = 0; i < vertexCount; i++) {
 		const angle = (i / vertexCount) * Math.PI * 2;
-		const radius = baseRadius * rng.float(0.6, 1);
 		points.push({
-			x: cx + Math.cos(angle) * radius,
-			y: cy + Math.sin(angle) * radius,
+			x: cx + Math.cos(angle) * baseRadius,
+			y: cy + Math.sin(angle) * baseRadius,
 		});
 	}
 	return points;
+}
+
+export function generateQuad(
+	rng: ReturnType<typeof prng>,
+	bounds: { w: number; h: number },
+	center: Point,
+): Point[] {
+	const { w, h } = bounds;
+	const half = Math.min(w, h) * 0.25;
+	const jitter = 0.2; // 0..1 fraction of half-size jitter for quad corners
+	const jx = (v: number) => v + rng.float(-1, 1) * jitter * half;
+	const jy = (v: number) => v + rng.float(-1, 1) * jitter * half;
+	return [
+		{ x: jx(center.x - half), y: jy(center.y - half) },
+		{ x: jx(center.x + half), y: jy(center.y - half) },
+		{ x: jx(center.x + half), y: jy(center.y + half) },
+		{ x: jx(center.x - half), y: jy(center.y + half) },
+	];
 }
 
 export function distanceSq(a: Point, b: Point): number {
@@ -179,11 +195,35 @@ export function generateShapes(args: {
 		return len - 1;
 	};
 
+	// Shape transform helpers
+	const rotatePoint = (p: Point, c: Point, angle: number): Point => {
+		const s = Math.sin(angle);
+		const co = Math.cos(angle);
+		const dx = p.x - c.x;
+		const dy = p.y - c.y;
+		return { x: c.x + dx * co - dy * s, y: c.y + dx * s + dy * co };
+	};
+	const scalePoint = (p: Point, c: Point, scale: number): Point => {
+		return { x: c.x + (p.x - c.x) * scale, y: c.y + (p.y - c.y) * scale };
+	};
+
 	for (let i = 0; i < args.count; i++) {
 		const c = centers[i];
 		const radiusCfg =
 			i < insideCount ? GEN_CONFIG.insideRadius : GEN_CONFIG.outsideRadius;
-		const pts = generatePolygon(r, { w, h }, c, radiusCfg);
+		// Choose between regular polygon and 4-point random quad
+		const useQuad = r.float(0, 1) < 0.4;
+		let pts = useQuad
+			? generateQuad(r, { w, h }, c)
+			: generatePolygon(r, { w, h }, c, radiusCfg);
+		// Apply rotation
+		const angle = r.float(0, Math.PI * 2);
+		pts = pts.map((p) => rotatePoint(p, c, angle));
+		// Apply scale: outside shapes larger
+		const sizeScaleBase = r.float(0.85, 1.15);
+		const mul = i < insideCount ? 1 : (GEN_CONFIG.outsideSizeMultiplier ?? 1);
+		const scale = sizeScaleBase * mul;
+		pts = pts.map((p) => scalePoint(p, c, scale));
 		const paletteLength = Math.max(1, args.palette?.length ?? 0);
 		shapes.push({
 			id: createId("blob"),
