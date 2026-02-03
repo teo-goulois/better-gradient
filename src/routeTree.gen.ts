@@ -20,6 +20,7 @@ import { Route as ShareStateRouteImport } from './routes/share.$state'
 import { Route as PagesResourcesRouteImport } from './routes/_pages/resources'
 import { Route as PagesGuideRouteImport } from './routes/_pages/guide'
 import { Route as PagesGalleryRouteImport } from './routes/_pages/gallery'
+import { Route as PagesDevelopersRouteImport } from './routes/_pages/developers'
 import { Route as PagesBlogIndexRouteImport } from './routes/_pages/blog/index'
 import { Route as PagesBlogSlugRouteImport } from './routes/_pages/blog/$slug'
 import { ServerRoute as SitemapDotxmlServerRouteImport } from './routes/sitemap[.]xml'
@@ -72,6 +73,11 @@ const PagesGalleryRoute = PagesGalleryRouteImport.update({
   path: '/gallery',
   getParentRoute: () => PagesRouteRoute,
 } as any)
+const PagesDevelopersRoute = PagesDevelopersRouteImport.update({
+  id: '/developers',
+  path: '/developers',
+  getParentRoute: () => PagesRouteRoute,
+} as any)
 const PagesBlogIndexRoute = PagesBlogIndexRouteImport.update({
   id: '/blog/',
   path: '/blog/',
@@ -102,6 +108,7 @@ export interface FileRoutesByFullPath {
   '/discovery': typeof DiscoveryRoute
   '/editor': typeof EditorRoute
   '/manage-gradients': typeof ManageGradientsRoute
+  '/developers': typeof PagesDevelopersRoute
   '/gallery': typeof PagesGalleryRoute
   '/guide': typeof PagesGuideRoute
   '/resources': typeof PagesResourcesRoute
@@ -114,6 +121,7 @@ export interface FileRoutesByTo {
   '/discovery': typeof DiscoveryRoute
   '/editor': typeof EditorRoute
   '/manage-gradients': typeof ManageGradientsRoute
+  '/developers': typeof PagesDevelopersRoute
   '/gallery': typeof PagesGalleryRoute
   '/guide': typeof PagesGuideRoute
   '/resources': typeof PagesResourcesRoute
@@ -128,6 +136,7 @@ export interface FileRoutesById {
   '/discovery': typeof DiscoveryRoute
   '/editor': typeof EditorRoute
   '/manage-gradients': typeof ManageGradientsRoute
+  '/_pages/developers': typeof PagesDevelopersRoute
   '/_pages/gallery': typeof PagesGalleryRoute
   '/_pages/guide': typeof PagesGuideRoute
   '/_pages/resources': typeof PagesResourcesRoute
@@ -142,6 +151,7 @@ export interface FileRouteTypes {
     | '/discovery'
     | '/editor'
     | '/manage-gradients'
+    | '/developers'
     | '/gallery'
     | '/guide'
     | '/resources'
@@ -154,6 +164,7 @@ export interface FileRouteTypes {
     | '/discovery'
     | '/editor'
     | '/manage-gradients'
+    | '/developers'
     | '/gallery'
     | '/guide'
     | '/resources'
@@ -167,6 +178,7 @@ export interface FileRouteTypes {
     | '/discovery'
     | '/editor'
     | '/manage-gradients'
+    | '/_pages/developers'
     | '/_pages/gallery'
     | '/_pages/guide'
     | '/_pages/resources'
@@ -278,6 +290,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PagesGalleryRouteImport
       parentRoute: typeof PagesRouteRoute
     }
+    '/_pages/developers': {
+      id: '/_pages/developers'
+      path: '/developers'
+      fullPath: '/developers'
+      preLoaderRoute: typeof PagesDevelopersRouteImport
+      parentRoute: typeof PagesRouteRoute
+    }
     '/_pages/blog/': {
       id: '/_pages/blog/'
       path: '/blog'
@@ -321,6 +340,7 @@ declare module '@tanstack/react-start/server' {
 }
 
 interface PagesRouteRouteChildren {
+  PagesDevelopersRoute: typeof PagesDevelopersRoute
   PagesGalleryRoute: typeof PagesGalleryRoute
   PagesGuideRoute: typeof PagesGuideRoute
   PagesResourcesRoute: typeof PagesResourcesRoute
@@ -330,6 +350,7 @@ interface PagesRouteRouteChildren {
 }
 
 const PagesRouteRouteChildren: PagesRouteRouteChildren = {
+  PagesDevelopersRoute: PagesDevelopersRoute,
   PagesGalleryRoute: PagesGalleryRoute,
   PagesGuideRoute: PagesGuideRoute,
   PagesResourcesRoute: PagesResourcesRoute,

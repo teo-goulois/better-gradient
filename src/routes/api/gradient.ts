@@ -1,3 +1,7 @@
+import { extractApiKey, getClientIp, hashToken, validateApiKey } from "@/lib/api/api-keys";
+import { gradientCache, getGradientCacheKey } from "@/lib/api/gradient-cache";
+import { applyRateLimit } from "@/lib/api/rate-limit";
+import { API_LIMITS, type ApiTier } from "@/lib/config/api-limits";
 import { configPreset } from "@/lib/config/config.preset";
 import { DEFAULT_CANVAS_SIZE, DEFAULT_FILTERS } from "@/lib/config/config.mesh";
 import { cssBackgroundFromState, svgStringFromState } from "@/lib/mesh-svg";
@@ -8,7 +12,10 @@ import { createServerFileRoute } from "@tanstack/react-start/server";
 const CORS_HEADERS = {
 	"Access-Control-Allow-Origin": "*",
 	"Access-Control-Allow-Methods": "GET, OPTIONS",
-	"Access-Control-Allow-Headers": "Content-Type",
+	"Access-Control-Allow-Headers":
+		"Content-Type, Authorization, X-API-Key, If-None-Match",
+	"Access-Control-Expose-Headers":
+		"ETag, X-RateLimit-Limit, X-RateLimit-Remaining, X-RateLimit-Reset, X-RateLimit-Limit-Minute, X-RateLimit-Remaining-Minute, X-RateLimit-Reset-Minute, X-RateLimit-Limit-Day, X-RateLimit-Remaining-Day, X-RateLimit-Reset-Day, Retry-After",
 };
 
 type SeedSource = "seed" | "email" | "random";
@@ -44,7 +51,8 @@ async function hash(value: string): Promise<string> {
 async function resolveSeed(
 	seedParam: string | null,
 	emailParam: string | null,
-): Promise<SeedResult> {
+	allowRandom: boolean,
+): Promise<SeedResult | null> {
 	const seed = seedParam?.trim();
 	if (seed) {
 		return { seed, source: "seed" };
@@ -58,6 +66,7 @@ async function resolveSeed(
 			email: normalizedEmail,
 		};
 	}
+	if (!allowRandom) return null;
 	const randomSeed =
 		globalThis.crypto?.randomUUID?.() ??
 		`seed_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 10)}`;
@@ -105,11 +114,16 @@ function encodeShare(state: {
 	return btoa(unescape(encodeURIComponent(JSON.stringify(state))));
 }
 
-function cacheControl(source: SeedSource): string {
+function cacheControl(tier: ApiTier, source: SeedSource): string {
+	if (tier === "verified") {
+		return source === "random" ? "no-store" : "private, max-age=0, must-revalidate";
+	}
 	return source === "random"
 		? "no-store"
-		: "public, max-age=31536000, immutable";
+		: "public, max-age=31536000, s-maxage=31536000, immutable";
 }
+
+const API_VERSION = "v1";
 
 export const ServerRoute = createServerFileRoute("/api/gradient").methods({
 	OPTIONS: async () => {
@@ -121,23 +135,178 @@ export const ServerRoute = createServerFileRoute("/api/gradient").methods({
 	GET: async ({ request }) => {
 		const url = new URL(request.url);
 		const params = url.searchParams;
-		const format = (params.get("format") ?? "svg").toLowerCase();
+		const apiKey = extractApiKey(request);
+		let tier: ApiTier = "public";
+		let apiKeyRecord: Awaited<ReturnType<typeof validateApiKey>> | null = null;
+
+		if (apiKey) {
+			apiKeyRecord = await validateApiKey(apiKey);
+			if (!apiKeyRecord) {
+				console.warn("Invalid API key", { prefix: apiKey.slice(0, 8) });
+				return Response.json(
+					{ error: "invalid_api_key" },
+					{
+						status: 401,
+						headers: {
+							...CORS_HEADERS,
+							"Cache-Control": "no-store",
+						},
+					},
+				);
+			}
+			tier = "verified";
+		}
+
+		const identifier =
+			tier === "public"
+				? `ip:${getClientIp(request)}`
+				: `key:${apiKeyRecord?.id ?? "unknown"}`;
+
+		const rateLimit = await applyRateLimit(tier, identifier);
+		if (!rateLimit.allowed) {
+			console.warn("Rate limit exceeded", { tier, identifier });
+			return Response.json(
+				{ error: "rate_limited" },
+				{
+					status: 429,
+					headers: {
+						...CORS_HEADERS,
+						...rateLimit.headers,
+						"Cache-Control": "no-store",
+					},
+				},
+			);
+		}
+
+		const formatParam = (params.get("format") ?? "svg").toLowerCase();
+		const allowedFormats =
+			tier === "verified" ? ["svg", "css", "share", "json"] : ["svg", "css", "share"];
+		if (!allowedFormats.includes(formatParam)) {
+			if (formatParam === "json") {
+				return Response.json(
+					{
+						error: "format_not_available",
+						message: "JSON format is reserved for Better Gradient.",
+					},
+					{
+						status: 403,
+						headers: {
+							...CORS_HEADERS,
+							...rateLimit.headers,
+							"Cache-Control": "no-store",
+						},
+					},
+				);
+			}
+			return Response.json(
+				{
+					error: "invalid_format",
+					message: "Format must be svg, css, or share.",
+				},
+				{
+					status: 400,
+					headers: {
+						...CORS_HEADERS,
+						...rateLimit.headers,
+						"Cache-Control": "no-store",
+					},
+				},
+			);
+		}
+
+		const format = formatParam as "svg" | "css" | "share" | "json";
+
+		const tierLimits = API_LIMITS[tier];
 		const size = parseNumber(params.get("size"));
 		const widthRaw = parseNumber(params.get("width")) ?? size;
 		const heightRaw = parseNumber(params.get("height")) ?? size;
 		const width = clamp(
 			Math.round(widthRaw ?? DEFAULT_CANVAS_SIZE.width),
 			64,
-			6000,
+			tierLimits.maxSize,
 		);
 		const height = clamp(
 			Math.round(heightRaw ?? DEFAULT_CANVAS_SIZE.height),
 			64,
-			6000,
+			tierLimits.maxSize,
 		);
 		const countRaw = parseNumber(params.get("count"));
-		const count = clamp(Math.round(countRaw ?? 6), 3, 10);
-		const seedResult = await resolveSeed(params.get("seed"), params.get("email"));
+		const count = clamp(Math.round(countRaw ?? 6), 3, tierLimits.maxCount);
+		const seedResult = await resolveSeed(
+			params.get("seed"),
+			params.get("email"),
+			tier === "verified",
+		);
+
+		if (!seedResult) {
+			return Response.json(
+				{
+					error: "seed_required",
+					message:
+						"Public requests require a deterministic seed or email. Use the API key tier for random seeds.",
+				},
+				{
+					status: 400,
+					headers: {
+						...CORS_HEADERS,
+						...rateLimit.headers,
+						"Cache-Control": "no-store",
+					},
+				},
+			);
+		}
+
+		const isSeeded = seedResult.source !== "random";
+		const cacheKey = getGradientCacheKey({
+			version: API_VERSION,
+			seed: seedResult.seed,
+			width,
+			height,
+			count,
+			format,
+		});
+		const etag = isSeeded ? `W/"${await hashToken(cacheKey)}"` : undefined;
+		if (etag && request.headers.get("if-none-match") === etag) {
+			return new Response(null, {
+				status: 304,
+				headers: {
+					...CORS_HEADERS,
+					...rateLimit.headers,
+					ETag: etag,
+					"Cache-Control": cacheControl(tier, seedResult.source),
+					Vary: "Authorization, X-API-Key",
+				},
+			});
+		}
+
+		const cached = isSeeded ? gradientCache.get(cacheKey) : undefined;
+		if (cached) {
+			const headers = {
+				...CORS_HEADERS,
+				...rateLimit.headers,
+				"Cache-Control": cacheControl(tier, seedResult.source),
+				ETag: cached.etag,
+				Vary: "Authorization, X-API-Key",
+			};
+			if (cached.format === "json") {
+				const body = cached.body as Record<string, unknown>;
+				const shareValue = typeof body.share === "string" ? body.share : "";
+				return Response.json(
+					{
+						...body,
+						shareUrl: `${url.origin}/share/${shareValue}`,
+					},
+					{ headers },
+				);
+			}
+			return new Response(cached.body as string, {
+				headers: {
+					...headers,
+					"Content-Type": cached.contentType ?? "text/plain; charset=utf-8",
+				},
+			});
+		}
+
 		const paletteResult = pickPalette(seedResult.seed);
 		const canvas = buildCanvas(paletteResult.palette, width, height);
 		const filters = buildFilters();
@@ -157,7 +326,10 @@ export const ServerRoute = createServerFileRoute("/api/gradient").methods({
 		const shareUrl = `${url.origin}/share/${share}`;
 		const headers = {
 			...CORS_HEADERS,
-			"Cache-Control": cacheControl(seedResult.source),
+			...rateLimit.headers,
+			"Cache-Control": cacheControl(tier, seedResult.source),
+			...(etag ? { ETag: etag } : {}),
+			Vary: "Authorization, X-API-Key",
 		};
 
 		switch (format) {
@@ -168,6 +340,14 @@ export const ServerRoute = createServerFileRoute("/api/gradient").methods({
 					palette: paletteResult.palette,
 					filters,
 				});
+				if (isSeeded && etag) {
+					gradientCache.set(cacheKey, {
+						etag,
+						format: "svg",
+						contentType: "image/svg+xml; charset=utf-8",
+						body: svg,
+					});
+				}
 				return new Response(svg, {
 					headers: {
 						...headers,
@@ -182,6 +362,14 @@ export const ServerRoute = createServerFileRoute("/api/gradient").methods({
 					palette: paletteResult.palette,
 					filters,
 				});
+				if (isSeeded && etag) {
+					gradientCache.set(cacheKey, {
+						etag,
+						format: "css",
+						contentType: "text/css; charset=utf-8",
+						body: css,
+					});
+				}
 				return new Response(css, {
 					headers: {
 						...headers,
@@ -190,6 +378,14 @@ export const ServerRoute = createServerFileRoute("/api/gradient").methods({
 				});
 			}
 			case "share": {
+				if (isSeeded && etag) {
+					gradientCache.set(cacheKey, {
+						etag,
+						format: "share",
+						contentType: "text/plain; charset=utf-8",
+						body: share,
+					});
+				}
 				return new Response(share, {
 					headers: {
 						...headers,
@@ -199,16 +395,26 @@ export const ServerRoute = createServerFileRoute("/api/gradient").methods({
 			}
 			case "json":
 			default:
+				const jsonBody = {
+					seed: seedResult.seed,
+					seedSource: seedResult.source,
+					presetIndex: paletteResult.index,
+					canvas,
+					filters,
+					palette: paletteResult.palette,
+					shapes,
+					share,
+				};
+				if (isSeeded && etag) {
+					gradientCache.set(cacheKey, {
+						etag,
+						format: "json",
+						body: jsonBody,
+					});
+				}
 				return Response.json(
 					{
-						seed: seedResult.seed,
-						seedSource: seedResult.source,
-						presetIndex: paletteResult.index,
-						canvas,
-						filters,
-						palette: paletteResult.palette,
-						shapes,
-						share,
+						...jsonBody,
 						shareUrl,
 					},
 					{ headers },
