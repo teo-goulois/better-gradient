@@ -24,6 +24,7 @@ import { Route as PagesBlogIndexRouteImport } from './routes/_pages/blog/index'
 import { Route as PagesBlogSlugRouteImport } from './routes/_pages/blog/$slug'
 import { ServerRoute as SitemapDotxmlServerRouteImport } from './routes/sitemap[.]xml'
 import { ServerRoute as RobotsDottxtServerRouteImport } from './routes/robots[.]txt'
+import { ServerRoute as ApiGradientServerRouteImport } from './routes/api/gradient'
 
 const rootServerRouteImport = createServerRootRoute()
 
@@ -89,6 +90,11 @@ const SitemapDotxmlServerRoute = SitemapDotxmlServerRouteImport.update({
 const RobotsDottxtServerRoute = RobotsDottxtServerRouteImport.update({
   id: '/robots.txt',
   path: '/robots.txt',
+  getParentRoute: () => rootServerRouteImport,
+} as any)
+const ApiGradientServerRoute = ApiGradientServerRouteImport.update({
+  id: '/api/gradient',
+  path: '/api/gradient',
   getParentRoute: () => rootServerRouteImport,
 } as any)
 
@@ -180,27 +186,31 @@ export interface RootRouteChildren {
 export interface FileServerRoutesByFullPath {
   '/robots.txt': typeof RobotsDottxtServerRoute
   '/sitemap.xml': typeof SitemapDotxmlServerRoute
+  '/api/gradient': typeof ApiGradientServerRoute
 }
 export interface FileServerRoutesByTo {
   '/robots.txt': typeof RobotsDottxtServerRoute
   '/sitemap.xml': typeof SitemapDotxmlServerRoute
+  '/api/gradient': typeof ApiGradientServerRoute
 }
 export interface FileServerRoutesById {
   __root__: typeof rootServerRouteImport
   '/robots.txt': typeof RobotsDottxtServerRoute
   '/sitemap.xml': typeof SitemapDotxmlServerRoute
+  '/api/gradient': typeof ApiGradientServerRoute
 }
 export interface FileServerRouteTypes {
   fileServerRoutesByFullPath: FileServerRoutesByFullPath
-  fullPaths: '/robots.txt' | '/sitemap.xml'
+  fullPaths: '/robots.txt' | '/sitemap.xml' | '/api/gradient'
   fileServerRoutesByTo: FileServerRoutesByTo
-  to: '/robots.txt' | '/sitemap.xml'
-  id: '__root__' | '/robots.txt' | '/sitemap.xml'
+  to: '/robots.txt' | '/sitemap.xml' | '/api/gradient'
+  id: '__root__' | '/robots.txt' | '/sitemap.xml' | '/api/gradient'
   fileServerRoutesById: FileServerRoutesById
 }
 export interface RootServerRouteChildren {
   RobotsDottxtServerRoute: typeof RobotsDottxtServerRoute
   SitemapDotxmlServerRoute: typeof SitemapDotxmlServerRoute
+  ApiGradientServerRoute: typeof ApiGradientServerRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -300,6 +310,13 @@ declare module '@tanstack/react-start/server' {
       preLoaderRoute: typeof RobotsDottxtServerRouteImport
       parentRoute: typeof rootServerRouteImport
     }
+    '/api/gradient': {
+      id: '/api/gradient'
+      path: '/api/gradient'
+      fullPath: '/api/gradient'
+      preLoaderRoute: typeof ApiGradientServerRouteImport
+      parentRoute: typeof rootServerRouteImport
+    }
   }
 }
 
@@ -338,6 +355,7 @@ export const routeTree = rootRouteImport
 const rootServerRouteChildren: RootServerRouteChildren = {
   RobotsDottxtServerRoute: RobotsDottxtServerRoute,
   SitemapDotxmlServerRoute: SitemapDotxmlServerRoute,
+  ApiGradientServerRoute: ApiGradientServerRoute,
 }
 export const serverRouteTree = rootServerRouteImport
   ._addFileChildren(rootServerRouteChildren)
