@@ -2,6 +2,7 @@ import { configPreset } from "@/lib/config/config.preset";
 import { DEFAULT_CANVAS_SIZE, DEFAULT_FILTERS } from "@/lib/config/config.mesh";
 import { db } from "@/lib/db";
 import { apiKeysTable, apiRateLimitsTable } from "@/lib/db/schema";
+import { trackUmamiServerEvent } from "@/lib/umami.server";
 import { rasterizeSvg } from "@/lib/mesh-raster.server";
 import { cssBackgroundFromState, svgStringFromState } from "@/lib/mesh-svg";
 import { clamp, generateShapes, prng } from "@/lib/utils/utils.mesh";
@@ -119,6 +120,13 @@ function cacheControl(source: SeedSource): string {
 
 function hashKey(value: string): string {
 	return createHash("sha256").update(value).digest("hex");
+}
+
+function bufferToArrayBuffer(buffer: Buffer): ArrayBuffer {
+	const view = new Uint8Array(buffer.buffer, buffer.byteOffset, buffer.byteLength);
+	const copy = new Uint8Array(view.byteLength);
+	copy.set(view);
+	return copy.buffer;
 }
 
 function parseBearerToken(header: string | null): string | null {
@@ -273,6 +281,23 @@ export const ServerRoute = createServerFileRoute("/api/gradient").methods({
 		const paletteResult = pickPalette(seedResult.seed);
 		const canvas = buildCanvas(paletteResult.palette, width, height);
 		const filters = buildFilters();
+
+		await trackUmamiServerEvent({
+			name: "API Gradient",
+			title: "API Gradient",
+			url: "/api/gradient",
+			request,
+			data: {
+				auth: rateLimitScope,
+				format,
+				width,
+				height,
+				count,
+				quality: quality ?? null,
+				seed_source: seedResult.source,
+				palette_index: paletteResult.index,
+			},
+		});
 		const shapes = generateShapes({
 			seed: `${seedResult.seed}:shapes`,
 			count,
@@ -311,7 +336,7 @@ export const ServerRoute = createServerFileRoute("/api/gradient").methods({
 					});
 				}
 				const png = await rasterizeSvg(svg, { format: "png" });
-				return new Response(png, {
+				return new Response(bufferToArrayBuffer(png), {
 					headers: {
 						...headers,
 						"Content-Type": "image/png",
@@ -329,7 +354,7 @@ export const ServerRoute = createServerFileRoute("/api/gradient").methods({
 					format: "webp",
 					quality: quality ?? 0.95,
 				});
-				return new Response(webp, {
+				return new Response(bufferToArrayBuffer(webp), {
 					headers: {
 						...headers,
 						"Content-Type": "image/webp",

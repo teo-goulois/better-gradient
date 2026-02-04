@@ -12,6 +12,7 @@ import appCss from "../styles.css?url";
 
 import { SharedDefaultCatchBoundary } from "@/components/shared/shared-default-catch-boundary";
 import { SharedNotFound } from "@/components/shared/shared-not-found";
+import { umamiConfig, umamiScriptUrl } from "@/utils/analytics";
 import type { QueryClient } from "@tanstack/react-query";
 import { useEffect } from "react";
 import { scan } from "react-scan";
@@ -184,10 +185,10 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
         async: true,
       },
       {
-        src: "https://analytics.teogoulois.com/script.js",
+        src: umamiScriptUrl,
         async: true,
         defer: true,
-        "data-website-id": "662a5822-5471-4b96-a504-eea1913d0221",
+        "data-website-id": umamiConfig.websiteId,
       },
     ],
   }),
