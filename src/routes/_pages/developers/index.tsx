@@ -116,8 +116,8 @@ function DevelopersPage() {
                     value: "width / height / size",
                   },
                   {
-                    label: "WebP quality",
-                    value: "Control compression",
+                    label: "Rate limits",
+                    value: "30/min public • 300/min with key",
                   },
                 ].map((item) => (
                   <div
@@ -181,7 +181,8 @@ function DevelopersPage() {
                 Authentication
               </h3>
               <p className="text-sm text-neutral-600">
-                Add your API key as a bearer token to access higher limits.
+                Add your API key as a bearer token to access higher limits
+                (300/min per key). Public traffic is limited to 30/min per IP.
               </p>
               <div className="mt-4 border border-neutral-200 bg-neutral-50 px-4 py-3 font-mono text-sm text-neutral-800">
                 Authorization: Bearer YOUR_API_KEY
@@ -275,7 +276,9 @@ function DevelopersPage() {
                 cURL example
               </h3>
               <div className="bg-neutral-900 text-neutral-100 border border-neutral-300 p-4 font-mono text-sm overflow-x-auto">
-                <pre>{`curl -o mesh.webp "https://better-gradient.com/api/gradient?format=webp&width=1600&height=900&seed=hello"`}</pre>
+                <pre>{`curl -H "Authorization: Bearer YOUR_API_KEY" \\
+  -o mesh.webp \\
+  "https://better-gradient.com/api/gradient?format=webp&width=1600&height=900&seed=hello"`}</pre>
               </div>
               <p className="text-sm text-neutral-600 mt-4">
                 Replace the seed value to generate a unique gradient.
@@ -337,7 +340,8 @@ document.body.style.cssText = css;`}</pre>
                 </li>
               </ul>
               <div className="mt-5 border border-neutral-200 bg-neutral-50 px-4 py-3 text-sm text-neutral-600">
-                Errors return plain text with status 400 or 500.
+                Errors return plain text with status 400 or 500. Rate limits
+                respond with 429 and include X-RateLimit headers.
               </div>
             </div>
           </div>

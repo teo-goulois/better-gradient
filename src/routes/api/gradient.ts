@@ -1,16 +1,25 @@
 import { configPreset } from "@/lib/config/config.preset";
 import { DEFAULT_CANVAS_SIZE, DEFAULT_FILTERS } from "@/lib/config/config.mesh";
+import { db } from "@/lib/db";
+import { apiKeysTable, apiRateLimitsTable } from "@/lib/db/schema";
 import { rasterizeSvg } from "@/lib/mesh-raster.server";
 import { cssBackgroundFromState, svgStringFromState } from "@/lib/mesh-svg";
 import { clamp, generateShapes, prng } from "@/lib/utils/utils.mesh";
 import type { CanvasSettings, Filters, RgbHex } from "@/types/types.mesh";
 import { createServerFileRoute } from "@tanstack/react-start/server";
+import { eq } from "drizzle-orm";
+import { createHash } from "node:crypto";
 
 const CORS_HEADERS = {
 	"Access-Control-Allow-Origin": "*",
 	"Access-Control-Allow-Methods": "GET, OPTIONS",
-	"Access-Control-Allow-Headers": "Content-Type",
+	"Access-Control-Allow-Headers": "Content-Type, Authorization",
 };
+
+const WINDOW_MS = 60_000;
+const PUBLIC_LIMIT = 30;
+const KEY_LIMIT = 300;
+const SUPPORTED_FORMATS = new Set(["svg", "png", "webp", "css"]);
 
 type SeedSource = "seed" | "email" | "random";
 
@@ -102,12 +111,70 @@ function buildFilters(): Filters {
 	return { ...DEFAULT_FILTERS };
 }
 
-const SUPPORTED_FORMATS = new Set(["svg", "png", "webp", "css"]);
-
 function cacheControl(source: SeedSource): string {
 	return source === "random"
 		? "no-store"
 		: "public, max-age=31536000, immutable";
+}
+
+function hashKey(value: string): string {
+	return createHash("sha256").update(value).digest("hex");
+}
+
+function parseBearerToken(header: string | null): string | null {
+	if (!header) return null;
+	const match = header.match(/^Bearer\s+(.+)$/i);
+	return match?.[1]?.trim() ?? null;
+}
+
+function getRequestIp(request: Request): string {
+	const forwarded =
+		request.headers.get("x-forwarded-for") ||
+		request.headers.get("x-real-ip") ||
+		request.headers.get("cf-connecting-ip") ||
+		request.headers.get("x-vercel-forwarded-for");
+	if (forwarded) {
+		return forwarded.split(",")[0]?.trim() || "unknown";
+	}
+	return "unknown";
+}
+
+async function checkRateLimit(args: {
+	scope: "public" | "key";
+	identifier: string;
+	limit: number;
+	now: number;
+}) {
+	const windowStart = Math.floor(args.now / WINDOW_MS) * WINDOW_MS;
+	const bucket = `${args.scope}:${args.identifier}:${windowStart}`;
+	const existing = await db
+		.select()
+		.from(apiRateLimitsTable)
+		.where(eq(apiRateLimitsTable.bucket, bucket))
+		.limit(1);
+	const nextCount = (existing[0]?.count ?? 0) + 1;
+	if (existing[0]) {
+		await db
+			.update(apiRateLimitsTable)
+			.set({ count: nextCount, updatedAt: args.now })
+			.where(eq(apiRateLimitsTable.bucket, bucket));
+	} else {
+		await db.insert(apiRateLimitsTable).values({
+			bucket,
+			scope: args.scope,
+			identifier: args.identifier,
+			windowStart,
+			count: nextCount,
+			updatedAt: args.now,
+		});
+	}
+	const remaining = Math.max(0, args.limit - nextCount);
+	return {
+		allowed: nextCount <= args.limit,
+		remaining,
+		limit: args.limit,
+		resetAt: windowStart + WINDOW_MS,
+	};
 }
 
 export const ServerRoute = createServerFileRoute("/api/gradient").methods({
@@ -146,6 +213,62 @@ export const ServerRoute = createServerFileRoute("/api/gradient").methods({
 		const countRaw = parseNumber(params.get("count"));
 		const count = clamp(Math.round(countRaw ?? 6), 3, 10);
 		const quality = parseQuality(params.get("quality"));
+
+		const now = Date.now();
+		const authHeader = request.headers.get("authorization");
+		const token = parseBearerToken(authHeader);
+		let rateLimitScope: "public" | "key" = "public";
+		let rateIdentifier = getRequestIp(request);
+		let limit = PUBLIC_LIMIT;
+		if (token) {
+			const keyHash = hashKey(token);
+			const keyRecord = await db
+				.select()
+				.from(apiKeysTable)
+				.where(eq(apiKeysTable.keyHash, keyHash))
+				.limit(1);
+			const key = keyRecord[0];
+			if (!key || key.status !== "active" || key.revokedAt) {
+				return new Response("Invalid API key", {
+					status: 401,
+					headers: {
+						...CORS_HEADERS,
+						"Content-Type": "text/plain; charset=utf-8",
+					},
+				});
+			}
+			rateLimitScope = "key";
+			rateIdentifier = key.id;
+			limit = KEY_LIMIT;
+		}
+
+		const rate = await checkRateLimit({
+			scope: rateLimitScope,
+			identifier: rateIdentifier,
+			limit,
+			now,
+		});
+		const rateHeaders = {
+			"X-RateLimit-Limit": String(rate.limit),
+			"X-RateLimit-Remaining": String(rate.remaining),
+			"X-RateLimit-Reset": String(Math.floor(rate.resetAt / 1000)),
+		};
+		if (!rate.allowed) {
+			const retryAfter = Math.max(
+				1,
+				Math.ceil((rate.resetAt - now) / 1000),
+			);
+			return new Response("Rate limit exceeded", {
+				status: 429,
+				headers: {
+					...CORS_HEADERS,
+					...rateHeaders,
+					"Retry-After": String(retryAfter),
+					"Content-Type": "text/plain; charset=utf-8",
+				},
+			});
+		}
+
 		const seedResult = await resolveSeed(params.get("seed"), params.get("email"));
 		const paletteResult = pickPalette(seedResult.seed);
 		const canvas = buildCanvas(paletteResult.palette, width, height);
@@ -158,6 +281,7 @@ export const ServerRoute = createServerFileRoute("/api/gradient").methods({
 		});
 		const headers = {
 			...CORS_HEADERS,
+			...rateHeaders,
 			"Cache-Control": cacheControl(seedResult.source),
 		};
 		const svg =
