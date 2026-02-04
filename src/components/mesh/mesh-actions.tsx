@@ -19,16 +19,22 @@ import {
 import { useState } from "react";
 import type { Key } from "react-aria-components";
 
-const MOOD_OPTIONS: { id: "auto" | CompositionMood; label: string }[] = [
-  { id: "auto", label: "Auto" },
-  { id: "balanced", label: "Balanced" },
-  { id: "centered", label: "Centered" },
-  { id: "diagonal", label: "Diagonal" },
-  { id: "corner", label: "Corner" },
-  { id: "horizon", label: "Horizon" },
-  { id: "orbit", label: "Orbit" },
-  { id: "triad", label: "Triad" },
-];
+type MoodOption = {
+  id: "auto" | CompositionMood;
+  label: string;
+  icon: typeof IconSparklesTwo;
+};
+
+const MOOD_OPTIONS = [
+  { id: "auto", label: "Auto", icon: IconSparklesTwo },
+  { id: "balanced", label: "Balanced", icon: IconGrid4 },
+  { id: "centered", label: "Centered", icon: IconCompass },
+  { id: "diagonal", label: "Diagonal", icon: IconArrowUpRight },
+  { id: "corner", label: "Corner", icon: IconArrowUpLeft },
+  { id: "horizon", label: "Horizon", icon: IconSunrise },
+  { id: "orbit", label: "Orbit", icon: IconMoon },
+  { id: "triad", label: "Triad", icon: IconStarLines },
+] satisfies MoodOption[];
 
 export const MeshActions = () => {
   const randomize = useMeshStore((state) => state.randomize);
