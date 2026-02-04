@@ -171,7 +171,7 @@ function GuidePage() {
                   stepNumber="04"
                   title="Export Your Gradient"
                   videoSrc="/video/step-4-export.mp4"
-                  description="When you're happy with your gradient, export it in your preferred format: PNG for images, SVG for scalable graphics, or copy the CSS code to use directly in your stylesheets."
+                  description="When you're happy with your gradient, export it in your preferred format: PNG or WebP for images, SVG for scalable graphics, or copy the CSS code to use directly in your stylesheets."
                 />
               </div>
             </section>
@@ -307,6 +307,51 @@ import GradientBg from './gradient.svg';
                     The PNG maintains full quality and can be used as a
                     background layer in your designs.
                   </p>
+                </div>
+              </div>
+            </section>
+
+            {/* API Usage */}
+            <section>
+              <div className="max-w-3xl mx-auto text-center mb-10">
+                <h2 className="font-nohemi text-3xl font-semibold tracking-tight text-neutral-900">
+                  API Usage
+                </h2>
+                <p className="mt-3 text-base text-neutral-600">
+                  Generate gradients programmatically with the public API
+                  endpoint.
+                </p>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-px bg-neutral-200 border border-neutral-200 relative">
+                <div className="bg-white p-8 relative group hover:bg-neutral-50 transition-all duration-300">
+                  <GridCursor />
+
+                  <h3 className="font-nohemi text-lg font-semibold text-neutral-900 mb-4">
+                    Example request
+                  </h3>
+                  <div className="bg-neutral-900 text-neutral-100 border border-neutral-300 p-4 font-mono text-sm overflow-x-auto">
+                    <pre>{`GET https://better-gradient.com/api/gradient?format=webp&width=1600&height=900&seed=hello`}</pre>
+                  </div>
+                  <p className="text-sm text-neutral-600 leading-relaxed mt-4">
+                    Available formats: svg, png, webp, css, share, json
+                  </p>
+                </div>
+
+                <div className="bg-white p-8 relative group hover:bg-neutral-50 transition-all duration-300">
+                  <GridCursor />
+
+                  <h3 className="font-nohemi text-lg font-semibold text-neutral-900 mb-4">
+                    Parameters
+                  </h3>
+                  <ul className="space-y-2 text-sm text-neutral-600 leading-relaxed">
+                    <li>
+                      format: svg | png | webp | css | share | json
+                    </li>
+                    <li>width / height or size: output size in pixels</li>
+                    <li>seed or email: deterministic generation</li>
+                    <li>count: number of shapes (3-10)</li>
+                    <li>quality: WebP quality (0-1 or 1-100)</li>
+                  </ul>
                 </div>
               </div>
             </section>

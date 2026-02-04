@@ -1,5 +1,6 @@
 import { DEFAULT_CANVAS, DEFAULT_FILTERS } from "@/lib/config/config.mesh";
 import { configPreset } from "@/lib/config/config.preset";
+import { encodeShareString } from "@/lib/utils/share";
 import {
 	clamp,
 	deserialize,
@@ -631,7 +632,7 @@ export const useMeshStore = create<MeshState>()(
 				},
 				toShareString: () => {
 					const curr = get();
-					const json = serialize({
+					const data = {
 						palette: curr.palette,
 						shapes: curr.shapes,
 						filters: curr.filters,
@@ -642,8 +643,8 @@ export const useMeshStore = create<MeshState>()(
 						ui: curr.ui,
 						_past: [],
 						_future: [],
-					});
-					return btoa(unescape(encodeURIComponent(json)));
+					};
+					return encodeShareString(data);
 				},
 				fromShareString: (encoded: string) => {
 					try {

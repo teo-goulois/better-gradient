@@ -1,6 +1,8 @@
 import { configPreset } from "@/lib/config/config.preset";
 import { DEFAULT_CANVAS_SIZE, DEFAULT_FILTERS } from "@/lib/config/config.mesh";
+import { rasterizeSvg } from "@/lib/mesh-raster.server";
 import { cssBackgroundFromState, svgStringFromState } from "@/lib/mesh-svg";
+import { encodeShareString } from "@/lib/utils/share";
 import { clamp, generateShapes, prng } from "@/lib/utils/utils.mesh";
 import type { CanvasSettings, Filters, RgbHex } from "@/types/types.mesh";
 import { createServerFileRoute } from "@tanstack/react-start/server";
@@ -20,6 +22,12 @@ type SeedResult = {
 };
 
 function parseNumber(value: string | null): number | undefined {
+	if (!value) return undefined;
+	const parsed = Number(value);
+	return Number.isFinite(parsed) ? parsed : undefined;
+}
+
+function parseQuality(value: string | null): number | undefined {
 	if (!value) return undefined;
 	const parsed = Number(value);
 	return Number.isFinite(parsed) ? parsed : undefined;
@@ -95,16 +103,6 @@ function buildFilters(): Filters {
 	return { ...DEFAULT_FILTERS };
 }
 
-function encodeShare(state: {
-	palette: RgbHex[];
-	shapes: ReturnType<typeof generateShapes>;
-	filters: Filters;
-	canvas: CanvasSettings;
-	seed: string;
-}): string {
-	return btoa(unescape(encodeURIComponent(JSON.stringify(state))));
-}
-
 function cacheControl(source: SeedSource): string {
 	return source === "random"
 		? "no-store"
@@ -137,6 +135,7 @@ export const ServerRoute = createServerFileRoute("/api/gradient").methods({
 		);
 		const countRaw = parseNumber(params.get("count"));
 		const count = clamp(Math.round(countRaw ?? 6), 3, 10);
+		const quality = parseQuality(params.get("quality"));
 		const seedResult = await resolveSeed(params.get("seed"), params.get("email"));
 		const paletteResult = pickPalette(seedResult.seed);
 		const canvas = buildCanvas(paletteResult.palette, width, height);
@@ -147,7 +146,7 @@ export const ServerRoute = createServerFileRoute("/api/gradient").methods({
 			canvas,
 			palette: paletteResult.palette,
 		});
-		const share = encodeShare({
+		const share = encodeShareString({
 			palette: paletteResult.palette,
 			shapes,
 			filters,
@@ -159,19 +158,55 @@ export const ServerRoute = createServerFileRoute("/api/gradient").methods({
 			...CORS_HEADERS,
 			"Cache-Control": cacheControl(seedResult.source),
 		};
+		const svg =
+			format === "svg" || format === "png" || format === "webp"
+				? svgStringFromState({
+						canvas,
+						shapes,
+						palette: paletteResult.palette,
+						filters,
+					})
+				: null;
 
 		switch (format) {
 			case "svg": {
-				const svg = svgStringFromState({
-					canvas,
-					shapes,
-					palette: paletteResult.palette,
-					filters,
-				});
 				return new Response(svg, {
 					headers: {
 						...headers,
 						"Content-Type": "image/svg+xml; charset=utf-8",
+					},
+				});
+			}
+			case "png": {
+				if (!svg) {
+					return new Response("SVG generation failed", {
+						status: 500,
+						headers,
+					});
+				}
+				const png = await rasterizeSvg(svg, { format: "png" });
+				return new Response(png, {
+					headers: {
+						...headers,
+						"Content-Type": "image/png",
+					},
+				});
+			}
+			case "webp": {
+				if (!svg) {
+					return new Response("SVG generation failed", {
+						status: 500,
+						headers,
+					});
+				}
+				const webp = await rasterizeSvg(svg, {
+					format: "webp",
+					quality: quality ?? 0.95,
+				});
+				return new Response(webp, {
+					headers: {
+						...headers,
+						"Content-Type": "image/webp",
 					},
 				});
 			}

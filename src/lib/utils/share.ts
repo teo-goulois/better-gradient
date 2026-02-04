@@ -5,6 +5,17 @@ import type {
 	RgbHex,
 } from "@/types/types.mesh";
 
+export function encodeShareString(data: unknown): string {
+	const json = JSON.stringify(data);
+	if (typeof window === "undefined") {
+		// SSR / Node
+		return Buffer.from(json, "utf-8").toString("base64");
+	}
+	// Browser - ensure Unicode-safe encode
+	// eslint-disable-next-line deprecation/deprecation
+	return btoa(unescape(encodeURIComponent(json)));
+}
+
 // Decode base64 share string to plain state object for preview
 function base64Decode(encoded: string): string {
 	if (typeof window === "undefined") {
