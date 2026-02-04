@@ -100,7 +100,6 @@ export const MeshActions = () => {
                     </div>
                   )}
 
-                  <Select.Label className="flex-1">{item.label}</Select.Label>
                 </Select.Item>
               )}
             </Select.Content>
