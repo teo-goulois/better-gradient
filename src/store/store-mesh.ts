@@ -1,5 +1,6 @@
 import { DEFAULT_CANVAS, DEFAULT_FILTERS } from "@/lib/config/config.mesh";
 import { configPreset } from "@/lib/config/config.preset";
+import { encodeShareString } from "@/lib/utils/share";
 import {
 	clamp,
 	deserialize,
@@ -7,6 +8,7 @@ import {
 	prng,
 	serialize,
 } from "@/lib/utils/utils.mesh";
+import type { CompositionMood } from "@/lib/utils/utils.mesh";
 import type {
 	BlobShape,
 	CanvasSettings,
@@ -45,7 +47,11 @@ export type MeshState = {
 	_future: string[];
 
 	// Actions
-	randomize: (opts?: { seed?: string; count?: number }) => void;
+	randomize: (opts?: {
+		seed?: string;
+		count?: number;
+		mood?: CompositionMood;
+	}) => void;
 	setPalette: (
 		palette: RgbHex[],
 		opts?: { history?: "push" | "replace" | "skip" },
@@ -250,6 +256,7 @@ export const useMeshStore = create<MeshState>()(
 						count,
 						canvas: curr.canvas,
 						palette: curr.palette,
+						mood: opts?.mood,
 					});
 					commit({ seed: nextSeed, shapes });
 				},
@@ -625,7 +632,7 @@ export const useMeshStore = create<MeshState>()(
 				},
 				toShareString: () => {
 					const curr = get();
-					const json = serialize({
+					const data = {
 						palette: curr.palette,
 						shapes: curr.shapes,
 						filters: curr.filters,
@@ -636,8 +643,8 @@ export const useMeshStore = create<MeshState>()(
 						ui: curr.ui,
 						_past: [],
 						_future: [],
-					});
-					return btoa(unescape(encodeURIComponent(json)));
+					};
+					return encodeShareString(data);
 				},
 				fromShareString: (encoded: string) => {
 					try {

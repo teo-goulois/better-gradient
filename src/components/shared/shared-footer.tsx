@@ -53,6 +53,14 @@ export const SharedFooter = () => {
               </li>
               <li>
                 <Link
+                  to="/developers"
+                  className="text-sm text-neutral-600 hover:text-neutral-900"
+                >
+                  Developers
+                </Link>
+              </li>
+              <li>
+                <Link
                   to="/blog"
                   className="text-sm text-neutral-600 hover:text-neutral-900"
                 >
@@ -122,6 +130,19 @@ export const SharedFooter = () => {
                   </svg>
                   GitHub
                 </a>
+              </li>
+              <li>
+                <span
+                  className="text-sm text-neutral-600 hover:text-neutral-900 flex items-center gap-2 cursor-pointer"
+                  data-tally-open="3NapOQ"
+                  data-tally-width="500"
+                  data-tally-align-left="1"
+                  data-tally-emoji-text="👋"
+                  data-tally-emoji-animation="wave"
+                  data-tally-form-events-forwarding="1"
+                >
+                  Share feedback
+                </span>{" "}
               </li>
             </ul>
           </div>

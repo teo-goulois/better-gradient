@@ -26,4 +26,13 @@ export const GEN_CONFIG = {
 	insideRadius: { min: 0.3, max: 0.55 },
 	outsideRadius: { min: 0.34, max: 0.62 },
 	maxPlacementTries: 300,
+	insidePadding: 0.06, // fraction of min side kept clear for inside centers
+	bestCandidateSamples: { min: 12, max: 48 },
+	compositionBiasWeight: 0.7,
+	shapeVariety: {
+		sizeJitter: { min: 0.85, max: 1.15 },
+		aspect: { min: 0.7, max: 1.4 },
+		angleJitter: { min: 0.05, max: 0.28 },
+		radiusJitter: { min: 0.15, max: 0.45 },
+	},
 };

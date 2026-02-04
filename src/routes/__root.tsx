@@ -12,6 +12,7 @@ import appCss from "../styles.css?url";
 
 import { SharedDefaultCatchBoundary } from "@/components/shared/shared-default-catch-boundary";
 import { SharedNotFound } from "@/components/shared/shared-not-found";
+import { umamiConfig, umamiScriptUrl } from "@/utils/analytics";
 import type { QueryClient } from "@tanstack/react-query";
 import { useEffect } from "react";
 import { scan } from "react-scan";
@@ -23,7 +24,7 @@ interface MyRouterContext {
 const seoConfig = {
   title: "Better Gradient - Free Mesh Gradient Generator & Maker",
   description:
-    "Free mesh gradient generator - Create stunning mesh blur gradient backgrounds for websites, UI design, and creative projects. No signup required. Export to PNG, Webp, SVG, or CSS instantly.",
+    "Free mesh gradient generator - Create stunning mesh blur gradient backgrounds for websites, UI design, and creative projects. No signup required. Export to PNG, WebP, SVG, or CSS instantly.",
   keywords:
     "gradient generator, mesh gradient generator, gradient maker, css gradient generator, gradient background generator, mesh gradient, gradient tool, gradient creator, free gradient generator, blur gradient generator, gradient design tool",
   image: "https://better-gradient.com/og-image.png",
@@ -184,10 +185,10 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
         async: true,
       },
       {
-        src: "https://analytics.teogoulois.com/script.js",
+        src: umamiScriptUrl,
         async: true,
         defer: true,
-        "data-website-id": "662a5822-5471-4b96-a504-eea1913d0221",
+        "data-website-id": umamiConfig.websiteId,
       },
     ],
   }),

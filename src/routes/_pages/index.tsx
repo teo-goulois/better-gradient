@@ -15,7 +15,7 @@ const structuredData = {
   "@type": "WebApplication",
   name: "Better Gradient - Free Mesh Gradient Generator & Maker",
   description:
-    "Create stunning mesh gradients for free. Professional gradient generator for web design, UI/UX, and creative projects. No signup required, export to PNG, SVG, or CSS.",
+    "Create stunning mesh gradients for free. Professional gradient generator for web design, UI/UX, and creative projects. No signup required, export to PNG, WebP, SVG, or CSS.",
   url: "https://better-gradient.com",
   applicationCategory: "DesignApplication",
   operatingSystem: "Web Browser",
@@ -32,7 +32,7 @@ const structuredData = {
     "Free mesh gradient generator",
     "No signup required",
     "Real-time gradient preview",
-    "Export to PNG, Webp, SVG, CSS",
+    "Export to PNG, WebP, SVG, CSS",
     "Multiple export formats",
     "Color customization",
     "Modern mesh gradients",
@@ -73,7 +73,7 @@ const faqStructuredData = {
       name: "What export formats are supported?",
       acceptedAnswer: {
         "@type": "Answer",
-        text: "Better Gradient supports PNG (raster images with transparency), SVG (scalable vector graphics), and CSS code export. PNG is perfect for images and graphics, SVG works great for web and maintains quality at any size, while CSS export lets you implement gradients directly in code.",
+        text: "Better Gradient supports PNG (raster images with transparency), WebP (optimized for the web), SVG (scalable vector graphics), and CSS code export. PNG is perfect for images and graphics, WebP reduces file size, SVG works great for web and maintains quality at any size, while CSS export lets you implement gradients directly in code.",
       },
     },
     {
@@ -94,7 +94,7 @@ export const Route = createFileRoute("/_pages/")({
       {
         name: "description",
         content:
-          "Free mesh gradient generator - Create stunning blur gradient backgrounds for websites, UI design, and creative projects. No signup required. Export to PNG, Webp, SVG, or CSS instantly.",
+          "Free mesh gradient generator - Create stunning blur gradient backgrounds for websites, UI design, and creative projects. No signup required. Export to PNG, WebP, SVG, or CSS instantly.",
       },
       {
         name: "keywords",
@@ -188,7 +188,7 @@ function App() {
                 </Link>
                 <div className="text-sm text-neutral-500 space-y-1.5">
                   <p className="mt-3 ">
-                    No signup required • 100% free • Export to PNG, Webp, SVG,
+                    No signup required • 100% free • Export to PNG, WebP, SVG,
                     CSS
                   </p>
                   {exportCount > 0 && (

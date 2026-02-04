@@ -26,7 +26,7 @@ export function FAQ() {
     {
       question: "What export formats are supported?",
       answer:
-        "Better Gradient supports PNG (raster images with transparency), SVG (scalable vector graphics), and CSS code export. PNG is perfect for images and graphics, SVG works great for web and maintains quality at any size, while CSS export lets you implement gradients directly in code.",
+        "Better Gradient supports PNG (raster images with transparency), WebP (optimized for the web), SVG (scalable vector graphics), and CSS code export. PNG is perfect for images and graphics, WebP reduces file size, SVG works great for web and maintains quality at any size, while CSS export lets you implement gradients directly in code.",
     },
     {
       question: "What's the difference between mesh and linear gradients?",

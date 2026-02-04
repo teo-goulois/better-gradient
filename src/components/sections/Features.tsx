@@ -16,7 +16,7 @@ export function Features() {
     {
       title: "Multiple Export Formats",
       description:
-        "Export as PNG, SVG, or copy CSS code directly. Perfect for any workflow.",
+        "Export as PNG, WebP, SVG, or copy CSS code directly. Perfect for any workflow.",
     },
     {
       title: "Full Customization",

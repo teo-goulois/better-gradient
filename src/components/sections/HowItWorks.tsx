@@ -19,7 +19,7 @@ export function HowItWorks() {
       number: "03",
       title: "Export & Use",
       description:
-        "Download your gradient as PNG, SVG, or copy CSS code. Ready to use in your designs immediately.",
+        "Download your gradient as PNG, WebP, SVG, or copy CSS code. Ready to use in your designs immediately.",
     },
   ];
 

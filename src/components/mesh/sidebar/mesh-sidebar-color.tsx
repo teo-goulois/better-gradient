@@ -10,6 +10,7 @@ import { Tooltip } from "@/components/ui/tooltip";
 import { useMeshStore } from "@/store/store-mesh";
 import { IconCircleQuestionmark, IconColorSwatch } from "@intentui/icons";
 import { MeshSidebarColorPalette } from "./mesh-sidebar-color-palette";
+import { MeshSidebarPaletteSelector } from "./mesh-sidebar-palette-selector";
 import { MeshSidebarPresetSelector } from "./mesh-sidebar-preset-selector";
 
 export const MeshSidebarColor = () => {
@@ -24,6 +25,7 @@ export const MeshSidebarColor = () => {
         </DisclosureTrigger>
         <DisclosurePanel>
           <MeshSidebarColorPalette />
+          <MeshSidebarPaletteSelector />
           <MeshSidebarPresetSelector />
           <div className="flex flex-col items-start gap-2">
             <Switch
