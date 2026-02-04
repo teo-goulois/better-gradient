@@ -20,7 +20,9 @@ import { Route as ShareStateRouteImport } from './routes/share.$state'
 import { Route as PagesResourcesRouteImport } from './routes/_pages/resources'
 import { Route as PagesGuideRouteImport } from './routes/_pages/guide'
 import { Route as PagesGalleryRouteImport } from './routes/_pages/gallery'
+import { Route as PagesDevelopersIndexRouteImport } from './routes/_pages/developers/index'
 import { Route as PagesBlogIndexRouteImport } from './routes/_pages/blog/index'
+import { Route as PagesDevelopersConfirmRouteImport } from './routes/_pages/developers/confirm'
 import { Route as PagesBlogSlugRouteImport } from './routes/_pages/blog/$slug'
 import { ServerRoute as SitemapDotxmlServerRouteImport } from './routes/sitemap[.]xml'
 import { ServerRoute as RobotsDottxtServerRouteImport } from './routes/robots[.]txt'
@@ -72,9 +74,19 @@ const PagesGalleryRoute = PagesGalleryRouteImport.update({
   path: '/gallery',
   getParentRoute: () => PagesRouteRoute,
 } as any)
+const PagesDevelopersIndexRoute = PagesDevelopersIndexRouteImport.update({
+  id: '/developers/',
+  path: '/developers/',
+  getParentRoute: () => PagesRouteRoute,
+} as any)
 const PagesBlogIndexRoute = PagesBlogIndexRouteImport.update({
   id: '/blog/',
   path: '/blog/',
+  getParentRoute: () => PagesRouteRoute,
+} as any)
+const PagesDevelopersConfirmRoute = PagesDevelopersConfirmRouteImport.update({
+  id: '/developers/confirm',
+  path: '/developers/confirm',
   getParentRoute: () => PagesRouteRoute,
 } as any)
 const PagesBlogSlugRoute = PagesBlogSlugRouteImport.update({
@@ -108,7 +120,9 @@ export interface FileRoutesByFullPath {
   '/share/$state': typeof ShareStateRoute
   '/': typeof PagesIndexRoute
   '/blog/$slug': typeof PagesBlogSlugRoute
+  '/developers/confirm': typeof PagesDevelopersConfirmRoute
   '/blog': typeof PagesBlogIndexRoute
+  '/developers': typeof PagesDevelopersIndexRoute
 }
 export interface FileRoutesByTo {
   '/discovery': typeof DiscoveryRoute
@@ -120,7 +134,9 @@ export interface FileRoutesByTo {
   '/share/$state': typeof ShareStateRoute
   '/': typeof PagesIndexRoute
   '/blog/$slug': typeof PagesBlogSlugRoute
+  '/developers/confirm': typeof PagesDevelopersConfirmRoute
   '/blog': typeof PagesBlogIndexRoute
+  '/developers': typeof PagesDevelopersIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -134,7 +150,9 @@ export interface FileRoutesById {
   '/share/$state': typeof ShareStateRoute
   '/_pages/': typeof PagesIndexRoute
   '/_pages/blog/$slug': typeof PagesBlogSlugRoute
+  '/_pages/developers/confirm': typeof PagesDevelopersConfirmRoute
   '/_pages/blog/': typeof PagesBlogIndexRoute
+  '/_pages/developers/': typeof PagesDevelopersIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -148,7 +166,9 @@ export interface FileRouteTypes {
     | '/share/$state'
     | '/'
     | '/blog/$slug'
+    | '/developers/confirm'
     | '/blog'
+    | '/developers'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/discovery'
@@ -160,7 +180,9 @@ export interface FileRouteTypes {
     | '/share/$state'
     | '/'
     | '/blog/$slug'
+    | '/developers/confirm'
     | '/blog'
+    | '/developers'
   id:
     | '__root__'
     | '/_pages'
@@ -173,7 +195,9 @@ export interface FileRouteTypes {
     | '/share/$state'
     | '/_pages/'
     | '/_pages/blog/$slug'
+    | '/_pages/developers/confirm'
     | '/_pages/blog/'
+    | '/_pages/developers/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -278,11 +302,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PagesGalleryRouteImport
       parentRoute: typeof PagesRouteRoute
     }
+    '/_pages/developers/': {
+      id: '/_pages/developers/'
+      path: '/developers'
+      fullPath: '/developers'
+      preLoaderRoute: typeof PagesDevelopersIndexRouteImport
+      parentRoute: typeof PagesRouteRoute
+    }
     '/_pages/blog/': {
       id: '/_pages/blog/'
       path: '/blog'
       fullPath: '/blog'
       preLoaderRoute: typeof PagesBlogIndexRouteImport
+      parentRoute: typeof PagesRouteRoute
+    }
+    '/_pages/developers/confirm': {
+      id: '/_pages/developers/confirm'
+      path: '/developers/confirm'
+      fullPath: '/developers/confirm'
+      preLoaderRoute: typeof PagesDevelopersConfirmRouteImport
       parentRoute: typeof PagesRouteRoute
     }
     '/_pages/blog/$slug': {
@@ -326,7 +364,9 @@ interface PagesRouteRouteChildren {
   PagesResourcesRoute: typeof PagesResourcesRoute
   PagesIndexRoute: typeof PagesIndexRoute
   PagesBlogSlugRoute: typeof PagesBlogSlugRoute
+  PagesDevelopersConfirmRoute: typeof PagesDevelopersConfirmRoute
   PagesBlogIndexRoute: typeof PagesBlogIndexRoute
+  PagesDevelopersIndexRoute: typeof PagesDevelopersIndexRoute
 }
 
 const PagesRouteRouteChildren: PagesRouteRouteChildren = {
@@ -335,7 +375,9 @@ const PagesRouteRouteChildren: PagesRouteRouteChildren = {
   PagesResourcesRoute: PagesResourcesRoute,
   PagesIndexRoute: PagesIndexRoute,
   PagesBlogSlugRoute: PagesBlogSlugRoute,
+  PagesDevelopersConfirmRoute: PagesDevelopersConfirmRoute,
   PagesBlogIndexRoute: PagesBlogIndexRoute,
+  PagesDevelopersIndexRoute: PagesDevelopersIndexRoute,
 }
 
 const PagesRouteRouteWithChildren = PagesRouteRoute._addFileChildren(

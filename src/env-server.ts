@@ -8,6 +8,8 @@ export const envServer = createEnv({
 		TURSO_AUTH_TOKEN: z.string(),
 		MARBLE_API_URL: z.url(),
 		MARBLE_WORKSPACE_KEY: z.string(),
+		RESEND_API_KEY: z.string(),
+		RESEND_FROM_EMAIL: z.string(),
 	},
 
 	/**
@@ -19,5 +21,7 @@ export const envServer = createEnv({
 		TURSO_AUTH_TOKEN: process.env.TURSO_AUTH_TOKEN,
 		MARBLE_API_URL: process.env.MARBLE_API_URL,
 		MARBLE_WORKSPACE_KEY: process.env.MARBLE_WORKSPACE_KEY,
+		RESEND_API_KEY: process.env.RESEND_API_KEY,
+		RESEND_FROM_EMAIL: process.env.RESEND_FROM_EMAIL,
 	},
 });

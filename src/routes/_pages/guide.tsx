@@ -333,7 +333,7 @@ import GradientBg from './gradient.svg';
                     <pre>{`GET https://better-gradient.com/api/gradient?format=webp&width=1600&height=900&seed=hello`}</pre>
                   </div>
                   <p className="text-sm text-neutral-600 leading-relaxed mt-4">
-                    Available formats: svg, png, webp, css, share, json
+                    Available formats: svg, png, webp, css
                   </p>
                 </div>
 

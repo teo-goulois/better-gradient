@@ -2,7 +2,6 @@ import { configPreset } from "@/lib/config/config.preset";
 import { DEFAULT_CANVAS_SIZE, DEFAULT_FILTERS } from "@/lib/config/config.mesh";
 import { rasterizeSvg } from "@/lib/mesh-raster.server";
 import { cssBackgroundFromState, svgStringFromState } from "@/lib/mesh-svg";
-import { encodeShareString } from "@/lib/utils/share";
 import { clamp, generateShapes, prng } from "@/lib/utils/utils.mesh";
 import type { CanvasSettings, Filters, RgbHex } from "@/types/types.mesh";
 import { createServerFileRoute } from "@tanstack/react-start/server";
@@ -103,6 +102,8 @@ function buildFilters(): Filters {
 	return { ...DEFAULT_FILTERS };
 }
 
+const SUPPORTED_FORMATS = new Set(["svg", "png", "webp", "css"]);
+
 function cacheControl(source: SeedSource): string {
 	return source === "random"
 		? "no-store"
@@ -120,6 +121,15 @@ export const ServerRoute = createServerFileRoute("/api/gradient").methods({
 		const url = new URL(request.url);
 		const params = url.searchParams;
 		const format = (params.get("format") ?? "svg").toLowerCase();
+		if (!SUPPORTED_FORMATS.has(format)) {
+			return new Response(`Unsupported format: ${format}`, {
+				status: 400,
+				headers: {
+					...CORS_HEADERS,
+					"Content-Type": "text/plain; charset=utf-8",
+				},
+			});
+		}
 		const size = parseNumber(params.get("size"));
 		const widthRaw = parseNumber(params.get("width")) ?? size;
 		const heightRaw = parseNumber(params.get("height")) ?? size;
@@ -146,14 +156,6 @@ export const ServerRoute = createServerFileRoute("/api/gradient").methods({
 			canvas,
 			palette: paletteResult.palette,
 		});
-		const share = encodeShareString({
-			palette: paletteResult.palette,
-			shapes,
-			filters,
-			canvas,
-			seed: seedResult.seed,
-		});
-		const shareUrl = `${url.origin}/share/${share}`;
 		const headers = {
 			...CORS_HEADERS,
 			"Cache-Control": cacheControl(seedResult.source),
@@ -224,30 +226,14 @@ export const ServerRoute = createServerFileRoute("/api/gradient").methods({
 					},
 				});
 			}
-			case "share": {
-				return new Response(share, {
+			default:
+				return new Response("Unsupported format", {
+					status: 400,
 					headers: {
 						...headers,
 						"Content-Type": "text/plain; charset=utf-8",
 					},
 				});
-			}
-			case "json":
-			default:
-				return Response.json(
-					{
-						seed: seedResult.seed,
-						seedSource: seedResult.source,
-						presetIndex: paletteResult.index,
-						canvas,
-						filters,
-						palette: paletteResult.palette,
-						shapes,
-						share,
-						shareUrl,
-					},
-					{ headers },
-				);
 		}
 	},
 });
