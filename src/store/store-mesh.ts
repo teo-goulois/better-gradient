@@ -7,6 +7,7 @@ import {
 	prng,
 	serialize,
 } from "@/lib/utils/utils.mesh";
+import type { CompositionMood } from "@/lib/utils/utils.mesh";
 import type {
 	BlobShape,
 	CanvasSettings,
@@ -45,7 +46,11 @@ export type MeshState = {
 	_future: string[];
 
 	// Actions
-	randomize: (opts?: { seed?: string; count?: number }) => void;
+	randomize: (opts?: {
+		seed?: string;
+		count?: number;
+		mood?: CompositionMood;
+	}) => void;
 	setPalette: (
 		palette: RgbHex[],
 		opts?: { history?: "push" | "replace" | "skip" },
@@ -250,6 +255,7 @@ export const useMeshStore = create<MeshState>()(
 						count,
 						canvas: curr.canvas,
 						palette: curr.palette,
+						mood: opts?.mood,
 					});
 					commit({ seed: nextSeed, shapes });
 				},
