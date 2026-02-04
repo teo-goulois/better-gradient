@@ -8,7 +8,7 @@ import { cssBackgroundFromState, svgStringFromState } from "@/lib/mesh-svg";
 import { clamp, generateShapes, prng } from "@/lib/utils/utils.mesh";
 import type { CanvasSettings, Filters, RgbHex } from "@/types/types.mesh";
 import { createServerFileRoute } from "@tanstack/react-start/server";
-import { eq } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
 import { createHash } from "node:crypto";
 
 const CORS_HEADERS = {
@@ -155,27 +155,30 @@ async function checkRateLimit(args: {
 }) {
 	const windowStart = Math.floor(args.now / WINDOW_MS) * WINDOW_MS;
 	const bucket = `${args.scope}:${args.identifier}:${windowStart}`;
-	const existing = await db
-		.select()
-		.from(apiRateLimitsTable)
-		.where(eq(apiRateLimitsTable.bucket, bucket))
-		.limit(1);
-	const nextCount = (existing[0]?.count ?? 0) + 1;
-	if (existing[0]) {
-		await db
-			.update(apiRateLimitsTable)
-			.set({ count: nextCount, updatedAt: args.now })
-			.where(eq(apiRateLimitsTable.bucket, bucket));
-	} else {
-		await db.insert(apiRateLimitsTable).values({
+	await db
+		.insert(apiRateLimitsTable)
+		.values({
 			bucket,
 			scope: args.scope,
 			identifier: args.identifier,
 			windowStart,
-			count: nextCount,
+			count: 1,
 			updatedAt: args.now,
+		})
+		.onConflictDoUpdate({
+			target: apiRateLimitsTable.bucket,
+			set: {
+				// Atomic increment avoids insert race conditions.
+				count: sql<number>`${apiRateLimitsTable.count} + 1`,
+				updatedAt: args.now,
+			},
 		});
-	}
+	const existing = await db
+		.select({ count: apiRateLimitsTable.count })
+		.from(apiRateLimitsTable)
+		.where(eq(apiRateLimitsTable.bucket, bucket))
+		.limit(1);
+	const nextCount = existing[0]?.count ?? 1;
 	const remaining = Math.max(0, args.limit - nextCount);
 	return {
 		allowed: nextCount <= args.limit,
