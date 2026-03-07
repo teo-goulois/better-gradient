@@ -8,6 +8,7 @@ const navLinks = [
   { name: "Gallery", href: "/gallery" },
   { name: "Guide", href: "/guide" },
   { name: "Developers", href: "/developers" },
+  { name: "Random", href: "/random-gradient" },
   { name: "Resources", href: "/resources" },
   { name: "Blog", href: "/blog" },
 ];

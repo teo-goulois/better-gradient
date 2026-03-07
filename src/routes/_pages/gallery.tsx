@@ -48,12 +48,18 @@ function GalleryPage() {
             Explore beautiful mesh gradients created by our community. Get
             inspired for your next design project.
           </p>
-          <div className="mt-6">
+          <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
             <Link
               to="/editor"
               className="inline-flex items-center px-6 py-3 rounded-full bg-black text-white font-nohemi font-semibold hover:scale-105 transition-transform"
             >
               Create Your Own
+            </Link>
+            <Link
+              to="/random-gradient"
+              className="inline-flex items-center px-6 py-3 rounded-full border border-neutral-200 text-neutral-700 font-nohemi font-semibold hover:bg-neutral-50 transition-colors"
+            >
+              Try Random Generator
             </Link>
           </div>
         </div>

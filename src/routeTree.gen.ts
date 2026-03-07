@@ -18,6 +18,7 @@ import { Route as PagesRouteRouteImport } from './routes/_pages/route'
 import { Route as PagesIndexRouteImport } from './routes/_pages/index'
 import { Route as ShareStateRouteImport } from './routes/share.$state'
 import { Route as PagesResourcesRouteImport } from './routes/_pages/resources'
+import { Route as PagesRandomGradientRouteImport } from './routes/_pages/random-gradient'
 import { Route as PagesGuideRouteImport } from './routes/_pages/guide'
 import { Route as PagesGalleryRouteImport } from './routes/_pages/gallery'
 import { Route as PagesDevelopersIndexRouteImport } from './routes/_pages/developers/index'
@@ -62,6 +63,11 @@ const ShareStateRoute = ShareStateRouteImport.update({
 const PagesResourcesRoute = PagesResourcesRouteImport.update({
   id: '/resources',
   path: '/resources',
+  getParentRoute: () => PagesRouteRoute,
+} as any)
+const PagesRandomGradientRoute = PagesRandomGradientRouteImport.update({
+  id: '/random-gradient',
+  path: '/random-gradient',
   getParentRoute: () => PagesRouteRoute,
 } as any)
 const PagesGuideRoute = PagesGuideRouteImport.update({
@@ -116,6 +122,7 @@ export interface FileRoutesByFullPath {
   '/manage-gradients': typeof ManageGradientsRoute
   '/gallery': typeof PagesGalleryRoute
   '/guide': typeof PagesGuideRoute
+  '/random-gradient': typeof PagesRandomGradientRoute
   '/resources': typeof PagesResourcesRoute
   '/share/$state': typeof ShareStateRoute
   '/': typeof PagesIndexRoute
@@ -130,6 +137,7 @@ export interface FileRoutesByTo {
   '/manage-gradients': typeof ManageGradientsRoute
   '/gallery': typeof PagesGalleryRoute
   '/guide': typeof PagesGuideRoute
+  '/random-gradient': typeof PagesRandomGradientRoute
   '/resources': typeof PagesResourcesRoute
   '/share/$state': typeof ShareStateRoute
   '/': typeof PagesIndexRoute
@@ -146,6 +154,7 @@ export interface FileRoutesById {
   '/manage-gradients': typeof ManageGradientsRoute
   '/_pages/gallery': typeof PagesGalleryRoute
   '/_pages/guide': typeof PagesGuideRoute
+  '/_pages/random-gradient': typeof PagesRandomGradientRoute
   '/_pages/resources': typeof PagesResourcesRoute
   '/share/$state': typeof ShareStateRoute
   '/_pages/': typeof PagesIndexRoute
@@ -162,6 +171,7 @@ export interface FileRouteTypes {
     | '/manage-gradients'
     | '/gallery'
     | '/guide'
+    | '/random-gradient'
     | '/resources'
     | '/share/$state'
     | '/'
@@ -176,6 +186,7 @@ export interface FileRouteTypes {
     | '/manage-gradients'
     | '/gallery'
     | '/guide'
+    | '/random-gradient'
     | '/resources'
     | '/share/$state'
     | '/'
@@ -191,6 +202,7 @@ export interface FileRouteTypes {
     | '/manage-gradients'
     | '/_pages/gallery'
     | '/_pages/guide'
+    | '/_pages/random-gradient'
     | '/_pages/resources'
     | '/share/$state'
     | '/_pages/'
@@ -288,6 +300,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PagesResourcesRouteImport
       parentRoute: typeof PagesRouteRoute
     }
+    '/_pages/random-gradient': {
+      id: '/_pages/random-gradient'
+      path: '/random-gradient'
+      fullPath: '/random-gradient'
+      preLoaderRoute: typeof PagesRandomGradientRouteImport
+      parentRoute: typeof PagesRouteRoute
+    }
     '/_pages/guide': {
       id: '/_pages/guide'
       path: '/guide'
@@ -361,6 +380,7 @@ declare module '@tanstack/react-start/server' {
 interface PagesRouteRouteChildren {
   PagesGalleryRoute: typeof PagesGalleryRoute
   PagesGuideRoute: typeof PagesGuideRoute
+  PagesRandomGradientRoute: typeof PagesRandomGradientRoute
   PagesResourcesRoute: typeof PagesResourcesRoute
   PagesIndexRoute: typeof PagesIndexRoute
   PagesBlogSlugRoute: typeof PagesBlogSlugRoute
@@ -372,6 +392,7 @@ interface PagesRouteRouteChildren {
 const PagesRouteRouteChildren: PagesRouteRouteChildren = {
   PagesGalleryRoute: PagesGalleryRoute,
   PagesGuideRoute: PagesGuideRoute,
+  PagesRandomGradientRoute: PagesRandomGradientRoute,
   PagesResourcesRoute: PagesResourcesRoute,
   PagesIndexRoute: PagesIndexRoute,
   PagesBlogSlugRoute: PagesBlogSlugRoute,
