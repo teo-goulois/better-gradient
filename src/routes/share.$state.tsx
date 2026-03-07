@@ -7,6 +7,25 @@ import { useEffect } from "react";
 
 export const Route = createFileRoute("/share/$state")({
   component: Share,
+  head: ({ params }) => {
+    const title = "Shared Gradient | Better Gradient";
+    const description =
+      "Check out this mesh gradient created with Better Gradient — Free Mesh Gradient Generator.";
+    const url = `https://better-gradient.com/share/${params.state}`;
+
+    return {
+      meta: [
+        { title },
+        { name: "description", content: description },
+        { property: "og:title", content: title },
+        { property: "og:description", content: description },
+        { property: "og:url", content: url },
+        { name: "twitter:title", content: title },
+        { name: "twitter:description", content: description },
+      ],
+      links: [{ rel: "canonical", href: url }],
+    };
+  },
 });
 
 function Share() {

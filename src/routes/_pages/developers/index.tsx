@@ -20,6 +20,9 @@ export const Route = createFileRoute("/_pages/developers/")({
           "gradient api, mesh gradient api, gradient generator api, webp png svg gradient, developer api",
       },
     ],
+    links: [
+      { rel: "canonical", href: "https://better-gradient.com/developers" },
+    ],
   }),
   component: DevelopersPage,
 });

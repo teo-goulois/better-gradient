@@ -19,6 +19,9 @@ export const Route = createFileRoute("/_pages/resources")({
           "gradient resources, color theory, css gradient documentation, design tools, gradient inspiration, web design resources",
       },
     ],
+    links: [
+      { rel: "canonical", href: "https://better-gradient.com/resources" },
+    ],
   }),
   component: ResourcesPage,
 });

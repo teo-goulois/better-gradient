@@ -21,6 +21,9 @@ export const Route = createFileRoute("/_pages/guide")({
           "gradient tutorial, how to create gradients, mesh gradient guide, gradient generator tutorial, css gradient tutorial",
       },
     ],
+    links: [
+      { rel: "canonical", href: "https://better-gradient.com/guide" },
+    ],
   }),
   component: GuidePage,
 });

@@ -115,6 +115,7 @@ export const Route = createFileRoute("/_pages/")({
         as: "image",
         type: "image/webp",
       },
+      { rel: "canonical", href: "https://better-gradient.com" },
     ],
   }),
   loader: async ({ context }) => {

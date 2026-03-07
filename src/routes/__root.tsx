@@ -174,10 +174,6 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
         rel: "manifest",
         href: "/manifest.json",
       },
-      {
-        rel: "canonical",
-        href: "https://better-gradient.com",
-      },
     ],
     scripts: [
       {

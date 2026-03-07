@@ -26,6 +26,9 @@ export const Route = createFileRoute("/_pages/gallery")({
           "gradient examples, gradient inspiration, mesh gradient gallery, gradient color combinations, beautiful gradients, gradient designs",
       },
     ],
+    links: [
+      { rel: "canonical", href: "https://better-gradient.com/gallery" },
+    ],
   }),
   component: GalleryPage,
 });

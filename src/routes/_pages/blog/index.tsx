@@ -17,6 +17,9 @@ export const Route = createFileRoute("/_pages/blog/")({
           "gradient tutorial, mesh gradient guide, css gradients, gradient design, web design tutorials, UI design blog",
       },
     ],
+    links: [
+      { rel: "canonical", href: "https://better-gradient.com/blog" },
+    ],
   }),
   loader: async () => {
     const posts = await getPosts();

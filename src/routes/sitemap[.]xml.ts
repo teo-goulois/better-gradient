@@ -2,7 +2,7 @@ import { getPosts } from "@/lib/actions/action.query";
 import { siteUrl } from "@/utils/site";
 import { createServerFileRoute } from "@tanstack/react-start/server";
 
-const routes = ["/", "/editor", "/gallery", "/resources", "/guide", "/blog"]; // add more as you add pages
+const routes = ["/", "/editor", "/gallery", "/resources", "/guide", "/blog", "/developers"]; // add more as you add pages
 
 const buildSitemap = async (): Promise<string> => {
 	// Fetch all blog posts
@@ -14,6 +14,7 @@ const buildSitemap = async (): Promise<string> => {
 		.map(
 			(path) => `  <url>
     <loc>${siteUrl}${path}</loc>
+    <lastmod>${new Date().toISOString().split("T")[0]}</lastmod>
     <changefreq>weekly</changefreq>
     <priority>${path === "/" ? "1.0" : "0.6"}</priority>
   </url>`,

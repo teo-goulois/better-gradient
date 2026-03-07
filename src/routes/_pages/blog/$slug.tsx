@@ -10,6 +10,34 @@ export const Route = createFileRoute("/_pages/blog/$slug")({
     const data = await getSinglePost({ data: params.slug });
     return data;
   },
+  head: ({ loaderData }) => {
+    const post = loaderData?.post;
+    if (!post) return {};
+
+    const title = `${post.title} | Better Gradient Blog`;
+    const description =
+      post.description ||
+      `Read "${post.title}" on the Better Gradient blog.`;
+    const image =
+      post.coverImage || "https://better-gradient.com/og-image.png";
+    const url = `https://better-gradient.com/blog/${post.slug}`;
+
+    return {
+      meta: [
+        { title },
+        { name: "description", content: description },
+        { property: "og:title", content: title },
+        { property: "og:description", content: description },
+        { property: "og:image", content: image },
+        { property: "og:url", content: url },
+        { property: "og:type", content: "article" },
+        { name: "twitter:title", content: title },
+        { name: "twitter:description", content: description },
+        { name: "twitter:image", content: image },
+      ],
+      links: [{ rel: "canonical", href: url }],
+    };
+  },
 });
 
 function RouteComponent() {
@@ -40,11 +68,52 @@ function RouteComponent() {
     );
   }
 
+  const blogPostSchema = post
+    ? {
+        "@context": "https://schema.org",
+        "@type": "BlogPosting",
+        headline: post.title,
+        description: post.description,
+        image: post.coverImage,
+        datePublished: post.publishedAt,
+        dateModified: post.updatedAt || post.publishedAt,
+        author:
+          post.authors?.length > 0
+            ? {
+                "@type": "Person",
+                name: post.authors[0].name,
+                image: post.authors[0].image,
+              }
+            : undefined,
+        publisher: {
+          "@type": "Organization",
+          name: "Better Gradient",
+          logo: {
+            "@type": "ImageObject",
+            url: "https://better-gradient.com/logo.png",
+          },
+        },
+        mainEntityOfPage: {
+          "@type": "WebPage",
+          "@id": `https://better-gradient.com/blog/${post.slug}`,
+        },
+      }
+    : null;
+
   return (
     <main className="flex-1 w-full bg-white relative">
       <DottedBackground />
 
       <article className="container px-6 max-w-5xl mx-auto py-12 relative z-10">
+        {blogPostSchema && (
+          <script
+            type="application/ld+json"
+            // biome-ignore lint/security/noDangerouslySetInnerHtml: SEO structured data
+            dangerouslySetInnerHTML={{
+              __html: JSON.stringify(blogPostSchema),
+            }}
+          />
+        )}
         {/* Back to Blog */}
         <div className=" mb-8">
           <Link
