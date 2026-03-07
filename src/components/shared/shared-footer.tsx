@@ -36,6 +36,30 @@ export const SharedFooter = () => {
                   Gallery
                 </Link>
               </li>
+              <li>
+                <Link
+                  to="/random-gradient"
+                  className="text-sm text-neutral-600 hover:text-neutral-900"
+                >
+                  Random Gradient
+                </Link>
+              </li>
+              <li>
+                <Link
+                  to="/text-gradient"
+                  className="text-sm text-neutral-600 hover:text-neutral-900"
+                >
+                  Text Gradient
+                </Link>
+              </li>
+              <li>
+                <Link
+                  to="/tailwind-gradient"
+                  className="text-sm text-neutral-600 hover:text-neutral-900"
+                >
+                  Tailwind Gradient
+                </Link>
+              </li>
             </ul>
           </div>
           <div>
@@ -148,7 +172,9 @@ export const SharedFooter = () => {
           </div>
         </div>
         <div className="border-t border-neutral-200 pt-8 text-center text-sm text-neutral-600">
-          <p>© 2025 Better Gradient. All rights reserved.</p>
+          <p>
+            © {new Date().getFullYear()} Better Gradient. All rights reserved.
+          </p>
         </div>
       </div>
     </footer>
