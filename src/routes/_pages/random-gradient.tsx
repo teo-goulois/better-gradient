@@ -414,12 +414,23 @@ function RandomGradientPage() {
             <h2 className="font-nohemi text-2xl font-semibold text-neutral-900 mb-4">
               Export Formats
             </h2>
-            <p className="text-neutral-600 leading-relaxed">
+            <p className="text-neutral-600 leading-relaxed mb-6">
               Every random gradient can be exported in multiple formats: PNG for
               images and social media, WebP for optimized web use, SVG for
               scalable vector graphics, or CSS code to paste directly into your
               stylesheets. All gradients are free to use in both personal and
               commercial projects.
+            </p>
+
+            <p className="text-neutral-600 leading-relaxed">
+              You can also try our{" "}
+              <Link
+                to="/text-gradient"
+                className="text-blue-600 hover:underline"
+              >
+                Text Gradient Generator
+              </Link>{" "}
+              to apply mesh gradients directly to text.
             </p>
           </section>
         </div>

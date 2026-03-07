@@ -17,6 +17,7 @@ import { Route as DiscoveryRouteImport } from './routes/discovery'
 import { Route as PagesRouteRouteImport } from './routes/_pages/route'
 import { Route as PagesIndexRouteImport } from './routes/_pages/index'
 import { Route as ShareStateRouteImport } from './routes/share.$state'
+import { Route as PagesTextGradientRouteImport } from './routes/_pages/text-gradient'
 import { Route as PagesResourcesRouteImport } from './routes/_pages/resources'
 import { Route as PagesRandomGradientRouteImport } from './routes/_pages/random-gradient'
 import { Route as PagesGuideRouteImport } from './routes/_pages/guide'
@@ -59,6 +60,11 @@ const ShareStateRoute = ShareStateRouteImport.update({
   id: '/share/$state',
   path: '/share/$state',
   getParentRoute: () => rootRouteImport,
+} as any)
+const PagesTextGradientRoute = PagesTextGradientRouteImport.update({
+  id: '/text-gradient',
+  path: '/text-gradient',
+  getParentRoute: () => PagesRouteRoute,
 } as any)
 const PagesResourcesRoute = PagesResourcesRouteImport.update({
   id: '/resources',
@@ -124,6 +130,7 @@ export interface FileRoutesByFullPath {
   '/guide': typeof PagesGuideRoute
   '/random-gradient': typeof PagesRandomGradientRoute
   '/resources': typeof PagesResourcesRoute
+  '/text-gradient': typeof PagesTextGradientRoute
   '/share/$state': typeof ShareStateRoute
   '/': typeof PagesIndexRoute
   '/blog/$slug': typeof PagesBlogSlugRoute
@@ -139,6 +146,7 @@ export interface FileRoutesByTo {
   '/guide': typeof PagesGuideRoute
   '/random-gradient': typeof PagesRandomGradientRoute
   '/resources': typeof PagesResourcesRoute
+  '/text-gradient': typeof PagesTextGradientRoute
   '/share/$state': typeof ShareStateRoute
   '/': typeof PagesIndexRoute
   '/blog/$slug': typeof PagesBlogSlugRoute
@@ -156,6 +164,7 @@ export interface FileRoutesById {
   '/_pages/guide': typeof PagesGuideRoute
   '/_pages/random-gradient': typeof PagesRandomGradientRoute
   '/_pages/resources': typeof PagesResourcesRoute
+  '/_pages/text-gradient': typeof PagesTextGradientRoute
   '/share/$state': typeof ShareStateRoute
   '/_pages/': typeof PagesIndexRoute
   '/_pages/blog/$slug': typeof PagesBlogSlugRoute
@@ -173,6 +182,7 @@ export interface FileRouteTypes {
     | '/guide'
     | '/random-gradient'
     | '/resources'
+    | '/text-gradient'
     | '/share/$state'
     | '/'
     | '/blog/$slug'
@@ -188,6 +198,7 @@ export interface FileRouteTypes {
     | '/guide'
     | '/random-gradient'
     | '/resources'
+    | '/text-gradient'
     | '/share/$state'
     | '/'
     | '/blog/$slug'
@@ -204,6 +215,7 @@ export interface FileRouteTypes {
     | '/_pages/guide'
     | '/_pages/random-gradient'
     | '/_pages/resources'
+    | '/_pages/text-gradient'
     | '/share/$state'
     | '/_pages/'
     | '/_pages/blog/$slug'
@@ -292,6 +304,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/share/$state'
       preLoaderRoute: typeof ShareStateRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/_pages/text-gradient': {
+      id: '/_pages/text-gradient'
+      path: '/text-gradient'
+      fullPath: '/text-gradient'
+      preLoaderRoute: typeof PagesTextGradientRouteImport
+      parentRoute: typeof PagesRouteRoute
     }
     '/_pages/resources': {
       id: '/_pages/resources'
@@ -382,6 +401,7 @@ interface PagesRouteRouteChildren {
   PagesGuideRoute: typeof PagesGuideRoute
   PagesRandomGradientRoute: typeof PagesRandomGradientRoute
   PagesResourcesRoute: typeof PagesResourcesRoute
+  PagesTextGradientRoute: typeof PagesTextGradientRoute
   PagesIndexRoute: typeof PagesIndexRoute
   PagesBlogSlugRoute: typeof PagesBlogSlugRoute
   PagesDevelopersConfirmRoute: typeof PagesDevelopersConfirmRoute
@@ -394,6 +414,7 @@ const PagesRouteRouteChildren: PagesRouteRouteChildren = {
   PagesGuideRoute: PagesGuideRoute,
   PagesRandomGradientRoute: PagesRandomGradientRoute,
   PagesResourcesRoute: PagesResourcesRoute,
+  PagesTextGradientRoute: PagesTextGradientRoute,
   PagesIndexRoute: PagesIndexRoute,
   PagesBlogSlugRoute: PagesBlogSlugRoute,
   PagesDevelopersConfirmRoute: PagesDevelopersConfirmRoute,

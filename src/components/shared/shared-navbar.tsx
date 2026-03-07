@@ -9,6 +9,7 @@ const navLinks = [
   { name: "Guide", href: "/guide" },
   { name: "Developers", href: "/developers" },
   { name: "Random", href: "/random-gradient" },
+  { name: "Text", href: "/text-gradient" },
   { name: "Resources", href: "/resources" },
   { name: "Blog", href: "/blog" },
 ];

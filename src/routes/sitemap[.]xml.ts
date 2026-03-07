@@ -2,7 +2,7 @@ import { getPosts } from "@/lib/actions/action.query";
 import { siteUrl } from "@/utils/site";
 import { createServerFileRoute } from "@tanstack/react-start/server";
 
-const routes = ["/", "/editor", "/gallery", "/resources", "/guide", "/blog", "/developers", "/random-gradient"]; // add more as you add pages
+const routes = ["/", "/editor", "/gallery", "/resources", "/guide", "/blog", "/developers", "/random-gradient", "/text-gradient"]; // add more as you add pages
 
 const buildSitemap = async (): Promise<string> => {
 	// Fetch all blog posts
