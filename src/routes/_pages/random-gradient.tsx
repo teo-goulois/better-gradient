@@ -430,7 +430,14 @@ function RandomGradientPage() {
               >
                 Text Gradient Generator
               </Link>{" "}
-              to apply mesh gradients directly to text.
+              to apply mesh gradients to text, or our{" "}
+              <Link
+                to="/tailwind-gradient"
+                className="text-blue-600 hover:underline"
+              >
+                Tailwind Gradient Generator
+              </Link>{" "}
+              to get Tailwind-ready code.
             </p>
           </section>
         </div>

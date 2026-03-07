@@ -18,6 +18,7 @@ import { Route as PagesRouteRouteImport } from './routes/_pages/route'
 import { Route as PagesIndexRouteImport } from './routes/_pages/index'
 import { Route as ShareStateRouteImport } from './routes/share.$state'
 import { Route as PagesTextGradientRouteImport } from './routes/_pages/text-gradient'
+import { Route as PagesTailwindGradientRouteImport } from './routes/_pages/tailwind-gradient'
 import { Route as PagesResourcesRouteImport } from './routes/_pages/resources'
 import { Route as PagesRandomGradientRouteImport } from './routes/_pages/random-gradient'
 import { Route as PagesGuideRouteImport } from './routes/_pages/guide'
@@ -64,6 +65,11 @@ const ShareStateRoute = ShareStateRouteImport.update({
 const PagesTextGradientRoute = PagesTextGradientRouteImport.update({
   id: '/text-gradient',
   path: '/text-gradient',
+  getParentRoute: () => PagesRouteRoute,
+} as any)
+const PagesTailwindGradientRoute = PagesTailwindGradientRouteImport.update({
+  id: '/tailwind-gradient',
+  path: '/tailwind-gradient',
   getParentRoute: () => PagesRouteRoute,
 } as any)
 const PagesResourcesRoute = PagesResourcesRouteImport.update({
@@ -130,6 +136,7 @@ export interface FileRoutesByFullPath {
   '/guide': typeof PagesGuideRoute
   '/random-gradient': typeof PagesRandomGradientRoute
   '/resources': typeof PagesResourcesRoute
+  '/tailwind-gradient': typeof PagesTailwindGradientRoute
   '/text-gradient': typeof PagesTextGradientRoute
   '/share/$state': typeof ShareStateRoute
   '/': typeof PagesIndexRoute
@@ -146,6 +153,7 @@ export interface FileRoutesByTo {
   '/guide': typeof PagesGuideRoute
   '/random-gradient': typeof PagesRandomGradientRoute
   '/resources': typeof PagesResourcesRoute
+  '/tailwind-gradient': typeof PagesTailwindGradientRoute
   '/text-gradient': typeof PagesTextGradientRoute
   '/share/$state': typeof ShareStateRoute
   '/': typeof PagesIndexRoute
@@ -164,6 +172,7 @@ export interface FileRoutesById {
   '/_pages/guide': typeof PagesGuideRoute
   '/_pages/random-gradient': typeof PagesRandomGradientRoute
   '/_pages/resources': typeof PagesResourcesRoute
+  '/_pages/tailwind-gradient': typeof PagesTailwindGradientRoute
   '/_pages/text-gradient': typeof PagesTextGradientRoute
   '/share/$state': typeof ShareStateRoute
   '/_pages/': typeof PagesIndexRoute
@@ -182,6 +191,7 @@ export interface FileRouteTypes {
     | '/guide'
     | '/random-gradient'
     | '/resources'
+    | '/tailwind-gradient'
     | '/text-gradient'
     | '/share/$state'
     | '/'
@@ -198,6 +208,7 @@ export interface FileRouteTypes {
     | '/guide'
     | '/random-gradient'
     | '/resources'
+    | '/tailwind-gradient'
     | '/text-gradient'
     | '/share/$state'
     | '/'
@@ -215,6 +226,7 @@ export interface FileRouteTypes {
     | '/_pages/guide'
     | '/_pages/random-gradient'
     | '/_pages/resources'
+    | '/_pages/tailwind-gradient'
     | '/_pages/text-gradient'
     | '/share/$state'
     | '/_pages/'
@@ -312,6 +324,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PagesTextGradientRouteImport
       parentRoute: typeof PagesRouteRoute
     }
+    '/_pages/tailwind-gradient': {
+      id: '/_pages/tailwind-gradient'
+      path: '/tailwind-gradient'
+      fullPath: '/tailwind-gradient'
+      preLoaderRoute: typeof PagesTailwindGradientRouteImport
+      parentRoute: typeof PagesRouteRoute
+    }
     '/_pages/resources': {
       id: '/_pages/resources'
       path: '/resources'
@@ -401,6 +420,7 @@ interface PagesRouteRouteChildren {
   PagesGuideRoute: typeof PagesGuideRoute
   PagesRandomGradientRoute: typeof PagesRandomGradientRoute
   PagesResourcesRoute: typeof PagesResourcesRoute
+  PagesTailwindGradientRoute: typeof PagesTailwindGradientRoute
   PagesTextGradientRoute: typeof PagesTextGradientRoute
   PagesIndexRoute: typeof PagesIndexRoute
   PagesBlogSlugRoute: typeof PagesBlogSlugRoute
@@ -414,6 +434,7 @@ const PagesRouteRouteChildren: PagesRouteRouteChildren = {
   PagesGuideRoute: PagesGuideRoute,
   PagesRandomGradientRoute: PagesRandomGradientRoute,
   PagesResourcesRoute: PagesResourcesRoute,
+  PagesTailwindGradientRoute: PagesTailwindGradientRoute,
   PagesTextGradientRoute: PagesTextGradientRoute,
   PagesIndexRoute: PagesIndexRoute,
   PagesBlogSlugRoute: PagesBlogSlugRoute,

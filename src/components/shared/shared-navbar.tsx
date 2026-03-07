@@ -10,6 +10,7 @@ const navLinks = [
   { name: "Developers", href: "/developers" },
   { name: "Random", href: "/random-gradient" },
   { name: "Text", href: "/text-gradient" },
+  { name: "Tailwind", href: "/tailwind-gradient" },
   { name: "Resources", href: "/resources" },
   { name: "Blog", href: "/blog" },
 ];

@@ -475,13 +475,24 @@ function TextGradientPage() {
             <h2 className="font-nohemi text-2xl font-semibold text-neutral-900 mb-4">
               Mesh Gradients vs Linear Gradients for Text
             </h2>
-            <p className="text-neutral-600 leading-relaxed">
+            <p className="text-neutral-600 leading-relaxed mb-6">
               While most text gradient generators use simple linear or radial
               gradients, Better Gradient applies{" "}
               <strong>mesh gradients</strong> to your text. Mesh gradients blend
               multiple colored shapes with blur effects, producing far more
               complex and organic color transitions than a basic two-color linear
               gradient. The result is typography that looks premium and unique.
+            </p>
+
+            <p className="text-neutral-600 leading-relaxed">
+              Need gradients for your Tailwind project? Try our{" "}
+              <Link
+                to="/tailwind-gradient"
+                className="text-blue-600 hover:underline"
+              >
+                Tailwind Gradient Generator
+              </Link>{" "}
+              for ready-to-use Tailwind CSS code.
             </p>
           </section>
         </div>
