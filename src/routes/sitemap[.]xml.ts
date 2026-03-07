@@ -2,21 +2,31 @@ import { getPosts } from "@/lib/actions/action.query";
 import { siteUrl } from "@/utils/site";
 import { createServerFileRoute } from "@tanstack/react-start/server";
 
-const routes = ["/", "/editor", "/gallery", "/resources", "/guide", "/blog", "/developers", "/random-gradient", "/text-gradient", "/tailwind-gradient"]; // add more as you add pages
+const routes: { path: string; priority: string; changefreq: string }[] = [
+	{ path: "/", priority: "1.0", changefreq: "weekly" },
+	{ path: "/editor", priority: "0.8", changefreq: "monthly" },
+	{ path: "/gallery", priority: "0.7", changefreq: "weekly" },
+	{ path: "/random-gradient", priority: "0.7", changefreq: "monthly" },
+	{ path: "/text-gradient", priority: "0.7", changefreq: "monthly" },
+	{ path: "/tailwind-gradient", priority: "0.7", changefreq: "monthly" },
+	{ path: "/blog", priority: "0.6", changefreq: "weekly" },
+	{ path: "/guide", priority: "0.6", changefreq: "monthly" },
+	{ path: "/resources", priority: "0.5", changefreq: "monthly" },
+	{ path: "/developers", priority: "0.5", changefreq: "monthly" },
+];
 
 const buildSitemap = async (): Promise<string> => {
 	// Fetch all blog posts
 	const postsData = await getPosts();
 	const posts = postsData?.posts || [];
 
-	// Generate URLs for static routes
+	// Generate URLs for static routes (no lastmod — inaccurate dates harm crawl signals)
 	const staticUrls = routes
 		.map(
-			(path) => `  <url>
-    <loc>${siteUrl}${path}</loc>
-    <lastmod>${new Date().toISOString().split("T")[0]}</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>${path === "/" ? "1.0" : "0.6"}</priority>
+			(route) => `  <url>
+    <loc>${siteUrl}${route.path}</loc>
+    <changefreq>${route.changefreq}</changefreq>
+    <priority>${route.priority}</priority>
   </url>`,
 		)
 		.join("\n");

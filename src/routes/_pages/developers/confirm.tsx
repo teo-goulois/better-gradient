@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { DottedBackground } from "@/components/ui/dotted-background";
 import { GridCursor } from "@/components/ui/grid-cursor";
 import { confirmApiKeyRequest } from "@/lib/actions/actions.api-key";
+import { seo } from "@/utils/seo";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { z } from "zod";
 import { useMemo, useState } from "react";
@@ -10,6 +11,13 @@ import { useMemo, useState } from "react";
 export const Route = createFileRoute("/_pages/developers/confirm")({
   validateSearch: z.object({
     token: z.string().optional(),
+  }),
+  head: () => ({
+    ...seo({
+      title: "Confirm API Key | Better Gradient",
+      description: "Confirm your Better Gradient API key request.",
+      noindex: true,
+    }),
   }),
   component: ConfirmPage,
 });

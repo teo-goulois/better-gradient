@@ -4,6 +4,7 @@ import { getPublicGradientsFromDbQueryOptions } from "@/lib/actions/actions.grad
 import { svgDataUrl, svgStringFromState } from "@/lib/mesh-svg";
 import { decodeShareString } from "@/lib/utils/share";
 import { useSuspenseQuery } from "@tanstack/react-query";
+import { buildAbsoluteUrl, seo } from "@/utils/seo";
 import { Link, createFileRoute } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/_pages/gallery")({
@@ -14,21 +15,13 @@ export const Route = createFileRoute("/_pages/gallery")({
     return data;
   },
   head: () => ({
-    meta: [
-      {
-        name: "description",
-        content:
-          "Browse beautiful mesh gradient examples and inspiration. Discover stunning gradient color combinations for your design projects. Free gradient gallery.",
-      },
-      {
-        name: "keywords",
-        content:
-          "gradient examples, gradient inspiration, mesh gradient gallery, gradient color combinations, beautiful gradients, gradient designs",
-      },
-    ],
-    links: [
-      { rel: "canonical", href: "https://better-gradient.com/gallery" },
-    ],
+    ...seo({
+      title: "Gradient Gallery — Free Mesh Gradient Inspiration | Better Gradient",
+      description: "Browse beautiful mesh gradient examples and inspiration. Discover stunning gradient color combinations for your design projects. Free gradient gallery.",
+      keywords: "gradient examples, gradient inspiration, mesh gradient gallery, gradient color combinations, beautiful gradients, gradient designs",
+      url: buildAbsoluteUrl("/gallery"),
+      canonical: buildAbsoluteUrl("/gallery"),
+    }),
   }),
   component: GalleryPage,
 });

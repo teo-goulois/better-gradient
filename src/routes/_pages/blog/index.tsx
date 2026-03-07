@@ -1,25 +1,18 @@
 import { DottedBackground } from "@/components/ui/dotted-background";
 import { GridCursor } from "@/components/ui/grid-cursor";
 import { getPosts } from "@/lib/actions/action.query";
+import { buildAbsoluteUrl, seo } from "@/utils/seo";
 import { Link, createFileRoute } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/_pages/blog/")({
   head: () => ({
-    meta: [
-      {
-        name: "description",
-        content:
-          "Learn about mesh gradients, CSS gradients, and modern design techniques. Tutorials, guides, and inspiration for creating stunning gradient backgrounds.",
-      },
-      {
-        name: "keywords",
-        content:
-          "gradient tutorial, mesh gradient guide, css gradients, gradient design, web design tutorials, UI design blog",
-      },
-    ],
-    links: [
-      { rel: "canonical", href: "https://better-gradient.com/blog" },
-    ],
+    ...seo({
+      title: "Gradient Design Blog — Tutorials & Inspiration | Better Gradient",
+      description: "Learn about mesh gradients, CSS gradients, and modern design techniques. Tutorials, guides, and inspiration for creating stunning gradient backgrounds.",
+      keywords: "gradient tutorial, mesh gradient guide, css gradients, gradient design, web design tutorials, UI design blog",
+      url: buildAbsoluteUrl("/blog"),
+      canonical: buildAbsoluteUrl("/blog"),
+    }),
   }),
   loader: async () => {
     const posts = await getPosts();

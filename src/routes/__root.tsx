@@ -104,10 +104,6 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
         name: "twitter:image",
         content: seoConfig.image,
       },
-      {
-        name: "twitter:url",
-        content: seoConfig.url,
-      },
       // Additional SEO meta tags
       {
         name: "theme-color",

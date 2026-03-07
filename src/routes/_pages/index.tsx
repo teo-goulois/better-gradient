@@ -7,6 +7,7 @@ import { getTotalExportsFromDbQueryOptions } from "@/lib/actions/actions.gradien
 import { trackEvent } from "@/lib/tracking";
 import { IconArrowDownFill } from "@intentui/icons";
 import { useSuspenseQuery } from "@tanstack/react-query";
+import { buildAbsoluteUrl, seo } from "@/utils/seo";
 import { createFileRoute } from "@tanstack/react-router";
 import { Link } from "@tanstack/react-router";
 
@@ -89,35 +90,34 @@ const faqStructuredData = {
 
 export const Route = createFileRoute("/_pages/")({
   component: App,
-  head: () => ({
-    meta: [
-      {
-        name: "description",
-        content:
-          "Free mesh gradient generator - Create stunning blur gradient backgrounds for websites, UI design, and creative projects. No signup required. Export to PNG, WebP, SVG, or CSS instantly.",
-      },
-      {
-        name: "keywords",
-        content:
-          "gradient generator, mesh gradient generator, gradient maker, css gradient generator, gradient background generator, mesh gradient, gradient tool, free gradient generator, blur gradient generator, gradient creator",
-      },
-    ],
-    links: [
-      {
-        rel: "preload",
-        href: "/logo.png",
-        as: "image",
-        type: "image/png",
-      },
-      {
-        rel: "preload",
-        href: "/gradients/gradient-1.webp",
-        as: "image",
-        type: "image/webp",
-      },
-      { rel: "canonical", href: "https://better-gradient.com" },
-    ],
-  }),
+  head: () => {
+    const { meta, links } = seo({
+      title: "Better Gradient — Free Mesh Gradient Generator & Maker",
+      description: "Free mesh gradient generator - Create stunning blur gradient backgrounds for websites, UI design, and creative projects. No signup required. Export to PNG, WebP, SVG, or CSS instantly.",
+      keywords: "gradient generator, mesh gradient generator, gradient maker, css gradient generator, gradient background generator, mesh gradient, gradient tool, free gradient generator, blur gradient generator, gradient creator",
+      url: buildAbsoluteUrl("/"),
+      canonical: buildAbsoluteUrl("/"),
+    });
+
+    return {
+      meta,
+      links: [
+        ...links,
+        {
+          rel: "preload",
+          href: "/logo.png",
+          as: "image",
+          type: "image/png",
+        },
+        {
+          rel: "preload",
+          href: "/gradients/gradient-1.webp",
+          as: "image",
+          type: "image/webp",
+        },
+      ],
+    };
+  },
   loader: async ({ context }) => {
     context.queryClient.ensureQueryData(getTotalExportsFromDbQueryOptions());
   },

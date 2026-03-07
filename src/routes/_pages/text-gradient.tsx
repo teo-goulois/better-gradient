@@ -3,6 +3,7 @@ import { DEFAULT_CANVAS, DEFAULT_FILTERS } from "@/lib/config/config.mesh";
 import { svgDataUrl, svgStringFromState } from "@/lib/mesh-svg";
 import { generateShapes } from "@/lib/utils/utils.mesh";
 import type { RgbHex } from "@/types/types.mesh";
+import { buildAbsoluteUrl, seo } from "@/utils/seo";
 import { Link, createFileRoute } from "@tanstack/react-router";
 import { useCallback, useMemo, useState } from "react";
 
@@ -92,54 +93,13 @@ const structuredData = {
 export const Route = createFileRoute("/_pages/text-gradient")({
   component: TextGradientPage,
   head: () => ({
-    meta: [
-      {
-        title:
-          "Text Gradient Generator — Free CSS Text Gradient Maker | Better Gradient",
-      },
-      {
-        name: "description",
-        content:
-          "Apply beautiful mesh gradients to text with our free text gradient generator. Preview live, customize colors, and copy the CSS code instantly. No signup required.",
-      },
-      {
-        name: "keywords",
-        content:
-          "text gradient generator, gradient text CSS, CSS text gradient, text gradient maker, gradient text effect, gradient typography, mesh gradient text",
-      },
-      {
-        property: "og:title",
-        content: "Text Gradient Generator | Better Gradient",
-      },
-      {
-        property: "og:description",
-        content:
-          "Apply beautiful mesh gradients to text. Preview live, customize colors, and copy the CSS code instantly.",
-      },
-      {
-        property: "og:url",
-        content: "https://better-gradient.com/text-gradient",
-      },
-      {
-        property: "og:image",
-        content: "https://better-gradient.com/og-image.png",
-      },
-      {
-        name: "twitter:title",
-        content: "Text Gradient Generator | Better Gradient",
-      },
-      {
-        name: "twitter:description",
-        content:
-          "Apply beautiful mesh gradients to text. Preview live, customize colors, and copy the CSS code instantly.",
-      },
-    ],
-    links: [
-      {
-        rel: "canonical",
-        href: "https://better-gradient.com/text-gradient",
-      },
-    ],
+    ...seo({
+      title: "Text Gradient Generator — Free CSS Text Gradient Maker | Better Gradient",
+      description: "Apply beautiful mesh gradients to text with our free text gradient generator. Preview live, customize colors, and copy the CSS code instantly. No signup required.",
+      keywords: "text gradient generator, gradient text CSS, CSS text gradient, text gradient maker, gradient text effect, gradient typography, mesh gradient text",
+      url: buildAbsoluteUrl("/text-gradient"),
+      canonical: buildAbsoluteUrl("/text-gradient"),
+    }),
   }),
 });
 

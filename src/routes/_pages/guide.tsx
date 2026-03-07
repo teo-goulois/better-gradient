@@ -3,27 +3,20 @@ import { SharedBetterGradientTypo } from "@/components/shared/shared-better-grad
 import { SharedFooter } from "@/components/shared/shared-footer";
 import { DottedBackground } from "@/components/ui/dotted-background";
 import { GridCursor } from "@/components/ui/grid-cursor";
+import { buildAbsoluteUrl, seo } from "@/utils/seo";
 import { createFileRoute } from "@tanstack/react-router";
 import { Link } from "@tanstack/react-router";
 import { useRef } from "react";
 
 export const Route = createFileRoute("/_pages/guide")({
   head: () => ({
-    meta: [
-      {
-        name: "description",
-        content:
-          "Complete guide to creating mesh gradients. Learn how to use the gradient generator, export options, and implement gradients in your projects.",
-      },
-      {
-        name: "keywords",
-        content:
-          "gradient tutorial, how to create gradients, mesh gradient guide, gradient generator tutorial, css gradient tutorial",
-      },
-    ],
-    links: [
-      { rel: "canonical", href: "https://better-gradient.com/guide" },
-    ],
+    ...seo({
+      title: "How to Create Mesh Gradients — Complete Guide | Better Gradient",
+      description: "Complete guide to creating mesh gradients. Learn how to use the gradient generator, export options, and implement gradients in your projects.",
+      keywords: "gradient tutorial, how to create gradients, mesh gradient guide, gradient generator tutorial, css gradient tutorial",
+      url: buildAbsoluteUrl("/guide"),
+      canonical: buildAbsoluteUrl("/guide"),
+    }),
   }),
   component: GuidePage,
 });

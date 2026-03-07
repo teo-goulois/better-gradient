@@ -17,10 +17,17 @@ import {
   useMutation,
   useQueryClient,
 } from "@tanstack/react-query";
+import { seo } from "@/utils/seo";
 import { createFileRoute, notFound } from "@tanstack/react-router";
 import { useEffect, useMemo, useRef, useState } from "react";
 
 export const Route = createFileRoute("/manage-gradients")({
+  head: () => ({
+    ...seo({
+      title: "Manage Gradients | Better Gradient",
+      noindex: true,
+    }),
+  }),
   loader: async ({ context }) => {
     // Prefetch first page for infinite query
     await context.queryClient.ensureInfiniteQueryData(

@@ -3,26 +3,19 @@ import { Button } from "@/components/ui/button";
 import { DottedBackground } from "@/components/ui/dotted-background";
 import { GridCursor } from "@/components/ui/grid-cursor";
 import { requestApiKey } from "@/lib/actions/actions.api-key";
+import { buildAbsoluteUrl, seo } from "@/utils/seo";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { type FormEvent, useMemo, useState } from "react";
 
 export const Route = createFileRoute("/_pages/developers/")({
   head: () => ({
-    meta: [
-      {
-        name: "description",
-        content:
-          "Developer API for Better Gradient. Request an API key and generate mesh gradients programmatically with simple endpoints.",
-      },
-      {
-        name: "keywords",
-        content:
-          "gradient api, mesh gradient api, gradient generator api, webp png svg gradient, developer api",
-      },
-    ],
-    links: [
-      { rel: "canonical", href: "https://better-gradient.com/developers" },
-    ],
+    ...seo({
+      title: "Developer API — Generate Gradients Programmatically | Better Gradient",
+      description: "Developer API for Better Gradient. Request an API key and generate mesh gradients programmatically with simple endpoints.",
+      keywords: "gradient api, mesh gradient api, gradient generator api, webp png svg gradient, developer api",
+      url: buildAbsoluteUrl("/developers"),
+      canonical: buildAbsoluteUrl("/developers"),
+    }),
   }),
   component: DevelopersPage,
 });

@@ -2,26 +2,19 @@ import { CallToAction } from "@/components/shared/call-to-action";
 import { SharedFooter } from "@/components/shared/shared-footer";
 import { DottedBackground } from "@/components/ui/dotted-background";
 import { GridCursor } from "@/components/ui/grid-cursor";
+import { buildAbsoluteUrl, seo } from "@/utils/seo";
 import { createFileRoute } from "@tanstack/react-router";
 import { Link } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/_pages/resources")({
   head: () => ({
-    meta: [
-      {
-        name: "description",
-        content:
-          "Free gradient design resources, color theory guides, CSS documentation, and design inspiration. Everything you need to master mesh gradients.",
-      },
-      {
-        name: "keywords",
-        content:
-          "gradient resources, color theory, css gradient documentation, design tools, gradient inspiration, web design resources",
-      },
-    ],
-    links: [
-      { rel: "canonical", href: "https://better-gradient.com/resources" },
-    ],
+    ...seo({
+      title: "Gradient Design Resources — Color Theory & CSS Docs | Better Gradient",
+      description: "Free gradient design resources, color theory guides, CSS documentation, and design inspiration. Everything you need to master mesh gradients.",
+      keywords: "gradient resources, color theory, css gradient documentation, design tools, gradient inspiration, web design resources",
+      url: buildAbsoluteUrl("/resources"),
+      canonical: buildAbsoluteUrl("/resources"),
+    }),
   }),
   component: ResourcesPage,
 });

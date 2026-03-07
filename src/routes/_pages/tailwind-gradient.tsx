@@ -3,6 +3,7 @@ import { DEFAULT_CANVAS, DEFAULT_FILTERS } from "@/lib/config/config.mesh";
 import { svgDataUrl, svgStringFromState } from "@/lib/mesh-svg";
 import { generateShapes } from "@/lib/utils/utils.mesh";
 import type { RgbHex } from "@/types/types.mesh";
+import { buildAbsoluteUrl, seo } from "@/utils/seo";
 import { Link, createFileRoute } from "@tanstack/react-router";
 import { useCallback, useMemo, useState } from "react";
 
@@ -98,54 +99,13 @@ const structuredData = {
 export const Route = createFileRoute("/_pages/tailwind-gradient")({
   component: TailwindGradientPage,
   head: () => ({
-    meta: [
-      {
-        title:
-          "Tailwind Gradient Generator — Free Tailwind CSS Gradient Tool | Better Gradient",
-      },
-      {
-        name: "description",
-        content:
-          "Generate beautiful mesh gradients and get ready-to-use Tailwind CSS code. Copy inline styles, custom CSS, or use as background images in your Tailwind projects. Free, no signup.",
-      },
-      {
-        name: "keywords",
-        content:
-          "tailwind gradient generator, tailwind CSS gradient, tailwind background gradient, tailwind gradient colors, tailwind mesh gradient, tailwind gradient tool",
-      },
-      {
-        property: "og:title",
-        content: "Tailwind Gradient Generator | Better Gradient",
-      },
-      {
-        property: "og:description",
-        content:
-          "Generate mesh gradients and get ready-to-use Tailwind CSS code. Free gradient tool for Tailwind developers.",
-      },
-      {
-        property: "og:url",
-        content: "https://better-gradient.com/tailwind-gradient",
-      },
-      {
-        property: "og:image",
-        content: "https://better-gradient.com/og-image.png",
-      },
-      {
-        name: "twitter:title",
-        content: "Tailwind Gradient Generator | Better Gradient",
-      },
-      {
-        name: "twitter:description",
-        content:
-          "Generate mesh gradients and get ready-to-use Tailwind CSS code. Free gradient tool for Tailwind developers.",
-      },
-    ],
-    links: [
-      {
-        rel: "canonical",
-        href: "https://better-gradient.com/tailwind-gradient",
-      },
-    ],
+    ...seo({
+      title: "Tailwind Gradient Generator — Free Tailwind CSS Gradient Tool | Better Gradient",
+      description: "Generate beautiful mesh gradients and get ready-to-use Tailwind CSS code. Copy inline styles, custom CSS, or use as background images in your Tailwind projects. Free, no signup.",
+      keywords: "tailwind gradient generator, tailwind CSS gradient, tailwind background gradient, tailwind gradient colors, tailwind mesh gradient, tailwind gradient tool",
+      url: buildAbsoluteUrl("/tailwind-gradient"),
+      canonical: buildAbsoluteUrl("/tailwind-gradient"),
+    }),
   }),
 });
 

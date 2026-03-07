@@ -8,6 +8,7 @@ type SEOArgs = {
   url?: string;
   type?: "website" | "article" | "profile";
   canonical?: string;
+  noindex?: boolean;
 };
 
 export const seo = ({
@@ -18,6 +19,7 @@ export const seo = ({
   url,
   type = "website",
   canonical,
+  noindex,
 }: SEOArgs) => {
   const resolvedTitle = title || defaultTitle;
   const resolvedDescription = description || defaultDescription;
@@ -25,26 +27,28 @@ export const seo = ({
   const resolvedUrl = url || siteUrl;
   const resolvedCanonical = canonical || resolvedUrl;
 
-  const tags = [
+  const meta = [
     { title: resolvedTitle },
     { name: "description", content: resolvedDescription },
     ...(keywords ? [{ name: "keywords", content: keywords }] : []),
+    ...(noindex ? [{ name: "robots", content: "noindex, nofollow" }] : []),
+    { property: "og:type", content: type },
+    { property: "og:site_name", content: siteName },
+    { property: "og:title", content: resolvedTitle },
+    { property: "og:description", content: resolvedDescription },
+    { property: "og:image", content: resolvedImage },
+    { property: "og:url", content: resolvedUrl },
     { name: "twitter:card", content: "summary_large_image" },
     { name: "twitter:title", content: resolvedTitle },
     { name: "twitter:description", content: resolvedDescription },
-    { name: "og:type", content: type },
-    { name: "og:site_name", content: siteName },
-    { name: "og:title", content: resolvedTitle },
-    { name: "og:description", content: resolvedDescription },
-    { name: "og:image", content: resolvedImage },
-    { name: "og:url", content: resolvedUrl },
+    { name: "twitter:image", content: resolvedImage },
   ];
 
   const links = [
     { rel: "canonical", href: resolvedCanonical },
   ];
 
-  return { meta: tags, links };
+  return { meta, links };
 };
 
 export const buildAbsoluteUrl = (pathname: string): string =>

@@ -3,6 +3,7 @@ import { MeshPreview } from "@/components/mesh/mesh-preview";
 import { MeshSidebar } from "@/components/mesh/sidebar/mesh-sidebar";
 import { Button } from "@/components/ui/button";
 import { trackEvent } from "@/lib/tracking";
+import { buildAbsoluteUrl, seo } from "@/utils/seo";
 import { Link, createFileRoute } from "@tanstack/react-router";
 import { useEffect } from "react";
 import { twJoin } from "tailwind-merge";
@@ -10,6 +11,15 @@ import { twJoin } from "tailwind-merge";
 export const Route = createFileRoute("/editor")({
   component: Editor,
   ssr: false,
+  head: () => ({
+    ...seo({
+      title: "Gradient Editor — Free Mesh Gradient Maker | Better Gradient",
+      description: "Create stunning mesh gradients with our free editor. Customize colors, blur, grain, and shapes. Export to PNG, WebP, SVG, or CSS. No signup required.",
+      keywords: "gradient editor, mesh gradient editor, gradient maker, gradient creator, free gradient tool",
+      url: buildAbsoluteUrl("/editor"),
+      canonical: buildAbsoluteUrl("/editor"),
+    }),
+  }),
 });
 
 function Editor() {

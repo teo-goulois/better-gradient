@@ -2,6 +2,7 @@ import { Prose } from "@/components/shared/shared-prose";
 import { DottedBackground } from "@/components/ui/dotted-background";
 import { Separator } from "@/components/ui/separator";
 import { getSinglePost } from "@/lib/actions/action.query";
+import { buildAbsoluteUrl, seo } from "@/utils/seo";
 import { Link, createFileRoute } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/_pages/blog/$slug")({
@@ -14,28 +15,17 @@ export const Route = createFileRoute("/_pages/blog/$slug")({
     const post = loaderData?.post;
     if (!post) return {};
 
-    const title = `${post.title} | Better Gradient Blog`;
-    const description =
-      post.description ||
-      `Read "${post.title}" on the Better Gradient blog.`;
-    const image =
-      post.coverImage || "https://better-gradient.com/og-image.png";
-    const url = `https://better-gradient.com/blog/${post.slug}`;
+    const url = buildAbsoluteUrl(`/blog/${post.slug}`);
 
     return {
-      meta: [
-        { title },
-        { name: "description", content: description },
-        { property: "og:title", content: title },
-        { property: "og:description", content: description },
-        { property: "og:image", content: image },
-        { property: "og:url", content: url },
-        { property: "og:type", content: "article" },
-        { name: "twitter:title", content: title },
-        { name: "twitter:description", content: description },
-        { name: "twitter:image", content: image },
-      ],
-      links: [{ rel: "canonical", href: url }],
+      ...seo({
+        title: `${post.title} | Better Gradient Blog`,
+        description: post.description || `Read "${post.title}" on the Better Gradient blog.`,
+        image: post.coverImage,
+        url,
+        canonical: url,
+        type: "article",
+      }),
     };
   },
 });

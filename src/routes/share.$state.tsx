@@ -2,28 +2,22 @@ import { FrameProvider } from "@/components/mesh/frame/frame-context";
 import { MeshPreviewShared } from "@/components/mesh/mesh-preview-shared";
 import { trackEvent } from "@/lib/tracking";
 import { useMeshStore } from "@/store/store-mesh";
+import { buildAbsoluteUrl, seo } from "@/utils/seo";
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect } from "react";
 
 export const Route = createFileRoute("/share/$state")({
   component: Share,
   head: ({ params }) => {
-    const title = "Shared Gradient | Better Gradient";
-    const description =
-      "Check out this mesh gradient created with Better Gradient — Free Mesh Gradient Generator.";
-    const url = `https://better-gradient.com/share/${params.state}`;
+    const url = buildAbsoluteUrl(`/share/${params.state}`);
 
     return {
-      meta: [
-        { title },
-        { name: "description", content: description },
-        { property: "og:title", content: title },
-        { property: "og:description", content: description },
-        { property: "og:url", content: url },
-        { name: "twitter:title", content: title },
-        { name: "twitter:description", content: description },
-      ],
-      links: [{ rel: "canonical", href: url }],
+      ...seo({
+        title: "Shared Gradient | Better Gradient",
+        description: "Check out this mesh gradient created with Better Gradient — Free Mesh Gradient Generator.",
+        url,
+        canonical: url,
+      }),
     };
   },
 });

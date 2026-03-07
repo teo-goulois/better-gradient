@@ -3,10 +3,17 @@ import {
   updateGradientStatusInDb,
 } from "@/lib/actions/actions.gradient";
 import { useMutation, useSuspenseQuery } from "@tanstack/react-query";
+import { seo } from "@/utils/seo";
 import { Link, createFileRoute, notFound } from "@tanstack/react-router";
 import { useState } from "react";
 
 export const Route = createFileRoute("/discovery")({
+  head: () => ({
+    ...seo({
+      title: "Discovery | Better Gradient",
+      noindex: true,
+    }),
+  }),
   loader: async ({ context }) => {
     const data = await context.queryClient.ensureQueryData(
       getPublicGradientsFromDbQueryOptions()

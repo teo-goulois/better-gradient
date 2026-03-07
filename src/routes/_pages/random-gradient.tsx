@@ -4,6 +4,7 @@ import { svgDataUrl, svgStringFromState } from "@/lib/mesh-svg";
 import { generateShapes } from "@/lib/utils/utils.mesh";
 import type { CompositionMood } from "@/lib/utils/utils.mesh";
 import type { BlobShape, CanvasSettings, Filters, RgbHex } from "@/types/types.mesh";
+import { buildAbsoluteUrl, seo } from "@/utils/seo";
 import { Link, createFileRoute } from "@tanstack/react-router";
 import { useCallback, useMemo, useState } from "react";
 
@@ -127,54 +128,13 @@ const structuredData = {
 export const Route = createFileRoute("/_pages/random-gradient")({
   component: RandomGradientPage,
   head: () => ({
-    meta: [
-      {
-        title:
-          "Random Gradient Generator — Free Random Mesh Gradients | Better Gradient",
-      },
-      {
-        name: "description",
-        content:
-          "Generate random mesh gradients instantly. Click to randomize colors, shapes, and compositions. Export to PNG, WebP, SVG, or CSS. Free, no signup required.",
-      },
-      {
-        name: "keywords",
-        content:
-          "random gradient generator, random gradient, random mesh gradient, gradient randomizer, random color gradient, generate random gradient",
-      },
-      {
-        property: "og:title",
-        content: "Random Gradient Generator | Better Gradient",
-      },
-      {
-        property: "og:description",
-        content:
-          "Generate random mesh gradients instantly. Click to randomize and export to PNG, WebP, SVG, or CSS.",
-      },
-      {
-        property: "og:url",
-        content: "https://better-gradient.com/random-gradient",
-      },
-      {
-        property: "og:image",
-        content: "https://better-gradient.com/og-image.png",
-      },
-      {
-        name: "twitter:title",
-        content: "Random Gradient Generator | Better Gradient",
-      },
-      {
-        name: "twitter:description",
-        content:
-          "Generate random mesh gradients instantly. Click to randomize and export to PNG, WebP, SVG, or CSS.",
-      },
-    ],
-    links: [
-      {
-        rel: "canonical",
-        href: "https://better-gradient.com/random-gradient",
-      },
-    ],
+    ...seo({
+      title: "Random Gradient Generator — Free Random Mesh Gradients | Better Gradient",
+      description: "Generate random mesh gradients instantly. Click to randomize colors, shapes, and compositions. Export to PNG, WebP, SVG, or CSS. Free, no signup required.",
+      keywords: "random gradient generator, random gradient, random mesh gradient, gradient randomizer, random color gradient, generate random gradient",
+      url: buildAbsoluteUrl("/random-gradient"),
+      canonical: buildAbsoluteUrl("/random-gradient"),
+    }),
   }),
 });
 
