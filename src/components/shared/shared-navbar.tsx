@@ -1,4 +1,9 @@
 import { Logo } from "@/components/shared/logo";
+import { Button } from "@/components/ui/button";
+import { Menu, MenuContent, MenuItem, MenuTrigger } from "@/components/ui/menu";
+import { authClient } from "@/lib/auth-client";
+import { getViewerQueryOptions } from "@/lib/actions/actions.auth";
+import { useQuery } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
 import {
   useCallback,
@@ -7,7 +12,6 @@ import {
   useRef,
   useState,
 } from "react";
-import { Button } from "../ui/button";
 
 interface NavItem {
   name: string;
@@ -44,7 +48,7 @@ const navEntries: NavEntry[] = [
     ],
   },
   { name: "Resources", href: "/resources" },
-  { name: "Blog", href: "/blog" },
+  { name: "Leaderboard", href: "/leaderboard" },
 ];
 
 const toolDescriptions: Record<string, string> = {
@@ -70,6 +74,40 @@ const toolIcons: Record<string, string> = {
   "/developers":
     "M6.75 7.5l3 2.25-3 2.25m4.5 0h3m-9 8.25h13.5A2.25 2.25 0 0 0 21 18V6a2.25 2.25 0 0 0-2.25-2.25H5.25A2.25 2.25 0 0 0 3 6v12a2.25 2.25 0 0 0 2.25 2.25Z",
 };
+
+function initials(name: string) {
+  return name
+    .split(/\s+/)
+    .slice(0, 2)
+    .map((part) => part[0]?.toUpperCase() ?? "")
+    .join("");
+}
+
+function UserAvatar({
+  viewer,
+}: {
+  viewer: { name: string; image: string | null };
+}) {
+  const [imgError, setImgError] = useState(false);
+
+  if (!viewer.image || imgError) {
+    return (
+      <div className="flex size-8 items-center justify-center rounded-lg bg-neutral-900 text-xs font-semibold text-white">
+        {initials(viewer.name)}
+      </div>
+    );
+  }
+
+  return (
+    <img
+      src={viewer.image}
+      alt={viewer.name}
+      className="size-8 rounded-lg object-cover"
+      loading="lazy"
+      onError={() => setImgError(true)}
+    />
+  );
+}
 
 const EASE_OUT_QUART = "cubic-bezier(0.165, 0.84, 0.44, 1)";
 const EASE_OUT_QUINT = "cubic-bezier(0.23, 1, 0.32, 1)";
@@ -140,6 +178,8 @@ function DropdownContent({
 }
 
 export const SharedNavbar = () => {
+  const viewerQuery = useQuery(getViewerQueryOptions());
+  const viewer = viewerQuery.data?.user ?? null;
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [expandedMobileSection, setExpandedMobileSection] = useState<
     string | null
@@ -164,33 +204,30 @@ export const SharedNavbar = () => {
   }, []);
 
   // Measure trigger position and content size, update popover style
-  const updatePopoverPosition = useCallback(
-    (index: number) => {
-      const trigger = triggerRefs.current.get(index);
-      const content = contentRefs.current.get(index);
-      const navBar = navBarRef.current;
-      if (!trigger || !navBar) return;
+  const updatePopoverPosition = useCallback((index: number) => {
+    const trigger = triggerRefs.current.get(index);
+    const content = contentRefs.current.get(index);
+    const navBar = navBarRef.current;
+    if (!trigger || !navBar) return;
 
-      const triggerRect = trigger.getBoundingClientRect();
-      const navRect = navBar.getBoundingClientRect();
+    const triggerRect = trigger.getBoundingClientRect();
+    const navRect = navBar.getBoundingClientRect();
 
-      const left = triggerRect.left - navRect.left - 12; // -12 for padding offset
+    const left = triggerRect.left - navRect.left - 12; // -12 for padding offset
 
-      const style: React.CSSProperties = {
-        left: `${left}px`,
-        minWidth: "320px",
-      };
+    const style: React.CSSProperties = {
+      left: `${left}px`,
+      minWidth: "320px",
+    };
 
-      if (content) {
-        const w = Math.max(content.scrollWidth, 320);
-        style.width = `${w}px`;
-        style.height = `${content.scrollHeight}px`;
-      }
+    if (content) {
+      const w = Math.max(content.scrollWidth, 320);
+      style.width = `${w}px`;
+      style.height = `${content.scrollHeight}px`;
+    }
 
-      setPopoverStyle(style);
-    },
-    [],
-  );
+    setPopoverStyle(style);
+  }, []);
 
   const handleMouseEnter = useCallback(
     (index: number) => {
@@ -337,45 +374,80 @@ export const SharedNavbar = () => {
             </div>
           </div>
 
-          {/* Desktop CTA */}
-          <Link
-            to="/editor"
-            className="nav-cta hidden md:flex flex-shrink-0 px-4 py-2 relative text-sm font-medium text-white rounded-lg overflow-hidden"
-          >
-            <img
-              src="/gradients/gradient-1.webp"
-              alt="Gradient background example"
-              className="h-full w-full object-cover -z-10 absolute top-0 left-0"
-              loading="eager"
-            />
-            Create Gradient
-          </Link>
+          {/* Desktop right side */}
+          <div className="hidden md:flex items-center gap-2">
+            <Link
+              to="/editor"
+              className="nav-cta shrink-0 px-4 py-2 relative text-sm font-medium text-white rounded-lg overflow-hidden bg-cover bg-center"
+              style={{ backgroundImage: "url('/gradients/gradient-1.webp')" }}
+            >
+              Create Gradient
+            </Link>
+            {viewer ? (
+              <Menu>
+                <MenuTrigger
+                  aria-label="Account menu"
+                  className="account-trigger"
+                >
+                  <UserAvatar viewer={viewer} />
+                </MenuTrigger>
+                <MenuContent placement="bottom end">
+                  <MenuItem href="/dashboard">Dashboard</MenuItem>
+                  <MenuItem href="/dashboard/favorites">Favorites</MenuItem>
+                  <MenuItem
+                    isDanger
+                    onAction={() => {
+                      void authClient.signOut({
+                        fetchOptions: {
+                          onSuccess: () => {
+                            window.location.href = "/";
+                          },
+                        },
+                      });
+                    }}
+                  >
+                    Log out
+                  </MenuItem>
+                </MenuContent>
+              </Menu>
+            ) : (
+              <Link
+                to="/login"
+                className="px-4 py-2 text-sm font-medium text-neutral-600 transition-colors hover:text-neutral-950"
+              >
+                Sign in
+              </Link>
+            )}
+          </div>
 
           {/* Mobile Menu Button */}
-          <Button
-            intent="plain"
-            size="sq-md"
+          <button
+            type="button"
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
             aria-label="Toggle menu"
-            className="md:hidden"
+            className="md:hidden flex size-9 items-center justify-center"
           >
-            <svg
-              className="w-6 h-6"
-              fill="none"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth="2"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <title>Toggle menu</title>
-              {isMobileMenuOpen ? (
-                <path d="M6 18L18 6M6 6l12 12" />
-              ) : (
-                <path d="M4 6h16M4 12h16M4 18h16" />
-              )}
-            </svg>
-          </Button>
+            {viewer && !isMobileMenuOpen ? (
+              <UserAvatar viewer={viewer} />
+            ) : (
+              <svg
+                className="w-6 h-6"
+                fill="none"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="2"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <title>Toggle menu</title>
+                {isMobileMenuOpen ? (
+                  <path d="M6 18L18 6M6 6l12 12" />
+                ) : (
+                  <path d="M4 6h16M4 12h16M4 18h16" />
+                )}
+              </svg>
+            )}
+          </button>
         </div>
 
         {/* Mobile Menu */}
@@ -443,9 +515,7 @@ export const SharedNavbar = () => {
                                 <path
                                   strokeLinecap="round"
                                   strokeLinejoin="round"
-                                  d={
-                                    toolIcons[item.href] ?? "M12 6v12m6-6H6"
-                                  }
+                                  d={toolIcons[item.href] ?? "M12 6v12m6-6H6"}
                                 />
                               </svg>
                               {item.name}
@@ -473,16 +543,63 @@ export const SharedNavbar = () => {
               <Link
                 to="/editor"
                 onClick={() => setIsMobileMenuOpen(false)}
-                className="nav-cta mt-2 px-4 py-2 relative text-sm font-medium text-white text-center rounded-lg overflow-hidden"
+                className="nav-cta mt-2 px-4 py-2 relative text-sm font-medium text-white text-center rounded-lg overflow-hidden bg-cover bg-center"
+                style={{ backgroundImage: "url('/gradients/gradient-1.webp')" }}
               >
-                <img
-                  src="/gradients/gradient-1.webp"
-                  alt="Gradient background example"
-                  className="h-full w-full object-cover -z-10 absolute top-0 left-0 rounded"
-                  loading="eager"
-                />
                 Create Gradient
               </Link>
+              {viewer ? (
+                <div className="mt-2 border-t border-neutral-100 pt-2">
+                  <div className="flex items-center gap-3 px-3 py-2">
+                    <UserAvatar viewer={viewer} />
+                    <div className="min-w-0">
+                      <p className="truncate text-sm font-semibold text-neutral-900">
+                        {viewer.name}
+                      </p>
+                      <p className="truncate text-xs text-neutral-500">
+                        {viewer.email}
+                      </p>
+                    </div>
+                  </div>
+                  <Link
+                    to="/dashboard"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                    className="block rounded-lg px-3 py-2 text-sm font-medium text-neutral-600 transition-colors hover:bg-neutral-100 hover:text-neutral-950"
+                  >
+                    Dashboard
+                  </Link>
+                  <Link
+                    to="/dashboard/favorites"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                    className="block rounded-lg px-3 py-2 text-sm font-medium text-neutral-600 transition-colors hover:bg-neutral-100 hover:text-neutral-950"
+                  >
+                    Favorites
+                  </Link>
+                  <button
+                    type="button"
+                    className="mt-1 w-full rounded-lg px-3 py-2 text-left text-sm font-medium text-red-600 transition-colors hover:bg-red-50"
+                    onClick={() => {
+                      void authClient.signOut({
+                        fetchOptions: {
+                          onSuccess: () => {
+                            window.location.href = "/";
+                          },
+                        },
+                      });
+                    }}
+                  >
+                    Log out
+                  </button>
+                </div>
+              ) : (
+                <Link
+                  to="/login"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  className="mt-2 block border-t border-neutral-100 px-4 pt-3 text-sm font-medium text-neutral-600"
+                >
+                  Sign in
+                </Link>
+              )}
             </div>
           </div>
         )}
@@ -609,6 +726,20 @@ export const SharedNavbar = () => {
           }
         }
 
+        /* ── Account button ────────────────────────────────── */
+        .account-trigger {
+          transition: opacity 150ms ease, transform 150ms var(--ease-out-quart);
+        }
+        @media (hover: hover) and (pointer: fine) {
+          .account-trigger:hover {
+            opacity: 0.8;
+          }
+          .account-trigger:active {
+            transform: scale(0.93);
+            transition-duration: 80ms;
+          }
+        }
+
         /* ── Mobile accordion ──────────────────────────────── */
         .nav-accordion {
           display: grid;
@@ -658,6 +789,7 @@ export const SharedNavbar = () => {
           .nav-dropdown-item,
           .nav-icon-box,
           .nav-cta,
+          .account-trigger,
           .nav-accordion {
             transition: none;
           }

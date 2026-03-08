@@ -1,15 +1,15 @@
-import { configPreset } from "@/lib/config/config.preset";
+import { createHash } from "node:crypto";
 import { DEFAULT_CANVAS_SIZE, DEFAULT_FILTERS } from "@/lib/config/config.mesh";
+import { configPreset } from "@/lib/config/config.preset";
 import { db } from "@/lib/db";
 import { apiKeysTable, apiRateLimitsTable } from "@/lib/db/schema";
-import { trackUmamiServerEvent } from "@/lib/umami.server";
 import { rasterizeSvg } from "@/lib/mesh-raster.server";
 import { cssBackgroundFromState, svgStringFromState } from "@/lib/mesh-svg";
+import { trackUmamiServerEvent } from "@/lib/umami.server";
 import { clamp, generateShapes, prng } from "@/lib/utils/utils.mesh";
 import type { CanvasSettings, Filters, RgbHex } from "@/types/types.mesh";
-import { createServerFileRoute } from "@tanstack/react-start/server";
+import { createFileRoute } from "@tanstack/react-router";
 import { eq, sql } from "drizzle-orm";
-import { createHash } from "node:crypto";
 
 const CORS_HEADERS = {
 	"Access-Control-Allow-Origin": "*",
@@ -85,7 +85,8 @@ function pickPalette(seed: string): { index: number; palette: RgbHex[] } {
 	const presets = configPreset;
 	const rng = prng(`${seed}:palette`);
 	const index = rng.int(0, Math.max(0, presets.length - 1));
-	const preset = presets[index]?.config.palette ?? presets[0]?.config.palette ?? [];
+	const preset =
+		presets[index]?.config.palette ?? presets[0]?.config.palette ?? [];
 	return {
 		index,
 		palette:
@@ -123,7 +124,11 @@ function hashKey(value: string): string {
 }
 
 function bufferToArrayBuffer(buffer: Buffer): ArrayBuffer {
-	const view = new Uint8Array(buffer.buffer, buffer.byteOffset, buffer.byteLength);
+	const view = new Uint8Array(
+		buffer.buffer,
+		buffer.byteOffset,
+		buffer.byteLength,
+	);
 	const copy = new Uint8Array(view.byteLength);
 	copy.set(view);
 	return copy.buffer;
@@ -188,204 +193,211 @@ async function checkRateLimit(args: {
 	};
 }
 
-export const ServerRoute = createServerFileRoute("/api/gradient").methods({
-	OPTIONS: async () => {
-		return new Response(null, {
-			status: 204,
-			headers: CORS_HEADERS,
-		});
-	},
-	GET: async ({ request }) => {
-		const url = new URL(request.url);
-		const params = url.searchParams;
-		const format = (params.get("format") ?? "svg").toLowerCase();
-		if (!SUPPORTED_FORMATS.has(format)) {
-			return new Response(`Unsupported format: ${format}`, {
-				status: 400,
-				headers: {
-					...CORS_HEADERS,
-					"Content-Type": "text/plain; charset=utf-8",
-				},
-			});
-		}
-		const size = parseNumber(params.get("size"));
-		const widthRaw = parseNumber(params.get("width")) ?? size;
-		const heightRaw = parseNumber(params.get("height")) ?? size;
-		const width = clamp(
-			Math.round(widthRaw ?? DEFAULT_CANVAS_SIZE.width),
-			64,
-			6000,
-		);
-		const height = clamp(
-			Math.round(heightRaw ?? DEFAULT_CANVAS_SIZE.height),
-			64,
-			6000,
-		);
-		const countRaw = parseNumber(params.get("count"));
-		const count = clamp(Math.round(countRaw ?? 6), 3, 10);
-		const quality = parseQuality(params.get("quality"));
+export const Route = createFileRoute("/api/gradient")({
+	server: {
+		handlers: {
+			OPTIONS: async () => {
+				return new Response(null, {
+					status: 204,
+					headers: CORS_HEADERS,
+				});
+			},
+			GET: async ({ request }) => {
+				const url = new URL(request.url);
+				const params = url.searchParams;
+				const format = (params.get("format") ?? "svg").toLowerCase();
+				if (!SUPPORTED_FORMATS.has(format)) {
+					return new Response(`Unsupported format: ${format}`, {
+						status: 400,
+						headers: {
+							...CORS_HEADERS,
+							"Content-Type": "text/plain; charset=utf-8",
+						},
+					});
+				}
+				const size = parseNumber(params.get("size"));
+				const widthRaw = parseNumber(params.get("width")) ?? size;
+				const heightRaw = parseNumber(params.get("height")) ?? size;
+				const width = clamp(
+					Math.round(widthRaw ?? DEFAULT_CANVAS_SIZE.width),
+					64,
+					6000,
+				);
+				const height = clamp(
+					Math.round(heightRaw ?? DEFAULT_CANVAS_SIZE.height),
+					64,
+					6000,
+				);
+				const countRaw = parseNumber(params.get("count"));
+				const count = clamp(Math.round(countRaw ?? 6), 3, 10);
+				const quality = parseQuality(params.get("quality"));
 
-		const now = Date.now();
-		const authHeader = request.headers.get("authorization");
-		const token = parseBearerToken(authHeader);
-		let rateLimitScope: "public" | "key" = "public";
-		let rateIdentifier = getRequestIp(request);
-		let limit = PUBLIC_LIMIT;
-		if (token) {
-			const keyHash = hashKey(token);
-			const keyRecord = await db
-				.select()
-				.from(apiKeysTable)
-				.where(eq(apiKeysTable.keyHash, keyHash))
-				.limit(1);
-			const key = keyRecord[0];
-			if (!key || key.status !== "active" || key.revokedAt) {
-				return new Response("Invalid API key", {
-					status: 401,
-					headers: {
-						...CORS_HEADERS,
-						"Content-Type": "text/plain; charset=utf-8",
+				const now = Date.now();
+				const authHeader = request.headers.get("authorization");
+				const token = parseBearerToken(authHeader);
+				let rateLimitScope: "public" | "key" = "public";
+				let rateIdentifier = getRequestIp(request);
+				let limit = PUBLIC_LIMIT;
+				if (token) {
+					const keyHash = hashKey(token);
+					const keyRecord = await db
+						.select()
+						.from(apiKeysTable)
+						.where(eq(apiKeysTable.keyHash, keyHash))
+						.limit(1);
+					const key = keyRecord[0];
+					if (!key || key.status !== "active" || key.revokedAt) {
+						return new Response("Invalid API key", {
+							status: 401,
+							headers: {
+								...CORS_HEADERS,
+								"Content-Type": "text/plain; charset=utf-8",
+							},
+						});
+					}
+					rateLimitScope = "key";
+					rateIdentifier = key.id;
+					limit = KEY_LIMIT;
+				}
+
+				const rate = await checkRateLimit({
+					scope: rateLimitScope,
+					identifier: rateIdentifier,
+					limit,
+					now,
+				});
+				const rateHeaders = {
+					"X-RateLimit-Limit": String(rate.limit),
+					"X-RateLimit-Remaining": String(rate.remaining),
+					"X-RateLimit-Reset": String(Math.floor(rate.resetAt / 1000)),
+				};
+				if (!rate.allowed) {
+					const retryAfter = Math.max(
+						1,
+						Math.ceil((rate.resetAt - now) / 1000),
+					);
+					return new Response("Rate limit exceeded", {
+						status: 429,
+						headers: {
+							...CORS_HEADERS,
+							...rateHeaders,
+							"Retry-After": String(retryAfter),
+							"Content-Type": "text/plain; charset=utf-8",
+						},
+					});
+				}
+
+				const seedResult = await resolveSeed(
+					params.get("seed"),
+					params.get("email"),
+				);
+				const paletteResult = pickPalette(seedResult.seed);
+				const canvas = buildCanvas(paletteResult.palette, width, height);
+				const filters = buildFilters();
+
+				await trackUmamiServerEvent({
+					name: "API Gradient",
+					title: "API Gradient",
+					url: "/api/gradient",
+					request,
+					data: {
+						auth: rateLimitScope,
+						format,
+						width,
+						height,
+						count,
+						quality: quality ?? null,
+						seed_source: seedResult.source,
+						palette_index: paletteResult.index,
 					},
 				});
-			}
-			rateLimitScope = "key";
-			rateIdentifier = key.id;
-			limit = KEY_LIMIT;
-		}
-
-		const rate = await checkRateLimit({
-			scope: rateLimitScope,
-			identifier: rateIdentifier,
-			limit,
-			now,
-		});
-		const rateHeaders = {
-			"X-RateLimit-Limit": String(rate.limit),
-			"X-RateLimit-Remaining": String(rate.remaining),
-			"X-RateLimit-Reset": String(Math.floor(rate.resetAt / 1000)),
-		};
-		if (!rate.allowed) {
-			const retryAfter = Math.max(
-				1,
-				Math.ceil((rate.resetAt - now) / 1000),
-			);
-			return new Response("Rate limit exceeded", {
-				status: 429,
-				headers: {
+				const shapes = generateShapes({
+					seed: `${seedResult.seed}:shapes`,
+					count,
+					canvas,
+					palette: paletteResult.palette,
+				});
+				const headers = {
 					...CORS_HEADERS,
 					...rateHeaders,
-					"Retry-After": String(retryAfter),
-					"Content-Type": "text/plain; charset=utf-8",
-				},
-			});
-		}
+					"Cache-Control": cacheControl(seedResult.source),
+				};
+				const svg =
+					format === "svg" || format === "png" || format === "webp"
+						? svgStringFromState({
+								canvas,
+								shapes,
+								palette: paletteResult.palette,
+								filters,
+							})
+						: null;
 
-		const seedResult = await resolveSeed(params.get("seed"), params.get("email"));
-		const paletteResult = pickPalette(seedResult.seed);
-		const canvas = buildCanvas(paletteResult.palette, width, height);
-		const filters = buildFilters();
-
-		await trackUmamiServerEvent({
-			name: "API Gradient",
-			title: "API Gradient",
-			url: "/api/gradient",
-			request,
-			data: {
-				auth: rateLimitScope,
-				format,
-				width,
-				height,
-				count,
-				quality: quality ?? null,
-				seed_source: seedResult.source,
-				palette_index: paletteResult.index,
+				switch (format) {
+					case "svg": {
+						return new Response(svg, {
+							headers: {
+								...headers,
+								"Content-Type": "image/svg+xml; charset=utf-8",
+							},
+						});
+					}
+					case "png": {
+						if (!svg) {
+							return new Response("SVG generation failed", {
+								status: 500,
+								headers,
+							});
+						}
+						const png = await rasterizeSvg(svg, { format: "png" });
+						return new Response(bufferToArrayBuffer(png), {
+							headers: {
+								...headers,
+								"Content-Type": "image/png",
+							},
+						});
+					}
+					case "webp": {
+						if (!svg) {
+							return new Response("SVG generation failed", {
+								status: 500,
+								headers,
+							});
+						}
+						const webp = await rasterizeSvg(svg, {
+							format: "webp",
+							quality: quality ?? 0.95,
+						});
+						return new Response(bufferToArrayBuffer(webp), {
+							headers: {
+								...headers,
+								"Content-Type": "image/webp",
+							},
+						});
+					}
+					case "css": {
+						const css = cssBackgroundFromState({
+							canvas,
+							shapes,
+							palette: paletteResult.palette,
+							filters,
+						});
+						return new Response(css, {
+							headers: {
+								...headers,
+								"Content-Type": "text/css; charset=utf-8",
+							},
+						});
+					}
+					default:
+						return new Response("Unsupported format", {
+							status: 400,
+							headers: {
+								...headers,
+								"Content-Type": "text/plain; charset=utf-8",
+							},
+						});
+				}
 			},
-		});
-		const shapes = generateShapes({
-			seed: `${seedResult.seed}:shapes`,
-			count,
-			canvas,
-			palette: paletteResult.palette,
-		});
-		const headers = {
-			...CORS_HEADERS,
-			...rateHeaders,
-			"Cache-Control": cacheControl(seedResult.source),
-		};
-		const svg =
-			format === "svg" || format === "png" || format === "webp"
-				? svgStringFromState({
-						canvas,
-						shapes,
-						palette: paletteResult.palette,
-						filters,
-					})
-				: null;
-
-		switch (format) {
-			case "svg": {
-				return new Response(svg, {
-					headers: {
-						...headers,
-						"Content-Type": "image/svg+xml; charset=utf-8",
-					},
-				});
-			}
-			case "png": {
-				if (!svg) {
-					return new Response("SVG generation failed", {
-						status: 500,
-						headers,
-					});
-				}
-				const png = await rasterizeSvg(svg, { format: "png" });
-				return new Response(bufferToArrayBuffer(png), {
-					headers: {
-						...headers,
-						"Content-Type": "image/png",
-					},
-				});
-			}
-			case "webp": {
-				if (!svg) {
-					return new Response("SVG generation failed", {
-						status: 500,
-						headers,
-					});
-				}
-				const webp = await rasterizeSvg(svg, {
-					format: "webp",
-					quality: quality ?? 0.95,
-				});
-				return new Response(bufferToArrayBuffer(webp), {
-					headers: {
-						...headers,
-						"Content-Type": "image/webp",
-					},
-				});
-			}
-			case "css": {
-				const css = cssBackgroundFromState({
-					canvas,
-					shapes,
-					palette: paletteResult.palette,
-					filters,
-				});
-				return new Response(css, {
-					headers: {
-						...headers,
-						"Content-Type": "text/css; charset=utf-8",
-					},
-				});
-			}
-			default:
-				return new Response("Unsupported format", {
-					status: 400,
-					headers: {
-						...headers,
-						"Content-Type": "text/plain; charset=utf-8",
-					},
-				});
-		}
+		},
 	},
 });

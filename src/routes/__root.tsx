@@ -14,6 +14,7 @@ import { SharedDefaultCatchBoundary } from "@/components/shared/shared-default-c
 import { SharedNotFound } from "@/components/shared/shared-not-found";
 import { umamiConfig, umamiScriptUrl } from "@/utils/analytics";
 import type { QueryClient } from "@tanstack/react-query";
+import { Agentation } from "agentation";
 import { useEffect } from "react";
 import { scan } from "react-scan";
 
@@ -223,6 +224,7 @@ function RootDocument({ children }: { children: React.ReactNode }) {
             TanStackQueryDevtools,
           ]}
         />
+        {process.env.NODE_ENV === "development" && <Agentation />}
         <Scripts />
       </body>
     </html>

@@ -1,6 +1,6 @@
-import { getPosts } from "@/lib/actions/action.query";
+import { getPostsData } from "@/lib/server/marble-service";
 import { siteUrl } from "@/utils/site";
-import { createServerFileRoute } from "@tanstack/react-start/server";
+import { createFileRoute } from "@tanstack/react-router";
 
 const routes: { path: string; priority: string; changefreq: string }[] = [
 	{ path: "/", priority: "1.0", changefreq: "weekly" },
@@ -17,7 +17,7 @@ const routes: { path: string; priority: string; changefreq: string }[] = [
 
 const buildSitemap = async (): Promise<string> => {
 	// Fetch all blog posts
-	const postsData = await getPosts();
+	const postsData = await getPostsData();
 	const posts = postsData?.posts || [];
 
 	// Generate URLs for static routes (no lastmod — inaccurate dates harm crawl signals)
@@ -50,13 +50,17 @@ ${blogUrls}
 </urlset>`;
 };
 
-export const ServerRoute = createServerFileRoute("/sitemap.xml").methods({
-	GET: async () => {
-		return new Response(await buildSitemap(), {
-			headers: {
-				"Content-Type": "application/xml",
-				"Cache-Control": "public, max-age=3600",
+export const Route = createFileRoute("/sitemap.xml")({
+	server: {
+		handlers: {
+			GET: async () => {
+				return new Response(await buildSitemap(), {
+					headers: {
+						"Content-Type": "application/xml",
+						"Cache-Control": "public, max-age=3600",
+					},
+				});
 			},
-		});
+		},
 	},
 });

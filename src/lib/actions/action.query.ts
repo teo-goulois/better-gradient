@@ -1,65 +1,29 @@
-import { envServer } from "@/env-server";
-import type {
-	MarbleAuthorList,
-	MarbleCategoryList,
-	MarblePost,
-	MarblePostList,
-	MarbleTagList,
-} from "@/types/type.marble";
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 
-const url = envServer.MARBLE_API_URL;
-const key = envServer.MARBLE_WORKSPACE_KEY;
-
 export const getPosts = createServerFn().handler(async () => {
-	try {
-		const raw = await fetch(`${url}/${key}/posts`);
-		const data: MarblePostList = await raw.json();
-		return data;
-	} catch (error) {
-		console.log(error);
-	}
+	const { getPostsData } = await import("@/lib/server/marble-service");
+	return getPostsData();
 });
 
 export const getTags = createServerFn().handler(async () => {
-	try {
-		const raw = await fetch(`${url}/${key}/tags`);
-		const data: MarbleTagList = await raw.json();
-		return data;
-	} catch (error) {
-		console.log(error);
-	}
+	const { getTagsData } = await import("@/lib/server/marble-service");
+	return getTagsData();
 });
 
 export const getSinglePost = createServerFn()
-	.validator(z.string())
+	.inputValidator(z.string())
 	.handler(async ({ data: slug }) => {
-		try {
-			const raw = await fetch(`${url}/${key}/posts/${slug}`);
-			const data: MarblePost = await raw.json();
-			return data;
-		} catch (error) {
-			console.log(error);
-		}
+		const { getSinglePostData } = await import("@/lib/server/marble-service");
+		return getSinglePostData(slug);
 	});
 
 export const getCategories = createServerFn().handler(async () => {
-	try {
-		const raw = await fetch(`${url}/${key}/categories`);
-		const data: MarbleCategoryList = await raw.json();
-		return data;
-	} catch (error) {
-		console.log(error);
-	}
+	const { getCategoriesData } = await import("@/lib/server/marble-service");
+	return getCategoriesData();
 });
 
 export const getAuthors = createServerFn().handler(async () => {
-	try {
-		const raw = await fetch(`${url}/${key}/authors`);
-		const data: MarbleAuthorList = await raw.json();
-		return data;
-	} catch (error) {
-		console.log(error);
-	}
+	const { getAuthorsData } = await import("@/lib/server/marble-service");
+	return getAuthorsData();
 });

@@ -1,19 +1,22 @@
-import { createServerFileRoute } from "@tanstack/react-start/server";
 import { siteUrl } from "@/utils/site";
+import { createFileRoute } from "@tanstack/react-router";
 
 const buildRobotsTxt = (): string => {
-  return `User-agent: *
+	return `User-agent: *
 Allow: /
 Sitemap: ${siteUrl}/sitemap.xml`;
 };
 
-export const ServerRoute = createServerFileRoute("/robots.txt").methods({
-  GET: async () => {
-    return new Response(buildRobotsTxt(), {
-      headers: {
-        "Content-Type": "text/plain",
-        "Cache-Control": "public, max-age=3600",
-      },
-    });
-  },
+export const Route = createFileRoute("/robots.txt")({
+	server: {
+		handlers: {
+			GET: async () => {
+				return new Response(buildRobotsTxt(), {
+					headers: {
+						"Content-Type": "text/plain",
+					},
+				});
+			},
+		},
+	},
 });

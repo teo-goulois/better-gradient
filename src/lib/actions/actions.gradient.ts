@@ -1,183 +1,116 @@
 import { queryOptions } from "@tanstack/react-query";
 import { createServerFn } from "@tanstack/react-start";
-import { eq, sql } from "drizzle-orm";
-import { db } from "../db";
-import { createdGradientsTable } from "../db/schema";
 import {
-	type GetGradientsValidator,
-	deleteGradientValidator,
-	getGradientsValidator,
-	saveGradientValidator,
-	updateGradientValidator,
+  type GetGradientsValidator,
+  deleteGradientValidator,
+  getGradientsValidator,
+  saveGradientValidator,
+  updateGradientValidator,
 } from "../validators/validator.gradient";
 
 export const getTotalExportsFromDb = createServerFn({
-	method: "GET",
-	response: "data",
+  method: "GET",
 }).handler(async () => {
-	// Count total number of export format entries across all gradients
-	const result = await db
-		.select({
-			count: sql<number>`count(*)`.as("count"),
-		})
-		.from(createdGradientsTable);
-
-	return { count: result[0]?.count || 0 };
+  const { getTotalExportsFromDbData } =
+    await import("@/lib/server/gradient-service");
+  return getTotalExportsFromDbData();
 });
 
 export const getTotalExportsFromDbQueryOptions = () =>
-	queryOptions({
-		queryKey: ["getTotalExportsFromDbQueryOptions"],
-		queryFn: () => getTotalExportsFromDb(),
-		refetchInterval: 1000 * 60 * 5, // 5 minutes
-	});
+  queryOptions({
+    queryKey: ["getTotalExportsFromDbQueryOptions"],
+    queryFn: () => getTotalExportsFromDb(),
+    refetchInterval: 1000 * 60 * 5,
+  });
 
 export const getPublicGradientsFromDb = createServerFn({
-	method: "GET", // HTTP method to use
-	response: "data", // Response handling mode
+  method: "GET",
 }).handler(async () => {
-	const gradients = await db
-		.select()
-		.from(createdGradientsTable)
-		.where(eq(createdGradientsTable.status, "public"));
-
-	return { gradients };
+  const { getPublicGradientsFromDbData } =
+    await import("@/lib/server/gradient-service");
+  return getPublicGradientsFromDbData();
 });
 
 export const getPublicGradientsFromDbQueryOptions = () =>
-	queryOptions({
-		queryKey: ["getPublicGradientsFromDbQueryOptions"],
-		queryFn: () => getPublicGradientsFromDb(),
-	});
+  queryOptions({
+    queryKey: ["getPublicGradientsFromDbQueryOptions"],
+    queryFn: () => getPublicGradientsFromDb(),
+  });
 
 export const saveGradientToDb = createServerFn({
-	method: "POST", // HTTP method to use
-	response: "data", // Response handling mode
+  method: "POST",
 })
-	.validator((data: unknown) => saveGradientValidator.parse(data))
-	.handler(async ({ data }) => {
-		const now = Date.now();
-		// Upsert by share
-		const existing = await db
-			.select()
-			.from(createdGradientsTable)
-			.where(eq(createdGradientsTable.share, data.share))
-			.limit(1);
-
-		if (existing.length > 0) {
-			const prev = existing[0];
-			const formats = new Set<string>(JSON.parse(prev.exportedFormats));
-			formats.add(data.format);
-			await db
-				.update(createdGradientsTable)
-				.set({
-					width: data.width,
-					height: data.height,
-					shapesCount: data.shapesCount,
-					colorsCount: data.colorsCount,
-					exportedFormats: JSON.stringify(Array.from(formats)),
-					updatedAt: now,
-				})
-				.where(eq(createdGradientsTable.share, data.share));
-			return { ok: true, id: prev.id, updated: true };
-		}
-		const id = `created_${Math.random().toString(36).slice(2, 10)}`;
-		await db.insert(createdGradientsTable).values({
-			id,
-			share: data.share,
-			width: data.width,
-			height: data.height,
-			shapesCount: data.shapesCount,
-			colorsCount: data.colorsCount,
-			exportedFormats: JSON.stringify([data.format]),
-			status: "draft",
-			createdAt: now,
-			updatedAt: now,
-		});
-		return { ok: true, id, created: true };
-
-		// Function implementation
-	});
+  .inputValidator((data: unknown) => saveGradientValidator.parse(data))
+  .handler(async ({ data }) => {
+    const { saveGradientToDbData } =
+      await import("@/lib/server/gradient-service");
+    return saveGradientToDbData(data);
+  });
 
 export const updateGradientStatusInDb = createServerFn({
-	method: "POST", // HTTP method to use
-	response: "data", // Response handling mode
+  method: "POST",
 })
-	.validator((data: unknown) => updateGradientValidator.parse(data))
-	.handler(async ({ data }) => {
-		await db
-			.update(createdGradientsTable)
-			.set({ status: data.status })
-			.where(eq(createdGradientsTable.id, data.id));
-		return { ok: true, id: data.id, updated: true };
-	});
+  .inputValidator((data: unknown) => updateGradientValidator.parse(data))
+  .handler(async ({ data }) => {
+    const { updateGradientStatusInDbData } =
+      await import("@/lib/server/gradient-service");
+    return updateGradientStatusInDbData(data);
+  });
 
 export const deleteGradientFromDb = createServerFn({
-	method: "POST",
-	response: "data",
+  method: "POST",
 })
-	.validator((data: unknown) => deleteGradientValidator.parse(data))
-	.handler(async ({ data }) => {
-		await db
-			.delete(createdGradientsTable)
-			.where(eq(createdGradientsTable.id, data.id));
-		return { ok: true, id: data.id, deleted: true };
-	});
+  .inputValidator((data: unknown) => deleteGradientValidator.parse(data))
+  .handler(async ({ data }) => {
+    const { deleteGradientFromDbData } =
+      await import("@/lib/server/gradient-service");
+    return deleteGradientFromDbData(data);
+  });
 
 export const getGradientsFromDb = createServerFn({
-	method: "GET", // HTTP method to use
-	response: "data", // Response handling mode
+  method: "GET",
 })
-	.validator((data: unknown) => getGradientsValidator.parse(data))
-	.handler(async ({ data }) => {
-		const gradients = await db
-			.select()
-			.from(createdGradientsTable)
-			.where(
-				data.status ? eq(createdGradientsTable.status, data.status) : undefined,
-			)
-			.limit(data.limit)
-			.offset((data.page - 1) * data.limit);
-		return { gradients };
-	});
+  .inputValidator((data: unknown) => getGradientsValidator.parse(data))
+  .handler(async ({ data }) => {
+    const { getGradientsFromDbData } =
+      await import("@/lib/server/gradient-service");
+    return getGradientsFromDbData(data);
+  });
 
 export const getGradientsFromDbQueryOptions = (input: GetGradientsValidator) =>
-	queryOptions({
-		queryKey: ["getGradientsFromDbQueryOptions", input],
-		queryFn: () => getGradientsFromDb({ data: input }),
-	});
+  queryOptions({
+    queryKey: ["getGradientsFromDbQueryOptions", input],
+    queryFn: () => getGradientsFromDb({ data: input }),
+  });
 
-// Infinite query helpers
 export type GradientsPage = Awaited<ReturnType<typeof getGradientsFromDb>>;
 
 export const getInfiniteGradientsFromDbQueryOptions = (
-	input: Omit<GetGradientsValidator, "page">,
+  input: Omit<GetGradientsValidator, "page">,
 ) =>
-	queryOptions({
-		queryKey: ["getInfiniteGradientsFromDbQueryOptions", input],
-		queryFn: async () => {
-			// This function is not used directly by useInfiniteQuery but kept for ensureInfiniteQueryData compatibility
-			return getGradientsFromDb({ data: { ...input, page: 1 } });
-		},
-	});
+  queryOptions({
+    queryKey: ["getInfiniteGradientsFromDbQueryOptions", input],
+    queryFn: async () => {
+      return getGradientsFromDb({ data: { ...input, page: 1 } });
+    },
+  });
 
-// Builder for useInfiniteQuery/ensureInfiniteQueryData
 export const getGradientsInfiniteOptions = (
-	input: Omit<GetGradientsValidator, "page">,
+  input: Omit<GetGradientsValidator, "page">,
 ) => ({
-	queryKey: ["gradientsInfinite", input] as const,
-	queryFn: ({ pageParam }: { pageParam?: unknown }) =>
-		getGradientsFromDb({
-			data: { ...input, page: (pageParam as number) ?? 1 },
-		}),
-	initialPageParam: 1,
-	getNextPageParam: (
-		lastPage: Awaited<ReturnType<typeof getGradientsFromDb>>,
-		_allPages: Array<Awaited<ReturnType<typeof getGradientsFromDb>>>,
-		lastPageParam: unknown,
-	) => {
-		return lastPage.gradients.length < input.limit
-			? undefined
-			: (lastPageParam as number) + 1;
-	},
+  queryKey: ["gradientsInfinite", input] as const,
+  queryFn: ({ pageParam }: { pageParam?: unknown }) =>
+    getGradientsFromDb({
+      data: { ...input, page: (pageParam as number) ?? 1 },
+    }),
+  initialPageParam: 1,
+  getNextPageParam: (
+    lastPage: Awaited<ReturnType<typeof getGradientsFromDb>>,
+    _allPages: Array<Awaited<ReturnType<typeof getGradientsFromDb>>>,
+    lastPageParam: unknown,
+  ) => {
+    return lastPage.gradients.length < input.limit
+      ? undefined
+      : (lastPageParam as number) + 1;
+  },
 });

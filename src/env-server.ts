@@ -10,6 +10,10 @@ export const envServer = createEnv({
 		MARBLE_WORKSPACE_KEY: z.string(),
 		RESEND_API_KEY: z.string(),
 		RESEND_FROM_EMAIL: z.string(),
+		BETTER_AUTH_SECRET: z.string(),
+		BETTER_AUTH_URL: z.url(),
+		GOOGLE_CLIENT_ID: z.string(),
+		GOOGLE_CLIENT_SECRET: z.string(),
 	},
 
 	/**
@@ -23,5 +27,9 @@ export const envServer = createEnv({
 		MARBLE_WORKSPACE_KEY: process.env.MARBLE_WORKSPACE_KEY,
 		RESEND_API_KEY: process.env.RESEND_API_KEY,
 		RESEND_FROM_EMAIL: process.env.RESEND_FROM_EMAIL,
+		BETTER_AUTH_SECRET: process.env.BETTER_AUTH_SECRET,
+		BETTER_AUTH_URL: process.env.BETTER_AUTH_URL,
+		GOOGLE_CLIENT_ID: process.env.GOOGLE_CLIENT_ID,
+		GOOGLE_CLIENT_SECRET: process.env.GOOGLE_CLIENT_SECRET,
 	},
 });

@@ -1,34 +1,31 @@
-import { defineConfig } from 'vite'
-import { tanstackStart } from '@tanstack/react-start/plugin/vite'
-import viteReact from '@vitejs/plugin-react'
-import viteTsConfigPaths from 'vite-tsconfig-paths'
-import tailwindcss from '@tailwindcss/vite'
-import { devtools } from '@tanstack/devtools-vite'
+import { defineConfig } from "vite";
+import { tanstackStart } from "@tanstack/react-start/plugin/vite";
+import viteReact from "@vitejs/plugin-react";
+import tsconfigPaths from "vite-tsconfig-paths";
+import tailwindcss from "@tailwindcss/vite";
+import { devtools } from "@tanstack/devtools-vite";
 // @ts-ignore
-import postcssEasingGradients from 'postcss-easing-gradients';
+import postcssEasingGradients from "postcss-easing-gradients";
 
 const config = defineConfig({
-  css:{
+  css: {
     postcss: {
-      plugins: [
-        postcssEasingGradients,
-      ],
-    }
+      plugins: [postcssEasingGradients],
+    },
   },
   plugins: [
-    devtools(),
-    // this is the plugin that enables path aliases
-    viteTsConfigPaths({
-      projects: ['./tsconfig.json'],
+    tsconfigPaths({
+      projects: ["./tsconfig.json"],
     }),
     tailwindcss(),
-    tanstackStart({
-      customViteReactPlugin: true,
+    devtools(),
+    tanstackStart(),
+    viteReact({
+      babel: {
+        plugins: ["babel-plugin-react-compiler"],
+      },
     }),
-    viteReact({ babel: {
-        plugins: ['babel-plugin-react-compiler'],
-      },}),
   ],
-})
+});
 
-export default config
+export default config;

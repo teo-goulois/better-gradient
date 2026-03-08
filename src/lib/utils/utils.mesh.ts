@@ -5,7 +5,6 @@ import type {
 	Point,
 	RgbHex,
 } from "@/types/types.mesh";
-import seedrandom from "seedrandom";
 import { GEN_CONFIG } from "../config/config.mesh";
 
 // Helpers
@@ -31,8 +30,33 @@ export function createId(prefix = "id"): string {
 	return `${prefix}_${Math.random().toString(36).slice(2, 10)}`;
 }
 
+function xmur3(input: string) {
+	let h = 1779033703 ^ input.length;
+	for (let i = 0; i < input.length; i++) {
+		h = Math.imul(h ^ input.charCodeAt(i), 3432918353);
+		h = (h << 13) | (h >>> 19);
+	}
+	return () => {
+		h = Math.imul(h ^ (h >>> 16), 2246822507);
+		h = Math.imul(h ^ (h >>> 13), 3266489909);
+		h ^= h >>> 16;
+		return h >>> 0;
+	};
+}
+
+function mulberry32(seed: number) {
+	let t = seed >>> 0;
+	return () => {
+		t += 0x6d2b79f5;
+		let value = Math.imul(t ^ (t >>> 15), t | 1);
+		value ^= value + Math.imul(value ^ (value >>> 7), value | 61);
+		return ((value ^ (value >>> 14)) >>> 0) / 4294967296;
+	};
+}
+
 export function prng(seed: string) {
-	const rng = seedrandom(seed);
+	const seedFactory = xmur3(seed);
+	const rng = mulberry32(seedFactory());
 	return {
 		int: (min: number, max: number) =>
 			Math.floor(rng() * (max - min + 1)) + min,
@@ -231,10 +255,7 @@ export function generatePolygon(
 		isAngular ? variety.radiusJitter.max : variety.radiusJitter.max * 0.85,
 	);
 
-	const sizeJitter = rng.float(
-		variety.sizeJitter.min,
-		variety.sizeJitter.max,
-	);
+	const sizeJitter = rng.float(variety.sizeJitter.min, variety.sizeJitter.max);
 	const baseRadius = minSide * rng.float(minScale, maxScale) * sizeJitter;
 
 	const aspect = rng.float(variety.aspect.min, variety.aspect.max);
@@ -292,7 +313,11 @@ export function sampleCentersWithMinDistance(
 	const xMax = (1 + overscan) * bounds.w;
 	const yMin = -overscan * bounds.h;
 	const yMax = (1 + overscan) * bounds.h;
-	const pad = clamp(minSide * (GEN_CONFIG.insidePadding ?? 0), 0, minSide * 0.25);
+	const pad = clamp(
+		minSide * (GEN_CONFIG.insidePadding ?? 0),
+		0,
+		minSide * 0.25,
+	);
 	const insideBounds = {
 		xMin: pad,
 		xMax: bounds.w - pad,

@@ -8,15 +8,23 @@
 // You should NOT make any changes in this file as it will be overwritten.
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
-import { createServerRootRoute } from '@tanstack/react-start/server'
-
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
+import { Route as RobotsDottxtRouteImport } from './routes/robots[.]txt'
 import { Route as ManageGradientsRouteImport } from './routes/manage-gradients'
+import { Route as LoginRouteImport } from './routes/login'
+import { Route as LeaderboardRouteImport } from './routes/leaderboard'
 import { Route as EditorRouteImport } from './routes/editor'
 import { Route as DiscoveryRouteImport } from './routes/discovery'
+import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as PagesRouteRouteImport } from './routes/_pages/route'
+import { Route as DashboardIndexRouteImport } from './routes/dashboard.index'
 import { Route as PagesIndexRouteImport } from './routes/_pages/index'
 import { Route as ShareStateRouteImport } from './routes/share.$state'
+import { Route as GSlugRouteImport } from './routes/g.$slug'
+import { Route as DashboardFavoritesRouteImport } from './routes/dashboard.favorites'
+import { Route as ApiGradientEventsRouteImport } from './routes/api/gradient-events'
+import { Route as ApiGradientRouteImport } from './routes/api/gradient'
 import { Route as PagesTextGradientRouteImport } from './routes/_pages/text-gradient'
 import { Route as PagesTailwindGradientRouteImport } from './routes/_pages/tailwind-gradient'
 import { Route as PagesResourcesRouteImport } from './routes/_pages/resources'
@@ -25,17 +33,36 @@ import { Route as PagesGuideRouteImport } from './routes/_pages/guide'
 import { Route as PagesGalleryRouteImport } from './routes/_pages/gallery'
 import { Route as PagesDevelopersIndexRouteImport } from './routes/_pages/developers/index'
 import { Route as PagesBlogIndexRouteImport } from './routes/_pages/blog/index'
+import { Route as DashboardGradientsGradientIdRouteImport } from './routes/dashboard.gradients.$gradientId'
+import { Route as ApiGradientReactionToggleUpvoteRouteImport } from './routes/api/gradient-reaction.toggle-upvote'
+import { Route as ApiGradientReactionToggleFavoriteRouteImport } from './routes/api/gradient-reaction.toggle-favorite'
+import { Route as ApiAuthSplatRouteImport } from './routes/api/auth.$'
 import { Route as PagesDevelopersConfirmRouteImport } from './routes/_pages/developers/confirm'
 import { Route as PagesBlogSlugRouteImport } from './routes/_pages/blog/$slug'
-import { ServerRoute as SitemapDotxmlServerRouteImport } from './routes/sitemap[.]xml'
-import { ServerRoute as RobotsDottxtServerRouteImport } from './routes/robots[.]txt'
-import { ServerRoute as ApiGradientServerRouteImport } from './routes/api/gradient'
 
-const rootServerRouteImport = createServerRootRoute()
-
+const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
+  id: '/sitemap.xml',
+  path: '/sitemap.xml',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RobotsDottxtRoute = RobotsDottxtRouteImport.update({
+  id: '/robots.txt',
+  path: '/robots.txt',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ManageGradientsRoute = ManageGradientsRouteImport.update({
   id: '/manage-gradients',
   path: '/manage-gradients',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LoginRoute = LoginRouteImport.update({
+  id: '/login',
+  path: '/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LeaderboardRoute = LeaderboardRouteImport.update({
+  id: '/leaderboard',
+  path: '/leaderboard',
   getParentRoute: () => rootRouteImport,
 } as any)
 const EditorRoute = EditorRouteImport.update({
@@ -48,9 +75,19 @@ const DiscoveryRoute = DiscoveryRouteImport.update({
   path: '/discovery',
   getParentRoute: () => rootRouteImport,
 } as any)
+const DashboardRoute = DashboardRouteImport.update({
+  id: '/dashboard',
+  path: '/dashboard',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const PagesRouteRoute = PagesRouteRouteImport.update({
   id: '/_pages',
   getParentRoute: () => rootRouteImport,
+} as any)
+const DashboardIndexRoute = DashboardIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => DashboardRoute,
 } as any)
 const PagesIndexRoute = PagesIndexRouteImport.update({
   id: '/',
@@ -60,6 +97,26 @@ const PagesIndexRoute = PagesIndexRouteImport.update({
 const ShareStateRoute = ShareStateRouteImport.update({
   id: '/share/$state',
   path: '/share/$state',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const GSlugRoute = GSlugRouteImport.update({
+  id: '/g/$slug',
+  path: '/g/$slug',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DashboardFavoritesRoute = DashboardFavoritesRouteImport.update({
+  id: '/favorites',
+  path: '/favorites',
+  getParentRoute: () => DashboardRoute,
+} as any)
+const ApiGradientEventsRoute = ApiGradientEventsRouteImport.update({
+  id: '/api/gradient-events',
+  path: '/api/gradient-events',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiGradientRoute = ApiGradientRouteImport.update({
+  id: '/api/gradient',
+  path: '/api/gradient',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PagesTextGradientRoute = PagesTextGradientRouteImport.update({
@@ -102,6 +159,29 @@ const PagesBlogIndexRoute = PagesBlogIndexRouteImport.update({
   path: '/blog/',
   getParentRoute: () => PagesRouteRoute,
 } as any)
+const DashboardGradientsGradientIdRoute =
+  DashboardGradientsGradientIdRouteImport.update({
+    id: '/gradients/$gradientId',
+    path: '/gradients/$gradientId',
+    getParentRoute: () => DashboardRoute,
+  } as any)
+const ApiGradientReactionToggleUpvoteRoute =
+  ApiGradientReactionToggleUpvoteRouteImport.update({
+    id: '/api/gradient-reaction/toggle-upvote',
+    path: '/api/gradient-reaction/toggle-upvote',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ApiGradientReactionToggleFavoriteRoute =
+  ApiGradientReactionToggleFavoriteRouteImport.update({
+    id: '/api/gradient-reaction/toggle-favorite',
+    path: '/api/gradient-reaction/toggle-favorite',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ApiAuthSplatRoute = ApiAuthSplatRouteImport.update({
+  id: '/api/auth/$',
+  path: '/api/auth/$',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const PagesDevelopersConfirmRoute = PagesDevelopersConfirmRouteImport.update({
   id: '/developers/confirm',
   path: '/developers/confirm',
@@ -112,174 +192,251 @@ const PagesBlogSlugRoute = PagesBlogSlugRouteImport.update({
   path: '/blog/$slug',
   getParentRoute: () => PagesRouteRoute,
 } as any)
-const SitemapDotxmlServerRoute = SitemapDotxmlServerRouteImport.update({
-  id: '/sitemap.xml',
-  path: '/sitemap.xml',
-  getParentRoute: () => rootServerRouteImport,
-} as any)
-const RobotsDottxtServerRoute = RobotsDottxtServerRouteImport.update({
-  id: '/robots.txt',
-  path: '/robots.txt',
-  getParentRoute: () => rootServerRouteImport,
-} as any)
-const ApiGradientServerRoute = ApiGradientServerRouteImport.update({
-  id: '/api/gradient',
-  path: '/api/gradient',
-  getParentRoute: () => rootServerRouteImport,
-} as any)
 
 export interface FileRoutesByFullPath {
+  '/': typeof PagesIndexRoute
+  '/dashboard': typeof DashboardRouteWithChildren
   '/discovery': typeof DiscoveryRoute
   '/editor': typeof EditorRoute
+  '/leaderboard': typeof LeaderboardRoute
+  '/login': typeof LoginRoute
   '/manage-gradients': typeof ManageGradientsRoute
+  '/robots.txt': typeof RobotsDottxtRoute
+  '/sitemap.xml': typeof SitemapDotxmlRoute
   '/gallery': typeof PagesGalleryRoute
   '/guide': typeof PagesGuideRoute
   '/random-gradient': typeof PagesRandomGradientRoute
   '/resources': typeof PagesResourcesRoute
   '/tailwind-gradient': typeof PagesTailwindGradientRoute
   '/text-gradient': typeof PagesTextGradientRoute
+  '/api/gradient': typeof ApiGradientRoute
+  '/api/gradient-events': typeof ApiGradientEventsRoute
+  '/dashboard/favorites': typeof DashboardFavoritesRoute
+  '/g/$slug': typeof GSlugRoute
   '/share/$state': typeof ShareStateRoute
-  '/': typeof PagesIndexRoute
+  '/dashboard/': typeof DashboardIndexRoute
   '/blog/$slug': typeof PagesBlogSlugRoute
   '/developers/confirm': typeof PagesDevelopersConfirmRoute
-  '/blog': typeof PagesBlogIndexRoute
-  '/developers': typeof PagesDevelopersIndexRoute
+  '/api/auth/$': typeof ApiAuthSplatRoute
+  '/api/gradient-reaction/toggle-favorite': typeof ApiGradientReactionToggleFavoriteRoute
+  '/api/gradient-reaction/toggle-upvote': typeof ApiGradientReactionToggleUpvoteRoute
+  '/dashboard/gradients/$gradientId': typeof DashboardGradientsGradientIdRoute
+  '/blog/': typeof PagesBlogIndexRoute
+  '/developers/': typeof PagesDevelopersIndexRoute
 }
 export interface FileRoutesByTo {
   '/discovery': typeof DiscoveryRoute
   '/editor': typeof EditorRoute
+  '/leaderboard': typeof LeaderboardRoute
+  '/login': typeof LoginRoute
   '/manage-gradients': typeof ManageGradientsRoute
+  '/robots.txt': typeof RobotsDottxtRoute
+  '/sitemap.xml': typeof SitemapDotxmlRoute
   '/gallery': typeof PagesGalleryRoute
   '/guide': typeof PagesGuideRoute
   '/random-gradient': typeof PagesRandomGradientRoute
   '/resources': typeof PagesResourcesRoute
   '/tailwind-gradient': typeof PagesTailwindGradientRoute
   '/text-gradient': typeof PagesTextGradientRoute
+  '/api/gradient': typeof ApiGradientRoute
+  '/api/gradient-events': typeof ApiGradientEventsRoute
+  '/dashboard/favorites': typeof DashboardFavoritesRoute
+  '/g/$slug': typeof GSlugRoute
   '/share/$state': typeof ShareStateRoute
   '/': typeof PagesIndexRoute
+  '/dashboard': typeof DashboardIndexRoute
   '/blog/$slug': typeof PagesBlogSlugRoute
   '/developers/confirm': typeof PagesDevelopersConfirmRoute
+  '/api/auth/$': typeof ApiAuthSplatRoute
+  '/api/gradient-reaction/toggle-favorite': typeof ApiGradientReactionToggleFavoriteRoute
+  '/api/gradient-reaction/toggle-upvote': typeof ApiGradientReactionToggleUpvoteRoute
+  '/dashboard/gradients/$gradientId': typeof DashboardGradientsGradientIdRoute
   '/blog': typeof PagesBlogIndexRoute
   '/developers': typeof PagesDevelopersIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/_pages': typeof PagesRouteRouteWithChildren
+  '/dashboard': typeof DashboardRouteWithChildren
   '/discovery': typeof DiscoveryRoute
   '/editor': typeof EditorRoute
+  '/leaderboard': typeof LeaderboardRoute
+  '/login': typeof LoginRoute
   '/manage-gradients': typeof ManageGradientsRoute
+  '/robots.txt': typeof RobotsDottxtRoute
+  '/sitemap.xml': typeof SitemapDotxmlRoute
   '/_pages/gallery': typeof PagesGalleryRoute
   '/_pages/guide': typeof PagesGuideRoute
   '/_pages/random-gradient': typeof PagesRandomGradientRoute
   '/_pages/resources': typeof PagesResourcesRoute
   '/_pages/tailwind-gradient': typeof PagesTailwindGradientRoute
   '/_pages/text-gradient': typeof PagesTextGradientRoute
+  '/api/gradient': typeof ApiGradientRoute
+  '/api/gradient-events': typeof ApiGradientEventsRoute
+  '/dashboard/favorites': typeof DashboardFavoritesRoute
+  '/g/$slug': typeof GSlugRoute
   '/share/$state': typeof ShareStateRoute
   '/_pages/': typeof PagesIndexRoute
+  '/dashboard/': typeof DashboardIndexRoute
   '/_pages/blog/$slug': typeof PagesBlogSlugRoute
   '/_pages/developers/confirm': typeof PagesDevelopersConfirmRoute
+  '/api/auth/$': typeof ApiAuthSplatRoute
+  '/api/gradient-reaction/toggle-favorite': typeof ApiGradientReactionToggleFavoriteRoute
+  '/api/gradient-reaction/toggle-upvote': typeof ApiGradientReactionToggleUpvoteRoute
+  '/dashboard/gradients/$gradientId': typeof DashboardGradientsGradientIdRoute
   '/_pages/blog/': typeof PagesBlogIndexRoute
   '/_pages/developers/': typeof PagesDevelopersIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
+    | '/'
+    | '/dashboard'
     | '/discovery'
     | '/editor'
+    | '/leaderboard'
+    | '/login'
     | '/manage-gradients'
+    | '/robots.txt'
+    | '/sitemap.xml'
     | '/gallery'
     | '/guide'
     | '/random-gradient'
     | '/resources'
     | '/tailwind-gradient'
     | '/text-gradient'
+    | '/api/gradient'
+    | '/api/gradient-events'
+    | '/dashboard/favorites'
+    | '/g/$slug'
     | '/share/$state'
-    | '/'
+    | '/dashboard/'
     | '/blog/$slug'
     | '/developers/confirm'
-    | '/blog'
-    | '/developers'
+    | '/api/auth/$'
+    | '/api/gradient-reaction/toggle-favorite'
+    | '/api/gradient-reaction/toggle-upvote'
+    | '/dashboard/gradients/$gradientId'
+    | '/blog/'
+    | '/developers/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/discovery'
     | '/editor'
+    | '/leaderboard'
+    | '/login'
     | '/manage-gradients'
+    | '/robots.txt'
+    | '/sitemap.xml'
     | '/gallery'
     | '/guide'
     | '/random-gradient'
     | '/resources'
     | '/tailwind-gradient'
     | '/text-gradient'
+    | '/api/gradient'
+    | '/api/gradient-events'
+    | '/dashboard/favorites'
+    | '/g/$slug'
     | '/share/$state'
     | '/'
+    | '/dashboard'
     | '/blog/$slug'
     | '/developers/confirm'
+    | '/api/auth/$'
+    | '/api/gradient-reaction/toggle-favorite'
+    | '/api/gradient-reaction/toggle-upvote'
+    | '/dashboard/gradients/$gradientId'
     | '/blog'
     | '/developers'
   id:
     | '__root__'
     | '/_pages'
+    | '/dashboard'
     | '/discovery'
     | '/editor'
+    | '/leaderboard'
+    | '/login'
     | '/manage-gradients'
+    | '/robots.txt'
+    | '/sitemap.xml'
     | '/_pages/gallery'
     | '/_pages/guide'
     | '/_pages/random-gradient'
     | '/_pages/resources'
     | '/_pages/tailwind-gradient'
     | '/_pages/text-gradient'
+    | '/api/gradient'
+    | '/api/gradient-events'
+    | '/dashboard/favorites'
+    | '/g/$slug'
     | '/share/$state'
     | '/_pages/'
+    | '/dashboard/'
     | '/_pages/blog/$slug'
     | '/_pages/developers/confirm'
+    | '/api/auth/$'
+    | '/api/gradient-reaction/toggle-favorite'
+    | '/api/gradient-reaction/toggle-upvote'
+    | '/dashboard/gradients/$gradientId'
     | '/_pages/blog/'
     | '/_pages/developers/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   PagesRouteRoute: typeof PagesRouteRouteWithChildren
+  DashboardRoute: typeof DashboardRouteWithChildren
   DiscoveryRoute: typeof DiscoveryRoute
   EditorRoute: typeof EditorRoute
+  LeaderboardRoute: typeof LeaderboardRoute
+  LoginRoute: typeof LoginRoute
   ManageGradientsRoute: typeof ManageGradientsRoute
+  RobotsDottxtRoute: typeof RobotsDottxtRoute
+  SitemapDotxmlRoute: typeof SitemapDotxmlRoute
+  ApiGradientRoute: typeof ApiGradientRoute
+  ApiGradientEventsRoute: typeof ApiGradientEventsRoute
+  GSlugRoute: typeof GSlugRoute
   ShareStateRoute: typeof ShareStateRoute
-}
-export interface FileServerRoutesByFullPath {
-  '/robots.txt': typeof RobotsDottxtServerRoute
-  '/sitemap.xml': typeof SitemapDotxmlServerRoute
-  '/api/gradient': typeof ApiGradientServerRoute
-}
-export interface FileServerRoutesByTo {
-  '/robots.txt': typeof RobotsDottxtServerRoute
-  '/sitemap.xml': typeof SitemapDotxmlServerRoute
-  '/api/gradient': typeof ApiGradientServerRoute
-}
-export interface FileServerRoutesById {
-  __root__: typeof rootServerRouteImport
-  '/robots.txt': typeof RobotsDottxtServerRoute
-  '/sitemap.xml': typeof SitemapDotxmlServerRoute
-  '/api/gradient': typeof ApiGradientServerRoute
-}
-export interface FileServerRouteTypes {
-  fileServerRoutesByFullPath: FileServerRoutesByFullPath
-  fullPaths: '/robots.txt' | '/sitemap.xml' | '/api/gradient'
-  fileServerRoutesByTo: FileServerRoutesByTo
-  to: '/robots.txt' | '/sitemap.xml' | '/api/gradient'
-  id: '__root__' | '/robots.txt' | '/sitemap.xml' | '/api/gradient'
-  fileServerRoutesById: FileServerRoutesById
-}
-export interface RootServerRouteChildren {
-  RobotsDottxtServerRoute: typeof RobotsDottxtServerRoute
-  SitemapDotxmlServerRoute: typeof SitemapDotxmlServerRoute
-  ApiGradientServerRoute: typeof ApiGradientServerRoute
+  ApiAuthSplatRoute: typeof ApiAuthSplatRoute
+  ApiGradientReactionToggleFavoriteRoute: typeof ApiGradientReactionToggleFavoriteRoute
+  ApiGradientReactionToggleUpvoteRoute: typeof ApiGradientReactionToggleUpvoteRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/sitemap.xml': {
+      id: '/sitemap.xml'
+      path: '/sitemap.xml'
+      fullPath: '/sitemap.xml'
+      preLoaderRoute: typeof SitemapDotxmlRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/robots.txt': {
+      id: '/robots.txt'
+      path: '/robots.txt'
+      fullPath: '/robots.txt'
+      preLoaderRoute: typeof RobotsDottxtRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/manage-gradients': {
       id: '/manage-gradients'
       path: '/manage-gradients'
       fullPath: '/manage-gradients'
       preLoaderRoute: typeof ManageGradientsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/login': {
+      id: '/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof LoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/leaderboard': {
+      id: '/leaderboard'
+      path: '/leaderboard'
+      fullPath: '/leaderboard'
+      preLoaderRoute: typeof LeaderboardRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/editor': {
@@ -296,12 +453,26 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DiscoveryRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/dashboard': {
+      id: '/dashboard'
+      path: '/dashboard'
+      fullPath: '/dashboard'
+      preLoaderRoute: typeof DashboardRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/_pages': {
       id: '/_pages'
       path: ''
-      fullPath: ''
+      fullPath: '/'
       preLoaderRoute: typeof PagesRouteRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/dashboard/': {
+      id: '/dashboard/'
+      path: '/'
+      fullPath: '/dashboard/'
+      preLoaderRoute: typeof DashboardIndexRouteImport
+      parentRoute: typeof DashboardRoute
     }
     '/_pages/': {
       id: '/_pages/'
@@ -315,6 +486,34 @@ declare module '@tanstack/react-router' {
       path: '/share/$state'
       fullPath: '/share/$state'
       preLoaderRoute: typeof ShareStateRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/g/$slug': {
+      id: '/g/$slug'
+      path: '/g/$slug'
+      fullPath: '/g/$slug'
+      preLoaderRoute: typeof GSlugRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/dashboard/favorites': {
+      id: '/dashboard/favorites'
+      path: '/favorites'
+      fullPath: '/dashboard/favorites'
+      preLoaderRoute: typeof DashboardFavoritesRouteImport
+      parentRoute: typeof DashboardRoute
+    }
+    '/api/gradient-events': {
+      id: '/api/gradient-events'
+      path: '/api/gradient-events'
+      fullPath: '/api/gradient-events'
+      preLoaderRoute: typeof ApiGradientEventsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/gradient': {
+      id: '/api/gradient'
+      path: '/api/gradient'
+      fullPath: '/api/gradient'
+      preLoaderRoute: typeof ApiGradientRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_pages/text-gradient': {
@@ -362,16 +561,44 @@ declare module '@tanstack/react-router' {
     '/_pages/developers/': {
       id: '/_pages/developers/'
       path: '/developers'
-      fullPath: '/developers'
+      fullPath: '/developers/'
       preLoaderRoute: typeof PagesDevelopersIndexRouteImport
       parentRoute: typeof PagesRouteRoute
     }
     '/_pages/blog/': {
       id: '/_pages/blog/'
       path: '/blog'
-      fullPath: '/blog'
+      fullPath: '/blog/'
       preLoaderRoute: typeof PagesBlogIndexRouteImport
       parentRoute: typeof PagesRouteRoute
+    }
+    '/dashboard/gradients/$gradientId': {
+      id: '/dashboard/gradients/$gradientId'
+      path: '/gradients/$gradientId'
+      fullPath: '/dashboard/gradients/$gradientId'
+      preLoaderRoute: typeof DashboardGradientsGradientIdRouteImport
+      parentRoute: typeof DashboardRoute
+    }
+    '/api/gradient-reaction/toggle-upvote': {
+      id: '/api/gradient-reaction/toggle-upvote'
+      path: '/api/gradient-reaction/toggle-upvote'
+      fullPath: '/api/gradient-reaction/toggle-upvote'
+      preLoaderRoute: typeof ApiGradientReactionToggleUpvoteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/gradient-reaction/toggle-favorite': {
+      id: '/api/gradient-reaction/toggle-favorite'
+      path: '/api/gradient-reaction/toggle-favorite'
+      fullPath: '/api/gradient-reaction/toggle-favorite'
+      preLoaderRoute: typeof ApiGradientReactionToggleFavoriteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/auth/$': {
+      id: '/api/auth/$'
+      path: '/api/auth/$'
+      fullPath: '/api/auth/$'
+      preLoaderRoute: typeof ApiAuthSplatRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/_pages/developers/confirm': {
       id: '/_pages/developers/confirm'
@@ -386,31 +613,6 @@ declare module '@tanstack/react-router' {
       fullPath: '/blog/$slug'
       preLoaderRoute: typeof PagesBlogSlugRouteImport
       parentRoute: typeof PagesRouteRoute
-    }
-  }
-}
-declare module '@tanstack/react-start/server' {
-  interface ServerFileRoutesByPath {
-    '/sitemap.xml': {
-      id: '/sitemap.xml'
-      path: '/sitemap.xml'
-      fullPath: '/sitemap.xml'
-      preLoaderRoute: typeof SitemapDotxmlServerRouteImport
-      parentRoute: typeof rootServerRouteImport
-    }
-    '/robots.txt': {
-      id: '/robots.txt'
-      path: '/robots.txt'
-      fullPath: '/robots.txt'
-      preLoaderRoute: typeof RobotsDottxtServerRouteImport
-      parentRoute: typeof rootServerRouteImport
-    }
-    '/api/gradient': {
-      id: '/api/gradient'
-      path: '/api/gradient'
-      fullPath: '/api/gradient'
-      preLoaderRoute: typeof ApiGradientServerRouteImport
-      parentRoute: typeof rootServerRouteImport
     }
   }
 }
@@ -447,21 +649,50 @@ const PagesRouteRouteWithChildren = PagesRouteRoute._addFileChildren(
   PagesRouteRouteChildren,
 )
 
+interface DashboardRouteChildren {
+  DashboardFavoritesRoute: typeof DashboardFavoritesRoute
+  DashboardIndexRoute: typeof DashboardIndexRoute
+  DashboardGradientsGradientIdRoute: typeof DashboardGradientsGradientIdRoute
+}
+
+const DashboardRouteChildren: DashboardRouteChildren = {
+  DashboardFavoritesRoute: DashboardFavoritesRoute,
+  DashboardIndexRoute: DashboardIndexRoute,
+  DashboardGradientsGradientIdRoute: DashboardGradientsGradientIdRoute,
+}
+
+const DashboardRouteWithChildren = DashboardRoute._addFileChildren(
+  DashboardRouteChildren,
+)
+
 const rootRouteChildren: RootRouteChildren = {
   PagesRouteRoute: PagesRouteRouteWithChildren,
+  DashboardRoute: DashboardRouteWithChildren,
   DiscoveryRoute: DiscoveryRoute,
   EditorRoute: EditorRoute,
+  LeaderboardRoute: LeaderboardRoute,
+  LoginRoute: LoginRoute,
   ManageGradientsRoute: ManageGradientsRoute,
+  RobotsDottxtRoute: RobotsDottxtRoute,
+  SitemapDotxmlRoute: SitemapDotxmlRoute,
+  ApiGradientRoute: ApiGradientRoute,
+  ApiGradientEventsRoute: ApiGradientEventsRoute,
+  GSlugRoute: GSlugRoute,
   ShareStateRoute: ShareStateRoute,
+  ApiAuthSplatRoute: ApiAuthSplatRoute,
+  ApiGradientReactionToggleFavoriteRoute:
+    ApiGradientReactionToggleFavoriteRoute,
+  ApiGradientReactionToggleUpvoteRoute: ApiGradientReactionToggleUpvoteRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-const rootServerRouteChildren: RootServerRouteChildren = {
-  RobotsDottxtServerRoute: RobotsDottxtServerRoute,
-  SitemapDotxmlServerRoute: SitemapDotxmlServerRoute,
-  ApiGradientServerRoute: ApiGradientServerRoute,
+
+import type { getRouter } from './router.tsx'
+import type { createStart } from '@tanstack/react-start'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+  }
 }
-export const serverRouteTree = rootServerRouteImport
-  ._addFileChildren(rootServerRouteChildren)
-  ._addFileTypes<FileServerRouteTypes>()
