@@ -248,11 +248,9 @@ function PublicGradientPage() {
 					{/* Author with avatar */}
 					<div className="flex items-center gap-3">
 						{gradient.ownerImage ? (
-							<img
-								src={gradient.ownerImage}
-								alt={gradient.ownerName}
-								className="size-8 object-cover"
-								loading="lazy"
+							<OwnerAvatar
+								image={gradient.ownerImage}
+								name={gradient.ownerName}
 							/>
 						) : (
 							<div className="flex size-8 items-center justify-center bg-neutral-900 text-xs font-semibold text-white">
@@ -496,6 +494,42 @@ function GradientLightbox({
 				</motion.div>
 			</div>
 		</motion.div>
+	);
+}
+
+function OwnerAvatar({ image, name }: { image: string; name: string }) {
+	const [imgError, setImgError] = useState(false);
+	const imgRef = useRef<HTMLImageElement>(null);
+
+	useEffect(() => {
+		const img = imgRef.current;
+		if (img && img.complete && img.naturalWidth === 0) {
+			setImgError(true);
+		}
+	}, []);
+
+	if (imgError) {
+		return (
+			<div className="flex size-8 items-center justify-center bg-neutral-900 text-xs font-semibold text-white">
+				{name
+					.split(/\s+/)
+					.slice(0, 2)
+					.map((p) => p[0]?.toUpperCase() ?? "")
+					.join("")}
+			</div>
+		);
+	}
+
+	return (
+		<img
+			ref={imgRef}
+			src={image}
+			alt={name}
+			referrerPolicy="no-referrer"
+			className="size-8 object-cover"
+			loading="lazy"
+			onError={() => setImgError(true)}
+		/>
 	);
 }
 

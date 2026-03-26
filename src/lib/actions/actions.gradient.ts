@@ -37,6 +37,22 @@ export const getPublicGradientsFromDbQueryOptions = () =>
     queryFn: () => getPublicGradientsFromDb(),
   });
 
+export const listExportedGradients = createServerFn({
+	method: "GET",
+	response: "data",
+}).handler(async () => {
+	const { listExportedGradientsForOwner } = await import(
+		"@/lib/server/gradient-service"
+	);
+	return listExportedGradientsForOwner();
+});
+
+export const listExportedGradientsQueryOptions = () =>
+	queryOptions({
+		queryKey: ["exported-gradients"],
+		queryFn: () => listExportedGradients(),
+	});
+
 export const saveGradientToDb = createServerFn({
   method: "POST",
 })

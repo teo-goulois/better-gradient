@@ -23,7 +23,7 @@ export function ProductShell({
 
       <main className="mx-auto flex w-full max-w-5xl flex-1 flex-col gap-8 px-4 py-8 sm:px-6 sm:py-10">
         {title || description || actions ? (
-          <section className="flex flex-col gap-6 border-b border-neutral-200 pb-8">
+          <section className="flex flex-col gap-6 border-b border-neutral-100 pb-8">
             <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
               <div className="max-w-3xl">
                 {title ? (
@@ -61,9 +61,8 @@ export function SurfaceCard({
   return (
     <section
       className={twJoin(
-        "border border-neutral-200 bg-white p-5 sm:p-6",
-        hoverable &&
-          "transition-colors duration-200 hover:border-neutral-300",
+        "rounded-2xl border border-neutral-100 bg-white p-5 shadow-sm shadow-neutral-950/[0.03] sm:p-6",
+        hoverable && "transition-shadow duration-200 hover:shadow-md hover:shadow-neutral-950/[0.06]",
         className,
       )}
     >
@@ -81,15 +80,15 @@ export function VisibilityBadge({
 }) {
   const palette =
     visibility === "public"
-      ? "border-emerald-200 bg-emerald-50 text-emerald-700"
+      ? "border-emerald-100 bg-emerald-50/80 text-emerald-600"
       : visibility === "unlisted"
-        ? "border-amber-200 bg-amber-50 text-amber-700"
-        : "border-neutral-200 bg-neutral-100 text-neutral-600";
+        ? "border-amber-100 bg-amber-50/80 text-amber-600"
+        : "border-neutral-100 bg-neutral-50 text-neutral-500";
 
   return (
     <span
       className={twJoin(
-        "inline-flex items-center border px-2.5 py-1 text-xs font-semibold uppercase tracking-[0.16em]",
+        "inline-flex items-center rounded-full border px-2.5 py-0.5 text-[11px] font-medium capitalize tracking-wide",
         palette,
         className,
       )}
@@ -109,11 +108,9 @@ export function MetricCard({
   helper?: string;
 }) {
   return (
-    <div className="border border-neutral-200 bg-white p-4">
-      <p className="text-xs font-medium text-neutral-400">
-        {label}
-      </p>
-      <p className="mt-2 font-nohemi text-2xl font-semibold tracking-tight text-neutral-950">
+    <div className="rounded-xl border border-neutral-100 bg-white p-4 shadow-sm shadow-neutral-950/[0.03]">
+      <p className="text-xs font-medium text-neutral-400">{label}</p>
+      <p className="mt-2 font-nohemi text-2xl font-semibold tabular-nums tracking-tight text-neutral-950">
         {value}
       </p>
       {helper ? (
@@ -133,8 +130,8 @@ export function EmptyState({
   action?: React.ReactNode;
 }) {
   return (
-    <section className="flex flex-col items-center border border-dashed border-neutral-300 bg-neutral-50/60 px-6 py-16 text-center sm:py-20">
-      <div className="mb-5 flex size-12 items-center justify-center bg-neutral-100 text-neutral-400">
+    <section className="flex flex-col items-center rounded-2xl border border-dashed border-neutral-200 bg-neutral-50/60 px-6 py-16 text-center sm:py-20">
+      <div className="mb-5 flex size-12 items-center justify-center rounded-xl bg-neutral-100 text-neutral-400">
         <svg
           className="size-6"
           fill="none"
@@ -156,9 +153,7 @@ export function EmptyState({
         {description}
       </p>
       {action ? (
-        <div className="mt-6 flex flex-wrap justify-center gap-3">
-          {action}
-        </div>
+        <div className="mt-6 flex flex-wrap justify-center gap-3">{action}</div>
       ) : null}
     </section>
   );
@@ -176,7 +171,7 @@ export function AuthInlineCta({
   return (
     <Button
       type="button"
-      className="rounded-none"
+      className=""
       isDisabled={isPending}
       onClick={async () => {
         try {

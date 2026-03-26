@@ -20,6 +20,7 @@
 | 2026-03-07 | self | Kept old request-context helper imports in auth after upgrading Start server helpers | Replace `getHeaders()`/`getEvent()` with `getRequestHeaders()`/`getRequestIP()` from `@tanstack/react-start/server` in Start 1.166.x |
 | 2026-03-07 | self | Left Vite React plugin wired twice during the Start upgrade | Duplicated `viteReact()` causes the React Refresh preamble to be injected twice; with TanStack Start, use one `tanstackStart({ customViteReactPlugin: true })` plus one configured `viteReact(...)` |
 | 2026-03-07 | self | Assumed the `g.$slug` route's loader return type was the problem | When TanStack Router infers a file route loader as `=> never` on this repo, treat it as a route typing mismatch and remove or restructure the loader instead of trying different serializable returns |
+| 2026-03-26 | self | Internal tabs on product pages used raw `<a href>` links, which forced full document navigations and remounted auth UI | For in-app route/search changes in this repo, use TanStack Router `Link` with typed `to`/`params`/`search` instead of bare anchors |
 
 ## User Preferences
 - Prefer implementation over extended discussion once the spec is settled.
@@ -34,6 +35,7 @@
 - For strategy deliverables in this repo, a standalone Markdown doc at the repository root works well when there is no `docs/` directory.
 - `pnpm build` is the reliable validation pass here; repo-wide `biome check` currently includes a large backlog of unrelated formatting/lint issues, so use scoped checks on touched files when iterating.
 - Better Auth integration here needs Better Auth-compatible Drizzle tables (`users`, `sessions`, `accounts`, `verifications`) rather than the earlier hand-rolled Google OAuth schema.
+- For owner-facing export history, keep anonymous `created_gradients` for global/share-level stats and add a separate per-user table instead of overloading the global deduped record.
 
 ## Patterns That Don't Work
 - Reusing legacy anonymous persistence tables as the canonical owner-facing model will couple unrelated behaviors and migrations.

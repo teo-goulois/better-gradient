@@ -1,9 +1,15 @@
 import { getViewerQueryOptions } from "@/lib/actions/actions.auth";
-import { listSavedGradientsQueryOptions } from "@/lib/actions/actions.saved-gradient";
+import { listExportedGradientsQueryOptions } from "@/lib/actions/actions.gradient";
+import {
+	listFavoriteGradientsQueryOptions,
+	listSavedGradientsQueryOptions,
+} from "@/lib/actions/actions.saved-gradient";
+import { dashboardSearchSchema } from "@/lib/dashboard";
 import { seo } from "@/utils/seo";
 import { Outlet, createFileRoute, redirect } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/dashboard")({
+	validateSearch: dashboardSearchSchema,
 	head: () => ({
 		...seo({
 			title: "Dashboard | Better Gradient",
@@ -20,6 +26,12 @@ export const Route = createFileRoute("/dashboard")({
 			throw redirect({ href: "/login?next=/dashboard" });
 		}
 		await context.queryClient.ensureQueryData(listSavedGradientsQueryOptions());
+		await context.queryClient.ensureQueryData(
+			listFavoriteGradientsQueryOptions(),
+		);
+		await context.queryClient.ensureQueryData(
+			listExportedGradientsQueryOptions(),
+		);
 		return null;
 	},
 	component: DashboardLayout,

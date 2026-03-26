@@ -10,7 +10,7 @@ import type {
 } from "@/lib/validators/validator.saved-gradient";
 import { buildAbsoluteUrl, seo } from "@/utils/seo";
 import { useSuspenseQuery } from "@tanstack/react-query";
-import { createFileRoute } from "@tanstack/react-router";
+import { Link, createFileRoute } from "@tanstack/react-router";
 import { z } from "zod";
 
 const searchSchema = z.object({
@@ -44,16 +44,16 @@ export const Route = createFileRoute("/leaderboard")({
 
 const podiumColors = [
 	{
-		text: "bg-gradient-to-b from-amber-400 to-amber-600 bg-clip-text text-transparent",
-		border: "border-t-2 border-t-amber-400",
+		text: "bg-gradient-to-b from-amber-300 to-amber-500 bg-clip-text text-transparent",
+		ring: "ring-2 ring-amber-200/60 ring-offset-2",
 	},
 	{
 		text: "bg-gradient-to-b from-neutral-300 to-neutral-400 bg-clip-text text-transparent",
-		border: "border-t-2 border-t-neutral-300",
+		ring: "ring-2 ring-neutral-200/60 ring-offset-2",
 	},
 	{
-		text: "bg-gradient-to-b from-amber-600 to-amber-800 bg-clip-text text-transparent",
-		border: "border-t-2 border-t-amber-700",
+		text: "bg-gradient-to-b from-amber-500 to-amber-700 bg-clip-text text-transparent",
+		ring: "ring-2 ring-amber-300/40 ring-offset-2",
 	},
 ];
 
@@ -68,7 +68,7 @@ function LeaderboardPage() {
 			title="Public gradient leaderboard"
 			description="Trending blends views with upvotes. Top Viewed and Top Voted keep the ranking legible when you want a single signal."
 		>
-			<div className="flex flex-col gap-4 border border-neutral-200 bg-white p-3 sm:flex-row sm:items-center sm:justify-between">
+			<div className="flex flex-col gap-3 rounded-2xl border border-neutral-100 bg-white p-2 shadow-sm shadow-neutral-950/[0.03] sm:flex-row sm:items-center sm:justify-between">
 				<ModeTabs currentMode={mode} currentWindow={window} />
 				<WindowTabs currentMode={mode} currentWindow={window} />
 			</div>
@@ -82,41 +82,42 @@ function LeaderboardPage() {
 						<SurfaceCard
 							key={gradient.id}
 							hoverable
-							className={`group overflow-hidden border-neutral-200 ${podium?.border ?? ""}`}
+							className={`group overflow-hidden ${podium?.ring ?? ""}`}
 						>
 							<div
 								className={`grid gap-5 ${isTopThree ? "lg:grid-cols-[72px_260px_1fr]" : "lg:grid-cols-[56px_180px_1fr]"}`}
 							>
 								<div className="flex items-start">
 									<p
-										className={`font-nohemi font-semibold tracking-tight ${
+										className={`font-nohemi font-semibold tabular-nums tracking-tight ${
 											isTopThree
 												? `text-6xl ${podium?.text ?? ""}`
-												: "text-4xl text-neutral-300"
+												: "text-4xl text-neutral-200"
 										}`}
 									>
 										{String(index + 1).padStart(2, "0")}
 									</p>
 								</div>
-								<div className="overflow-hidden">
+								<div className="overflow-hidden rounded-xl">
 									<GradientPreview
 										shareState={gradient.shareState}
 										title={gradient.title}
-										className={`block w-full border border-neutral-200 object-cover transition-transform duration-300 group-hover:scale-[1.02] ${isTopThree ? "aspect-[4/3]" : "aspect-[3/2]"}`}
+										className={`block w-full object-cover transition-transform duration-300 group-hover:scale-[1.02] ${isTopThree ? "aspect-[4/3]" : "aspect-[3/2]"}`}
 									/>
 								</div>
 								<div className="flex flex-col gap-4">
 									<div className="flex flex-col gap-3 xl:flex-row xl:items-start xl:justify-between">
 										<div>
-											<p className="text-xs font-semibold uppercase tracking-[0.16em] text-neutral-500">
+											<p className="text-xs font-medium text-neutral-400">
 												By {gradient.ownerName}
 											</p>
 											<h2
-												className={`mt-3 font-nohemi font-semibold tracking-tight text-neutral-950 ${isTopThree ? "text-3xl" : "text-2xl"}`}
+												className={`mt-3 font-nohemi font-semibold tracking-tight text-neutral-900 ${isTopThree ? "text-3xl" : "text-2xl"}`}
+												style={{ textWrap: "balance" }}
 											>
 												{gradient.title}
 											</h2>
-											<p className="mt-2 max-w-2xl text-sm leading-6 text-neutral-600">
+											<p className="mt-2 max-w-2xl text-sm leading-6 text-neutral-500">
 												Published{" "}
 												{gradient.publishedAt
 													? new Date(
@@ -126,35 +127,36 @@ function LeaderboardPage() {
 											</p>
 										</div>
 										{gradient.publicSlug ? (
-											<a
-												href={`/g/${gradient.publicSlug}`}
-												className="inline-flex items-center bg-neutral-950 px-4 py-2 text-sm font-semibold text-white transition-transform duration-150 active:scale-[0.97]"
+											<Link
+												to="/g/$slug"
+												params={{ slug: gradient.publicSlug }}
+												className="inline-flex items-center rounded-xl bg-neutral-900 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-neutral-800 active:scale-[0.96]"
 											>
 												Open gradient
-											</a>
+											</Link>
 										) : null}
 									</div>
-									<div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-sm text-neutral-600">
+									<div className="flex flex-wrap items-center gap-x-5 gap-y-2 text-sm text-neutral-400">
 										<span>
-											<strong className="font-semibold text-neutral-950">
+											<strong className="font-semibold tabular-nums text-neutral-900">
 												{gradient.score.toFixed(1)}
 											</strong>{" "}
 											score
 										</span>
 										<span>
-											<strong className="font-semibold text-neutral-950">
+											<strong className="font-semibold tabular-nums text-neutral-900">
 												{gradient.stats.views.toLocaleString()}
 											</strong>{" "}
 											views
 										</span>
 										<span>
-											<strong className="font-semibold text-neutral-950">
+											<strong className="font-semibold tabular-nums text-neutral-900">
 												{gradient.stats.upvotes.toLocaleString()}
 											</strong>{" "}
 											upvotes
 										</span>
 										<span>
-											<strong className="font-semibold text-neutral-950">
+											<strong className="font-semibold tabular-nums text-neutral-900">
 												{gradient.stats.uniqueVisitors.toLocaleString()}
 											</strong>{" "}
 											unique
@@ -167,7 +169,7 @@ function LeaderboardPage() {
 				})}
 				{data.gradients.length === 0 ? (
 					<SurfaceCard className="flex flex-col items-center justify-center py-16 text-center">
-						<div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-full bg-neutral-100">
+						<div className="mx-auto mb-6 flex size-14 items-center justify-center rounded-xl bg-neutral-50">
 							<svg
 								xmlns="http://www.w3.org/2000/svg"
 								width="28"
@@ -178,7 +180,7 @@ function LeaderboardPage() {
 								strokeWidth="1.5"
 								strokeLinecap="round"
 								strokeLinejoin="round"
-								className="text-neutral-400"
+								className="text-neutral-300"
 							>
 								<path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6" />
 								<path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18" />
@@ -188,10 +190,10 @@ function LeaderboardPage() {
 								<path d="M18 2H6v7a6 6 0 0 0 12 0V2Z" />
 							</svg>
 						</div>
-						<h3 className="font-nohemi text-lg font-semibold tracking-tight text-neutral-950">
+						<h3 className="font-nohemi text-lg font-semibold tracking-tight text-neutral-900" style={{ textWrap: "balance" }}>
 							No gradients ranked yet
 						</h3>
-						<p className="mt-2 max-w-sm text-sm leading-6 text-neutral-500">
+						<p className="mt-2 max-w-sm text-sm leading-6 text-neutral-400" style={{ textWrap: "pretty" }}>
 							No public gradients have been published for this time
 							period. Try a different window or check back later.
 						</p>
@@ -220,17 +222,18 @@ function ModeTabs({
 			{tabs.map((tab) => {
 				const isActive = tab.value === currentMode;
 				return (
-					<a
+					<Link
 						key={tab.value}
-						href={`/leaderboard?mode=${tab.value}&window=${currentWindow}`}
+						to="/leaderboard"
+						search={{ mode: tab.value, window: currentWindow }}
 						className={
 							isActive
-								? "bg-neutral-950 px-3.5 py-1.5 text-sm font-semibold text-white"
-								: "px-3.5 py-1.5 text-sm font-semibold text-neutral-400 transition-colors hover:bg-neutral-100 hover:text-neutral-950"
+								? "rounded-xl bg-neutral-900 px-3.5 py-1.5 text-sm font-semibold text-white shadow-sm"
+								: "rounded-xl px-3.5 py-1.5 text-sm font-medium text-neutral-500 transition-colors hover:bg-neutral-50 hover:text-neutral-900"
 						}
 					>
 						{tab.label}
-					</a>
+					</Link>
 				);
 			})}
 		</div>
@@ -256,20 +259,20 @@ function WindowTabs({
 			{tabs.map((tab) => {
 				const isActive = tab.value === currentWindow;
 				return (
-					<a
+					<Link
 						key={tab.value}
-						href={`/leaderboard?mode=${currentMode}&window=${tab.value}`}
+						to="/leaderboard"
+						search={{ mode: currentMode, window: tab.value }}
 						className={
 							isActive
-								? "bg-neutral-950 px-3 py-1.5 text-sm font-semibold text-white"
-								: "px-3 py-1.5 text-sm font-semibold text-neutral-400 transition-colors hover:bg-neutral-100 hover:text-neutral-950"
+								? "rounded-xl bg-neutral-900 px-3 py-1.5 text-sm font-semibold text-white shadow-sm"
+								: "rounded-xl px-3 py-1.5 text-sm font-medium text-neutral-500 transition-colors hover:bg-neutral-50 hover:text-neutral-900"
 						}
 					>
 						{tab.label}
-					</a>
+					</Link>
 				);
 			})}
 		</div>
 	);
 }
-

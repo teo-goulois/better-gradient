@@ -2,15 +2,11 @@
 
 import { Logo } from "@/components/shared/logo";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import {
-  Menu,
-  MenuContent,
-  MenuItem,
-  MenuTrigger,
-} from "@/components/ui/menu";
+import { Menu, MenuContent, MenuItem, MenuTrigger } from "@/components/ui/menu";
 import { AuthInlineCta } from "@/components/gradients/product-shell";
 import { authClient } from "@/lib/auth-client";
 import { getViewerQueryOptions } from "@/lib/actions/actions.auth";
+import { FAVORITES_DASHBOARD_HREF } from "@/lib/dashboard";
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
 import { MeshSidebarColor } from "./mesh-sidebar-color";
@@ -31,10 +27,7 @@ export const MeshSidebar = () => {
 
   return (
     <div className="w-64 min-h-0 h-[calc(100vh-2rem)] fixed left-4 top-4 rounded-xl bg-white z-50 flex flex-col">
-      <ScrollArea
-        type="scroll"
-        className="flex-1 min-h-0"
-      >
+      <ScrollArea type="scroll" className="flex-1 min-h-0">
         <div className="pt-4">
           <Link to="/" className="px-4 py-1 inline-block">
             <Logo />
@@ -86,7 +79,7 @@ export const MeshSidebar = () => {
             </MenuTrigger>
             <MenuContent placement="top start" className="min-w-56">
               <MenuItem href="/dashboard">Dashboard</MenuItem>
-              <MenuItem href="/dashboard/favorites">Favorites</MenuItem>
+              <MenuItem href={FAVORITES_DASHBOARD_HREF}>Favorites</MenuItem>
               <MenuItem href="/leaderboard">Leaderboard</MenuItem>
               <MenuItem
                 isDanger
@@ -106,9 +99,6 @@ export const MeshSidebar = () => {
           </Menu>
         ) : (
           <div className="flex flex-col gap-2">
-            <p className="text-xs text-neutral-500">
-              Sign in to save gradients
-            </p>
             <AuthInlineCta next="/editor" label="Sign in with Google" />
           </div>
         )}

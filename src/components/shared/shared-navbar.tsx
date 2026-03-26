@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Menu, MenuContent, MenuItem, MenuTrigger } from "@/components/ui/menu";
 import { authClient } from "@/lib/auth-client";
 import { getViewerQueryOptions } from "@/lib/actions/actions.auth";
+import { FAVORITES_DASHBOARD_HREF } from "@/lib/dashboard";
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
 import {
@@ -89,6 +90,15 @@ function UserAvatar({
   viewer: { name: string; image: string | null };
 }) {
   const [imgError, setImgError] = useState(false);
+  const imgRef = useRef<HTMLImageElement>(null);
+
+  // Catch errors that fired before React hydration attached the onError handler
+  useEffect(() => {
+    const img = imgRef.current;
+    if (img && img.complete && img.naturalWidth === 0) {
+      setImgError(true);
+    }
+  }, []);
 
   if (!viewer.image || imgError) {
     return (
@@ -100,8 +110,10 @@ function UserAvatar({
 
   return (
     <img
+      ref={imgRef}
       src={viewer.image}
       alt={viewer.name}
+      referrerPolicy="no-referrer"
       className="size-8 rounded-lg object-cover"
       loading="lazy"
       onError={() => setImgError(true)}
@@ -393,7 +405,7 @@ export const SharedNavbar = () => {
                 </MenuTrigger>
                 <MenuContent placement="bottom end">
                   <MenuItem href="/dashboard">Dashboard</MenuItem>
-                  <MenuItem href="/dashboard/favorites">Favorites</MenuItem>
+                  <MenuItem href={FAVORITES_DASHBOARD_HREF}>Favorites</MenuItem>
                   <MenuItem
                     isDanger
                     onAction={() => {
@@ -569,7 +581,8 @@ export const SharedNavbar = () => {
                     Dashboard
                   </Link>
                   <Link
-                    to="/dashboard/favorites"
+                    to="/dashboard"
+                    search={{ filter: "favorites" }}
                     onClick={() => setIsMobileMenuOpen(false)}
                     className="block rounded-lg px-3 py-2 text-sm font-medium text-neutral-600 transition-colors hover:bg-neutral-100 hover:text-neutral-950"
                   >

@@ -77,12 +77,13 @@ function DashboardGradientDetailPage() {
 					</Link>
 					{data.gradient.publicSlug &&
 					data.gradient.visibility !== "private" ? (
-						<a
-							href={`/g/${data.gradient.publicSlug}`}
+						<Link
+							to="/g/$slug"
+							params={{ slug: data.gradient.publicSlug }}
 							className="inline-flex items-center bg-neutral-950 px-4 py-2 text-sm font-semibold text-white"
 						>
 							Open published page
-						</a>
+						</Link>
 					) : null}
 				</>
 			}
@@ -195,9 +196,11 @@ function WindowTabs({
 			{windows.map((item) => {
 				const isActive = item.value === currentWindow;
 				return (
-					<a
+					<Link
 						key={item.value}
-						href={`/dashboard/gradients/${gradientId}?window=${item.value}`}
+						to="/dashboard/gradients/$gradientId"
+						params={{ gradientId }}
+						search={{ window: item.value }}
 						className={
 							isActive
 								? "bg-neutral-950 px-3 py-1.5 text-sm font-semibold text-white"
@@ -205,7 +208,7 @@ function WindowTabs({
 						}
 					>
 						{item.label}
-					</a>
+					</Link>
 				);
 			})}
 		</div>

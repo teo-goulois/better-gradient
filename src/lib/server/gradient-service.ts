@@ -1,7 +1,30 @@
+import { getCurrentViewer, requireCurrentUser } from "@/lib/auth";
 import { db } from "@/lib/db";
-import { createdGradientsTable } from "@/lib/db/schema";
+import {
+	createdGradientsTable,
+	userExportedGradientsTable,
+} from "@/lib/db/schema";
 import type { GetGradientsValidator } from "@/lib/validators/validator.gradient";
-import { eq, sql } from "drizzle-orm";
+import { and, desc, eq, sql } from "drizzle-orm";
+
+type ExportFormat = "png" | "svg" | "css" | "share" | "webp";
+type SaveGradientExportInput = {
+	share: string;
+	format: ExportFormat;
+	width: number;
+	height: number;
+	shapesCount: number;
+	colorsCount: number;
+};
+
+export function mergeExportedFormats(
+	existingFormats: string,
+	format: ExportFormat,
+) {
+	const formats = new Set<string>(JSON.parse(existingFormats));
+	formats.add(format);
+	return JSON.stringify(Array.from(formats));
+}
 
 export async function getTotalExportsFromDbData() {
 	const result = await db
@@ -22,15 +45,10 @@ export async function getPublicGradientsFromDbData() {
 	return { gradients };
 }
 
-export async function saveGradientToDbData(data: {
-	share: string;
-	format: "png" | "svg" | "css" | "share" | "webp";
-	width: number;
-	height: number;
-	shapesCount: number;
-	colorsCount: number;
-}) {
-	const now = Date.now();
+async function upsertGlobalGradientExport(
+	data: SaveGradientExportInput,
+	now: number,
+) {
 	const existing = await db
 		.select()
 		.from(createdGradientsTable)
@@ -72,6 +90,74 @@ export async function saveGradientToDbData(data: {
 	return { ok: true, id, created: true };
 }
 
+async function upsertOwnedGradientExport(args: {
+	ownerId: string;
+	data: SaveGradientExportInput;
+	now: number;
+}) {
+	const existing = await db
+		.select()
+		.from(userExportedGradientsTable)
+		.where(
+			and(
+				eq(userExportedGradientsTable.ownerId, args.ownerId),
+				eq(userExportedGradientsTable.share, args.data.share),
+			),
+		)
+		.limit(1);
+
+	if (existing.length > 0) {
+		const prev = existing[0];
+		await db
+			.update(userExportedGradientsTable)
+			.set({
+				width: args.data.width,
+				height: args.data.height,
+				shapesCount: args.data.shapesCount,
+				colorsCount: args.data.colorsCount,
+				exportedFormats: mergeExportedFormats(
+					prev.exportedFormats,
+					args.data.format,
+				),
+				updatedAt: args.now,
+			})
+			.where(eq(userExportedGradientsTable.id, prev.id));
+		return { ok: true, id: prev.id, updated: true };
+	}
+
+	const id = `export_${Math.random().toString(36).slice(2, 10)}`;
+	await db.insert(userExportedGradientsTable).values({
+		id,
+		ownerId: args.ownerId,
+		share: args.data.share,
+		width: args.data.width,
+		height: args.data.height,
+		shapesCount: args.data.shapesCount,
+		colorsCount: args.data.colorsCount,
+		exportedFormats: JSON.stringify([args.data.format]),
+		createdAt: args.now,
+		updatedAt: args.now,
+	});
+
+	return { ok: true, id, created: true };
+}
+
+export async function saveGradientToDbData(data: SaveGradientExportInput) {
+	const now = Date.now();
+	const viewer = await getCurrentViewer();
+	const globalResult = await upsertGlobalGradientExport(data, now);
+
+	if (viewer.user) {
+		await upsertOwnedGradientExport({
+			ownerId: viewer.user.id,
+			data,
+			now,
+		});
+	}
+
+	return globalResult;
+}
+
 export async function updateGradientStatusInDbData(data: {
 	id: string;
 	status: "draft" | "public";
@@ -99,5 +185,26 @@ export async function getGradientsFromDbData(data: GetGradientsValidator) {
 		)
 		.limit(data.limit)
 		.offset((data.page - 1) * data.limit);
+	return { gradients };
+}
+
+export async function listExportedGradientsForOwner() {
+	const user = await requireCurrentUser();
+	const gradients = await db
+		.select({
+			id: userExportedGradientsTable.id,
+			share: userExportedGradientsTable.share,
+			width: userExportedGradientsTable.width,
+			height: userExportedGradientsTable.height,
+			shapesCount: userExportedGradientsTable.shapesCount,
+			colorsCount: userExportedGradientsTable.colorsCount,
+			exportedFormats: userExportedGradientsTable.exportedFormats,
+			createdAt: userExportedGradientsTable.createdAt,
+			updatedAt: userExportedGradientsTable.updatedAt,
+		})
+		.from(userExportedGradientsTable)
+		.where(eq(userExportedGradientsTable.ownerId, user.id))
+		.orderBy(desc(userExportedGradientsTable.updatedAt));
+
 	return { gradients };
 }
