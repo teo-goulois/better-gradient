@@ -274,13 +274,7 @@ function mapLegacyEvent(
 				},
 			};
 		case "Randomize Gradient":
-			return {
-				event: "gradient_randomized",
-				properties: {
-					source: data?.mood ? "editor_mood" : "editor",
-					...data,
-				},
-			};
+			return null;
 		case "Apply Preset":
 			return {
 				event: "preset_applied",
