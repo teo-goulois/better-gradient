@@ -14,7 +14,8 @@
     "db:push": "drizzle-kit push",
     "db:pull": "drizzle-kit pull",
     "db:generate": "drizzle-kit generate",
-    "db:studio": "drizzle-kit studio"
+    "db:studio": "drizzle-kit studio",
+    "dev-localify": "echo Localify URL: https://better-gradient.localify && vite dev --host 127.0.0.1 --port 59639"
   },
   "dependencies": {
     "@base-ui-components/react": "1.0.0-beta.3",

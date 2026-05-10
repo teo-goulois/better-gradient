@@ -29,6 +29,9 @@ const config = defineConfig({
         plugins: ['babel-plugin-react-compiler'],
       },}),
   ],
+  server: {
+allowedHosts: ["better-gradient.localify"]
+  },
 })
 
 export default config
