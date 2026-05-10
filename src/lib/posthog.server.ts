@@ -12,6 +12,8 @@ type TrackPostHogServerEventInput = {
 	properties?: PostHogServerProperties;
 };
 
+const DEFAULT_POSTHOG_KEY = "phc_qBjjWJrivwd3o22DBN6RUtoUFddf5tiAsUQGuzo5LGEC";
+
 function pickHeader(
 	request: Request | undefined,
 	name: string,
@@ -23,7 +25,7 @@ export async function trackPostHogServerEvent(
 	input: TrackPostHogServerEventInput,
 ): Promise<void> {
 	try {
-		const apiKey = envServer.POSTHOG_KEY;
+		const apiKey = envServer.POSTHOG_KEY ?? DEFAULT_POSTHOG_KEY;
 		if (!apiKey || envServer.POSTHOG_ENABLED === "false") return;
 
 		const host = (envServer.POSTHOG_HOST ?? "https://eu.i.posthog.com").replace(

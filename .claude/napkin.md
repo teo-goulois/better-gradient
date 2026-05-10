@@ -11,6 +11,7 @@
 
 ## Patterns That Work
 - Keep analytics instrumentation thin and centralized; avoid noisy low-value events.
+- For PostHog in Vite production builds, provide a client-side fallback project key or ensure `VITE_POSTHOG_KEY` is present during build; runtime-only env changes will not affect already-built client bundles.
 
 ## Patterns That Don't Work
 - Avoid shell string writes for markdown content with quotes.

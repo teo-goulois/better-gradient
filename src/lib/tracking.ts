@@ -34,6 +34,8 @@ interface EventData {
 
 type AnalyticsProperties = Record<string, unknown>;
 
+const DEFAULT_POSTHOG_KEY = "phc_qBjjWJrivwd3o22DBN6RUtoUFddf5tiAsUQGuzo5LGEC";
+const POSTHOG_KEY = env.VITE_POSTHOG_KEY ?? DEFAULT_POSTHOG_KEY;
 const POSTHOG_HOST = env.VITE_POSTHOG_HOST ?? "https://eu.i.posthog.com";
 const ANONYMOUS_ID_KEY = "bg_anonymous_user_id";
 const FIRST_SEEN_KEY = "bg_first_seen_at";
@@ -104,7 +106,7 @@ function isPostHogEnabled(): boolean {
 	return (
 		typeof window !== "undefined" &&
 		env.VITE_PH_ENABLED !== "false" &&
-		!!env.VITE_POSTHOG_KEY
+		!!POSTHOG_KEY
 	);
 }
 
@@ -188,7 +190,7 @@ function normalizeProperties(
 }
 
 function initPostHog(): void {
-	if (!isPostHogEnabled() || posthogInitialized || !env.VITE_POSTHOG_KEY) {
+	if (!isPostHogEnabled() || posthogInitialized) {
 		return;
 	}
 
@@ -203,7 +205,7 @@ function initPostHog(): void {
 	writeStorage(FIRST_REFERRER_KEY, firstReferrerDomain);
 	writeStorage(FIRST_LANDING_PATH_KEY, firstLandingPath);
 
-	posthog.init(env.VITE_POSTHOG_KEY, {
+	posthog.init(POSTHOG_KEY, {
 		api_host: POSTHOG_HOST,
 		person_profiles: "identified_only",
 		capture_pageview: false,
