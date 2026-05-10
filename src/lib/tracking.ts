@@ -37,6 +37,9 @@ type AnalyticsProperties = Record<string, unknown>;
 const DEFAULT_POSTHOG_KEY = "phc_qBjjWJrivwd3o22DBN6RUtoUFddf5tiAsUQGuzo5LGEC";
 const POSTHOG_KEY = env.VITE_POSTHOG_KEY ?? DEFAULT_POSTHOG_KEY;
 const POSTHOG_HOST = env.VITE_POSTHOG_HOST ?? "https://eu.i.posthog.com";
+const POSTHOG_REPLAY_SAMPLE_RATE = Number.parseFloat(
+	env.VITE_POSTHOG_REPLAY_SAMPLE_RATE ?? "0.02",
+);
 const ANONYMOUS_ID_KEY = "bg_anonymous_user_id";
 const FIRST_SEEN_KEY = "bg_first_seen_at";
 const LAST_SEEN_KEY = "bg_last_seen_at";
@@ -160,6 +163,34 @@ function createId(): string {
 	);
 }
 
+function stableHashToUnitInterval(value: string): number {
+	let hash = 2166136261;
+	for (let index = 0; index < value.length; index += 1) {
+		hash ^= value.charCodeAt(index);
+		hash = Math.imul(hash, 16777619);
+	}
+	return (hash >>> 0) / 2 ** 32;
+}
+
+function getReplaySampleRate(): number {
+	if (!Number.isFinite(POSTHOG_REPLAY_SAMPLE_RATE)) return 0.02;
+	return Math.min(Math.max(POSTHOG_REPLAY_SAMPLE_RATE, 0), 1);
+}
+
+function shouldRecordSessionReplay(anonymousId: string): boolean {
+	if (env.VITE_POSTHOG_REPLAY_FORCE === "true") return true;
+
+	try {
+		if (new URLSearchParams(window.location.search).get("replay") === "1") {
+			return true;
+		}
+	} catch {
+		// URL parsing is best-effort; sampling remains the fallback.
+	}
+
+	return stableHashToUnitInterval(anonymousId) < getReplaySampleRate();
+}
+
 function getOrCreateAnonymousUserId(): string {
 	const existing = readStorage(ANONYMOUS_ID_KEY);
 	if (existing) return existing;
@@ -226,6 +257,7 @@ function initPostHog(): void {
 		person_profiles: "identified_only",
 		capture_pageview: false,
 		autocapture: false,
+		disable_session_recording: true,
 		loaded: (client) => {
 			client.identify(anonymousId, {
 				first_seen_at: firstSeenAt,
@@ -234,6 +266,16 @@ function initPostHog(): void {
 				device_type: getDeviceType(),
 				locale: getLocale(),
 			});
+			if (shouldRecordSessionReplay(anonymousId)) {
+				client.startSessionRecording();
+				debugPostHog("session replay started", {
+					sampleRate: getReplaySampleRate(),
+				});
+			} else {
+				debugPostHog("session replay skipped", {
+					sampleRate: getReplaySampleRate(),
+				});
+			}
 		},
 	});
 	posthogInitialized = true;
