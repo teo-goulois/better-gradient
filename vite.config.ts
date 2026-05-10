@@ -26,6 +26,9 @@ const config = defineConfig({
       },
     }),
   ],
+  server: {
+		allowedHosts: ["better-gradient.localify"],
+  },
 });
 
 export default config;

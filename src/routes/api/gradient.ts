@@ -5,6 +5,7 @@ import { db } from "@/lib/db";
 import { apiKeysTable, apiRateLimitsTable } from "@/lib/db/schema";
 import { rasterizeSvg } from "@/lib/mesh-raster.server";
 import { cssBackgroundFromState, svgStringFromState } from "@/lib/mesh-svg";
+import { trackPostHogServerEvent } from "@/lib/posthog.server";
 import { trackUmamiServerEvent } from "@/lib/umami.server";
 import { clamp, generateShapes, prng } from "@/lib/utils/utils.mesh";
 import type { CanvasSettings, Filters, RgbHex } from "@/types/types.mesh";
@@ -309,6 +310,21 @@ export const Route = createFileRoute("/api/gradient")({
 						quality: quality ?? null,
 						seed_source: seedResult.source,
 						palette_index: paletteResult.index,
+					},
+				});
+				await trackPostHogServerEvent({
+					event: "api_gradient_generated",
+					distinctId: `${rateLimitScope}:${rateIdentifier}`,
+					request,
+					properties: {
+						format,
+						auth_scope: rateLimitScope === "key" ? "verified" : "anonymous",
+						width,
+						height,
+						shape_count: count,
+						palette_count: paletteResult.palette.length,
+						quality: quality ?? null,
+						seed_source: seedResult.source,
 					},
 				});
 				const shapes = generateShapes({

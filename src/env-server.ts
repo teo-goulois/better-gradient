@@ -14,6 +14,11 @@ export const envServer = createEnv({
 		BETTER_AUTH_URL: z.url(),
 		GOOGLE_CLIENT_ID: z.string(),
 		GOOGLE_CLIENT_SECRET: z.string(),
+		POSTHOG_KEY: z.string().optional(),
+		POSTHOG_HOST: z.url().optional(),
+		POSTHOG_ENABLED: z.string().optional(),
+		POSTHOG_DISABLED: z.string().optional(),
+		POSTHOG_DEBUG: z.string().optional(),
 	},
 
 	/**
@@ -31,5 +36,11 @@ export const envServer = createEnv({
 		BETTER_AUTH_URL: process.env.BETTER_AUTH_URL,
 		GOOGLE_CLIENT_ID: process.env.GOOGLE_CLIENT_ID,
 		GOOGLE_CLIENT_SECRET: process.env.GOOGLE_CLIENT_SECRET,
+		POSTHOG_KEY: process.env.POSTHOG_KEY ?? process.env.VITE_POSTHOG_KEY,
+		POSTHOG_HOST: process.env.POSTHOG_HOST ?? process.env.VITE_POSTHOG_HOST,
+		POSTHOG_ENABLED: process.env.POSTHOG_ENABLED ?? process.env.VITE_PH_ENABLED,
+		POSTHOG_DISABLED:
+			process.env.POSTHOG_DISABLED ?? process.env.VITE_POSTHOG_DISABLED,
+		POSTHOG_DEBUG: process.env.POSTHOG_DEBUG ?? process.env.VITE_POSTHOG_DEBUG,
 	},
 });

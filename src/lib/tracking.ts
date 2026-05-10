@@ -1,4 +1,5 @@
 import { env } from "@/env";
+import posthog from "posthog-js";
 
 interface DiscordEmbedField {
 	name: string;
@@ -30,6 +31,21 @@ interface EventData {
 	referrer?: string;
 	[key: string]: unknown;
 }
+
+type AnalyticsProperties = Record<string, unknown>;
+
+const DEFAULT_POSTHOG_KEY = "phc_qBjjWJrivwd3o22DBN6RUtoUFddf5tiAsUQGuzo5LGEC";
+const POSTHOG_KEY = env.VITE_POSTHOG_KEY ?? DEFAULT_POSTHOG_KEY;
+const POSTHOG_HOST = env.VITE_POSTHOG_HOST ?? "https://eu.i.posthog.com";
+const ANONYMOUS_ID_KEY = "bg_anonymous_user_id";
+const FIRST_SEEN_KEY = "bg_first_seen_at";
+const LAST_SEEN_KEY = "bg_last_seen_at";
+const FIRST_REFERRER_KEY = "bg_first_referrer_domain";
+const FIRST_LANDING_PATH_KEY = "bg_first_landing_path";
+const RETURN_VISIT_MIN_MS = 24 * 60 * 60 * 1000;
+
+let posthogInitialized = false;
+let lifecycleCaptured = false;
 
 const DISCORD_WEBHOOK_URL =
 	"https://discord.com/api/webhooks/1410733340084015214/Ydp1bquncROUJ_grG-zg1tReLO9hgpyndACglVViWreRK6azU7caf6EAwszq67hr4nlv";
@@ -86,12 +102,299 @@ async function trackUmamiEvent(event: string): Promise<void> {
 	}
 }
 
+function isPostHogEnabled(): boolean {
+	return (
+		typeof window !== "undefined" &&
+		env.VITE_POSTHOG_DISABLED !== "true" &&
+		!!POSTHOG_KEY
+	);
+}
+
+function debugPostHog(message: string, data?: Record<string, unknown>): void {
+	if (env.VITE_POSTHOG_DEBUG !== "true") return;
+	console.info("[PostHog]", message, data ?? {});
+}
+
+function getReferrerDomain(): string {
+	if (typeof document === "undefined" || !document.referrer) {
+		return "direct";
+	}
+	try {
+		return new URL(document.referrer).hostname;
+	} catch {
+		return "unknown";
+	}
+}
+
+function getDeviceType(): "mobile" | "tablet" | "desktop" {
+	if (typeof window === "undefined") return "desktop";
+	const coarsePointer = window.matchMedia("(pointer: coarse)").matches;
+	if (!coarsePointer) return "desktop";
+	return window.innerWidth >= 768 ? "tablet" : "mobile";
+}
+
+function getLocale(): string {
+	if (typeof navigator === "undefined") return "unknown";
+	return navigator.language || "unknown";
+}
+
+function readStorage(key: string): string | null {
+	try {
+		return window.localStorage.getItem(key);
+	} catch {
+		return null;
+	}
+}
+
+function writeStorage(key: string, value: string): void {
+	try {
+		window.localStorage.setItem(key, value);
+	} catch {
+		// Analytics must not break the product when storage is unavailable.
+	}
+}
+
+function createId(): string {
+	return (
+		globalThis.crypto?.randomUUID?.() ?? `bg_${Date.now()}_${Math.random()}`
+	);
+}
+
+function getOrCreateAnonymousUserId(): string {
+	const existing = readStorage(ANONYMOUS_ID_KEY);
+	if (existing) return existing;
+
+	const id = createId();
+	writeStorage(ANONYMOUS_ID_KEY, id);
+	return id;
+}
+
+function commonProperties(): AnalyticsProperties {
+	return {
+		path: window.location.pathname,
+		referrer_domain: getReferrerDomain(),
+		device_type: getDeviceType(),
+		locale: getLocale(),
+	};
+}
+
+function normalizeProperties(
+	properties?: AnalyticsProperties,
+): AnalyticsProperties | undefined {
+	if (!properties) return undefined;
+	return Object.fromEntries(
+		Object.entries(properties)
+			.map(([key, value]) => [
+				key
+					.replace(/^colors_count$/, "palette_count")
+					.replace(/^shapes_count$/, "shape_count"),
+				value,
+			])
+			.filter(([, value]) => value !== undefined),
+	);
+}
+
+function initPostHog(): void {
+	if (posthogInitialized) {
+		debugPostHog("init skipped: already initialized");
+		return;
+	}
+
+	if (!isPostHogEnabled()) {
+		debugPostHog("init skipped: disabled or missing key", {
+			hasWindow: typeof window !== "undefined",
+			disabled: env.VITE_POSTHOG_DISABLED === "true",
+			hasKey: !!POSTHOG_KEY,
+			host: POSTHOG_HOST,
+		});
+		return;
+	}
+
+	const anonymousId = getOrCreateAnonymousUserId();
+	const firstSeenAt = readStorage(FIRST_SEEN_KEY) ?? new Date().toISOString();
+	const firstReferrerDomain =
+		readStorage(FIRST_REFERRER_KEY) ?? getReferrerDomain();
+	const firstLandingPath =
+		readStorage(FIRST_LANDING_PATH_KEY) ?? window.location.pathname;
+
+	writeStorage(FIRST_SEEN_KEY, firstSeenAt);
+	writeStorage(FIRST_REFERRER_KEY, firstReferrerDomain);
+	writeStorage(FIRST_LANDING_PATH_KEY, firstLandingPath);
+
+	posthog.init(POSTHOG_KEY, {
+		api_host: POSTHOG_HOST,
+		person_profiles: "identified_only",
+		capture_pageview: false,
+		autocapture: false,
+		loaded: (client) => {
+			client.identify(anonymousId, {
+				first_seen_at: firstSeenAt,
+				first_referrer_domain: firstReferrerDomain,
+				first_landing_path: firstLandingPath,
+				device_type: getDeviceType(),
+				locale: getLocale(),
+			});
+		},
+	});
+	posthogInitialized = true;
+	debugPostHog("initialized", {
+		host: POSTHOG_HOST,
+		keyPrefix: POSTHOG_KEY.slice(0, 8),
+		distinctId: anonymousId,
+		path: window.location.pathname,
+	});
+}
+
+function capturePostHogEvent(
+	event: string,
+	properties?: AnalyticsProperties,
+): void {
+	initPostHog();
+	if (!posthogInitialized) {
+		debugPostHog("capture skipped: not initialized", { event });
+		return;
+	}
+	const normalizedProperties = normalizeProperties(properties);
+	debugPostHog("capture", { event, properties: normalizedProperties });
+	posthog.capture(event, normalizedProperties);
+}
+
+function mapLegacyEvent(
+	event: string,
+	data?: AnalyticsProperties,
+): { event: string; properties?: AnalyticsProperties } | null {
+	switch (event) {
+		case "Editor Loaded":
+			return {
+				event: "editor_loaded",
+				properties: {
+					entry_source: inferEditorEntrySource(),
+					is_mobile: getDeviceType() !== "desktop",
+					...data,
+				},
+			};
+		case "Randomize Gradient":
+			return {
+				event: "gradient_randomized",
+				properties: {
+					source: data?.mood ? "editor_mood" : "editor",
+					...data,
+				},
+			};
+		case "Apply Preset":
+			return {
+				event: "preset_applied",
+				properties: {
+					preset_type: data?.is_user_preset ? "user" : "built_in",
+					preset_name: data?.preset_name,
+				},
+			};
+		case "Save Custom Preset":
+			return {
+				event: "custom_preset_saved",
+				properties: data,
+			};
+		case "Copy Share URL":
+			return {
+				event: "share_link_copied",
+				properties: {
+					surface: "editor_export_popover",
+					...data,
+				},
+			};
+		case "Export PNG":
+			return exportEvent("png", data);
+		case "Export WebP":
+			return exportEvent("webp", data);
+		case "Export SVG":
+			return exportEvent("svg", data);
+		case "Copy CSS":
+			return exportEvent("css", data);
+		case "API Key Requested":
+			return {
+				event: "api_key_requested",
+				properties: data,
+			};
+		case "View Shared Gradient":
+			return {
+				event: "gallery_gradient_opened",
+				properties: {
+					source: "share",
+					...data,
+				},
+			};
+		default:
+			return null;
+	}
+}
+
+function exportEvent(format: string, data?: AnalyticsProperties) {
+	return {
+		event: "export_completed",
+		properties: {
+			format,
+			...data,
+		},
+	};
+}
+
+function inferEditorEntrySource(): string {
+	if (typeof document === "undefined") return "direct";
+	const referrer = document.referrer;
+	if (!referrer) return "direct";
+	try {
+		const url = new URL(referrer);
+		if (url.pathname === "/") return "home_cta";
+		if (url.pathname.startsWith("/share/")) return "share_page";
+		if (url.pathname === "/random-gradient") return "random_gradient_page";
+		if (url.pathname === "/gallery") return "gallery";
+		return "other";
+	} catch {
+		return "other";
+	}
+}
+
+function captureLifecycleEvents(): void {
+	if (lifecycleCaptured || typeof window === "undefined") return;
+	lifecycleCaptured = true;
+
+	initPostHog();
+	if (!posthogInitialized) return;
+
+	const now = Date.now();
+	const previousLastSeen = Number(readStorage(LAST_SEEN_KEY) ?? 0);
+	const firstSeenAt = readStorage(FIRST_SEEN_KEY);
+	const properties = commonProperties();
+
+	capturePostHogEvent("app_loaded", properties);
+
+	if (previousLastSeen && now - previousLastSeen >= RETURN_VISIT_MIN_MS) {
+		capturePostHogEvent("return_visit", {
+			days_since_last_seen: Math.floor(
+				(now - previousLastSeen) / RETURN_VISIT_MIN_MS,
+			),
+			path: window.location.pathname,
+		});
+	}
+
+	posthog.setPersonProperties({
+		is_returning_user: !!firstSeenAt && previousLastSeen > 0,
+		device_type: getDeviceType(),
+		locale: getLocale(),
+	});
+	writeStorage(LAST_SEEN_KEY, String(now));
+}
+
 async function trackEvent(
 	event: string,
 	data?: Record<string, unknown>,
 	hideDiscord?: boolean,
 ): Promise<void> {
 	//if (env.VITE_SERVER_URL !== "http://localhost:3000") {
+	const posthogEvent = mapLegacyEvent(event, data);
+	if (posthogEvent) {
+		capturePostHogEvent(posthogEvent.event, posthogEvent.properties);
+	}
 	await Promise.allSettled([
 		hideDiscord ? Promise.resolve() : sendDiscordNotification(event, data),
 		trackUmamiEvent(event),
@@ -99,4 +402,12 @@ async function trackEvent(
 	//}
 }
 
-export { sendDiscordNotification, trackUmamiEvent, trackEvent, type EventData };
+export {
+	captureLifecycleEvents,
+	capturePostHogEvent,
+	getOrCreateAnonymousUserId,
+	sendDiscordNotification,
+	trackUmamiEvent,
+	trackEvent,
+	type EventData,
+};

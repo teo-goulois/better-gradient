@@ -14,7 +14,8 @@
     "db:push": "drizzle-kit push",
     "db:pull": "drizzle-kit pull",
     "db:generate": "drizzle-kit generate",
-    "db:studio": "drizzle-kit studio"
+    "db:studio": "drizzle-kit studio",
+    "dev-localify": "echo Localify URL: https://better-gradient.localify && vite dev --host 127.0.0.1 --port 59639"
   },
   "dependencies": {
     "@base-ui-components/react": "1.0.0-beta.3",
@@ -42,6 +43,7 @@
     "html-to-image": "^1.11.13",
     "motion": "^12.35.1",
     "postcss-easing-gradients": "^3.0.1",
+    "posthog-js": "^1.372.10",
     "react": "^19.2.0",
     "react-aria-components": "^1.13.0",
     "react-dom": "^19.2.0",

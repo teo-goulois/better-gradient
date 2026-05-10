@@ -14,6 +14,10 @@ export const env = createEnv({
 		VITE_SERVER_URL: z.url().optional(),
 		VITE_APP_TITLE: z.string().min(1).optional(),
 		VITE_PH_ENABLED: z.string().optional(),
+		VITE_POSTHOG_KEY: z.string().optional(),
+		VITE_POSTHOG_HOST: z.url().optional(),
+		VITE_POSTHOG_DISABLED: z.string().optional(),
+		VITE_POSTHOG_DEBUG: z.string().optional(),
 	},
 
 	/**
