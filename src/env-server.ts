@@ -10,6 +10,9 @@ export const envServer = createEnv({
 		MARBLE_WORKSPACE_KEY: z.string(),
 		RESEND_API_KEY: z.string(),
 		RESEND_FROM_EMAIL: z.string(),
+		POSTHOG_KEY: z.string().optional(),
+		POSTHOG_HOST: z.url().optional(),
+		POSTHOG_ENABLED: z.string().optional(),
 	},
 
 	/**
@@ -23,5 +26,8 @@ export const envServer = createEnv({
 		MARBLE_WORKSPACE_KEY: process.env.MARBLE_WORKSPACE_KEY,
 		RESEND_API_KEY: process.env.RESEND_API_KEY,
 		RESEND_FROM_EMAIL: process.env.RESEND_FROM_EMAIL,
+		POSTHOG_KEY: process.env.POSTHOG_KEY ?? process.env.VITE_POSTHOG_KEY,
+		POSTHOG_HOST: process.env.POSTHOG_HOST ?? process.env.VITE_POSTHOG_HOST,
+		POSTHOG_ENABLED: process.env.POSTHOG_ENABLED ?? process.env.VITE_PH_ENABLED,
 	},
 });

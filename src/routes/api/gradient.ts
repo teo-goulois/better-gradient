@@ -1,15 +1,16 @@
-import { configPreset } from "@/lib/config/config.preset";
+import { createHash } from "node:crypto";
 import { DEFAULT_CANVAS_SIZE, DEFAULT_FILTERS } from "@/lib/config/config.mesh";
+import { configPreset } from "@/lib/config/config.preset";
 import { db } from "@/lib/db";
 import { apiKeysTable, apiRateLimitsTable } from "@/lib/db/schema";
-import { trackUmamiServerEvent } from "@/lib/umami.server";
 import { rasterizeSvg } from "@/lib/mesh-raster.server";
 import { cssBackgroundFromState, svgStringFromState } from "@/lib/mesh-svg";
+import { trackPostHogServerEvent } from "@/lib/posthog.server";
+import { trackUmamiServerEvent } from "@/lib/umami.server";
 import { clamp, generateShapes, prng } from "@/lib/utils/utils.mesh";
 import type { CanvasSettings, Filters, RgbHex } from "@/types/types.mesh";
 import { createServerFileRoute } from "@tanstack/react-start/server";
 import { eq, sql } from "drizzle-orm";
-import { createHash } from "node:crypto";
 
 const CORS_HEADERS = {
 	"Access-Control-Allow-Origin": "*",
@@ -85,7 +86,8 @@ function pickPalette(seed: string): { index: number; palette: RgbHex[] } {
 	const presets = configPreset;
 	const rng = prng(`${seed}:palette`);
 	const index = rng.int(0, Math.max(0, presets.length - 1));
-	const preset = presets[index]?.config.palette ?? presets[0]?.config.palette ?? [];
+	const preset =
+		presets[index]?.config.palette ?? presets[0]?.config.palette ?? [];
 	return {
 		index,
 		palette:
@@ -123,7 +125,11 @@ function hashKey(value: string): string {
 }
 
 function bufferToArrayBuffer(buffer: Buffer): ArrayBuffer {
-	const view = new Uint8Array(buffer.buffer, buffer.byteOffset, buffer.byteLength);
+	const view = new Uint8Array(
+		buffer.buffer,
+		buffer.byteOffset,
+		buffer.byteLength,
+	);
 	const copy = new Uint8Array(view.byteLength);
 	copy.set(view);
 	return copy.buffer;
@@ -265,10 +271,7 @@ export const ServerRoute = createServerFileRoute("/api/gradient").methods({
 			"X-RateLimit-Reset": String(Math.floor(rate.resetAt / 1000)),
 		};
 		if (!rate.allowed) {
-			const retryAfter = Math.max(
-				1,
-				Math.ceil((rate.resetAt - now) / 1000),
-			);
+			const retryAfter = Math.max(1, Math.ceil((rate.resetAt - now) / 1000));
 			return new Response("Rate limit exceeded", {
 				status: 429,
 				headers: {
@@ -280,7 +283,10 @@ export const ServerRoute = createServerFileRoute("/api/gradient").methods({
 			});
 		}
 
-		const seedResult = await resolveSeed(params.get("seed"), params.get("email"));
+		const seedResult = await resolveSeed(
+			params.get("seed"),
+			params.get("email"),
+		);
 		const paletteResult = pickPalette(seedResult.seed);
 		const canvas = buildCanvas(paletteResult.palette, width, height);
 		const filters = buildFilters();
@@ -299,6 +305,21 @@ export const ServerRoute = createServerFileRoute("/api/gradient").methods({
 				quality: quality ?? null,
 				seed_source: seedResult.source,
 				palette_index: paletteResult.index,
+			},
+		});
+		await trackPostHogServerEvent({
+			event: "api_gradient_generated",
+			distinctId: `${rateLimitScope}:${rateIdentifier}`,
+			request,
+			properties: {
+				format,
+				auth_scope: rateLimitScope === "key" ? "verified" : "anonymous",
+				width,
+				height,
+				shape_count: count,
+				palette_count: paletteResult.palette.length,
+				quality: quality ?? null,
+				seed_source: seedResult.source,
 			},
 		});
 		const shapes = generateShapes({

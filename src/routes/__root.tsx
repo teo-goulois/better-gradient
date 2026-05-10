@@ -1,8 +1,8 @@
 import { TanStackDevtools } from "@tanstack/react-devtools";
 import {
-  HeadContent,
-  Scripts,
-  createRootRouteWithContext,
+	HeadContent,
+	Scripts,
+	createRootRouteWithContext,
 } from "@tanstack/react-router";
 import { TanStackRouterDevtoolsPanel } from "@tanstack/react-router-devtools";
 
@@ -12,219 +12,221 @@ import appCss from "../styles.css?url";
 
 import { SharedDefaultCatchBoundary } from "@/components/shared/shared-default-catch-boundary";
 import { SharedNotFound } from "@/components/shared/shared-not-found";
+import { captureLifecycleEvents } from "@/lib/tracking";
 import { umamiConfig, umamiScriptUrl } from "@/utils/analytics";
 import type { QueryClient } from "@tanstack/react-query";
 import { useEffect } from "react";
 import { scan } from "react-scan";
 
 interface MyRouterContext {
-  queryClient: QueryClient;
+	queryClient: QueryClient;
 }
 
 const seoConfig = {
-  title: "Better Gradient - Free Mesh Gradient Generator & Maker",
-  description:
-    "Free mesh gradient generator - Create stunning mesh blur gradient backgrounds for websites, UI design, and creative projects. No signup required. Export to PNG, WebP, SVG, or CSS instantly.",
-  keywords:
-    "gradient generator, mesh gradient generator, gradient maker, css gradient generator, gradient background generator, mesh gradient, gradient tool, gradient creator, free gradient generator, blur gradient generator, gradient design tool",
-  image: "https://better-gradient.com/og-image.png",
-  url: "https://better-gradient.com",
-  type: "website",
-  canonical: "https://better-gradient.com",
+	title: "Better Gradient - Free Mesh Gradient Generator & Maker",
+	description:
+		"Free mesh gradient generator - Create stunning mesh blur gradient backgrounds for websites, UI design, and creative projects. No signup required. Export to PNG, WebP, SVG, or CSS instantly.",
+	keywords:
+		"gradient generator, mesh gradient generator, gradient maker, css gradient generator, gradient background generator, mesh gradient, gradient tool, gradient creator, free gradient generator, blur gradient generator, gradient design tool",
+	image: "https://better-gradient.com/og-image.png",
+	url: "https://better-gradient.com",
+	type: "website",
+	canonical: "https://better-gradient.com",
 };
 
 export const Route = createRootRouteWithContext<MyRouterContext>()({
-  head: () => ({
-    meta: [
-      {
-        charSet: "utf-8",
-      },
-      {
-        name: "viewport",
-        content: "width=device-width, initial-scale=1",
-      },
-      {
-        title: seoConfig.title,
-      },
-      {
-        name: "description",
-        content: seoConfig.description,
-      },
-      {
-        name: "keywords",
-        content: seoConfig.keywords,
-      },
-      {
-        name: "author",
-        content: "Téo Goulois",
-      },
-      {
-        name: "robots",
-        content: "index, follow",
-      },
-      // Open Graph meta tags
-      {
-        property: "og:title",
-        content: seoConfig.title,
-      },
-      {
-        property: "og:description",
-        content: seoConfig.description,
-      },
-      {
-        property: "og:type",
-        content: "website",
-      },
-      {
-        property: "og:url",
-        content: seoConfig.url,
-      },
-      {
-        property: "og:image",
-        content: seoConfig.image,
-      },
-      {
-        property: "og:site_name",
-        content: "Better Gradient",
-      },
-      // Twitter Card meta tags
-      {
-        name: "twitter:card",
-        content: "summary_large_image",
-      },
-      {
-        name: "twitter:title",
-        content: seoConfig.title,
-      },
-      {
-        name: "twitter:description",
-        content: seoConfig.description,
-      },
-      {
-        name: "twitter:image",
-        content: seoConfig.image,
-      },
-      // Additional SEO meta tags
-      {
-        name: "theme-color",
-        content: "#000000",
-      },
-      {
-        name: "mobile-web-app-capable",
-        content: "yes",
-      },
-      {
-        name: "apple-mobile-web-app-status-bar-style",
-        content: "black-translucent",
-      },
-    ],
-    links: [
-      {
-        rel: "preload",
-        href: "/Nohemi/Nohemi-Regular-BF6438cc579d934.woff",
-        as: "font",
-        type: "font/woff",
-        crossOrigin: "anonymous",
-      },
-      {
-        rel: "preload",
-        href: "/Nohemi/Nohemi-Bold-BF6438cc577b524.woff",
-        as: "font",
-        type: "font/woff",
-        crossOrigin: "anonymous",
-      },
-      {
-        rel: "preload",
-        href: "/Nohemi/Nohemi-VF-BF6438cc58ad63d.ttf",
-        as: "font",
-        type: "font/ttf",
-        crossOrigin: "anonymous",
-      },
-      {
-        rel: "stylesheet",
-        href: appCss,
-      },
-      {
-        rel: "icon",
-        type: "image/x-icon",
-        href: "/favicon.ico",
-      },
-      {
-        rel: "icon",
-        type: "image/png",
-        sizes: "16x16",
-        href: "/favicon-16x16.png",
-      },
-      {
-        rel: "icon",
-        type: "image/png",
-        sizes: "32x32",
-        href: "/favicon-32x32.png",
-      },
-      {
-        rel: "apple-touch-icon",
-        sizes: "180x180",
-        href: "/apple-touch-icon.png",
-      },
-      {
-        rel: "manifest",
-        href: "/manifest.json",
-      },
-    ],
-    scripts: [
-      {
-        src: "https://tally.so/widgets/embed.js",
-        async: true,
-      },
-      {
-        src: umamiScriptUrl,
-        async: true,
-        defer: true,
-        "data-website-id": umamiConfig.websiteId,
-      },
-    ],
-  }),
-  shellComponent: RootDocument,
-  errorComponent: (props) => {
-    return (
-      <RootDocument>
-        <SharedDefaultCatchBoundary {...props} />
-      </RootDocument>
-    );
-  },
-  notFoundComponent: () => <SharedNotFound />,
+	head: () => ({
+		meta: [
+			{
+				charSet: "utf-8",
+			},
+			{
+				name: "viewport",
+				content: "width=device-width, initial-scale=1",
+			},
+			{
+				title: seoConfig.title,
+			},
+			{
+				name: "description",
+				content: seoConfig.description,
+			},
+			{
+				name: "keywords",
+				content: seoConfig.keywords,
+			},
+			{
+				name: "author",
+				content: "Téo Goulois",
+			},
+			{
+				name: "robots",
+				content: "index, follow",
+			},
+			// Open Graph meta tags
+			{
+				property: "og:title",
+				content: seoConfig.title,
+			},
+			{
+				property: "og:description",
+				content: seoConfig.description,
+			},
+			{
+				property: "og:type",
+				content: "website",
+			},
+			{
+				property: "og:url",
+				content: seoConfig.url,
+			},
+			{
+				property: "og:image",
+				content: seoConfig.image,
+			},
+			{
+				property: "og:site_name",
+				content: "Better Gradient",
+			},
+			// Twitter Card meta tags
+			{
+				name: "twitter:card",
+				content: "summary_large_image",
+			},
+			{
+				name: "twitter:title",
+				content: seoConfig.title,
+			},
+			{
+				name: "twitter:description",
+				content: seoConfig.description,
+			},
+			{
+				name: "twitter:image",
+				content: seoConfig.image,
+			},
+			// Additional SEO meta tags
+			{
+				name: "theme-color",
+				content: "#000000",
+			},
+			{
+				name: "mobile-web-app-capable",
+				content: "yes",
+			},
+			{
+				name: "apple-mobile-web-app-status-bar-style",
+				content: "black-translucent",
+			},
+		],
+		links: [
+			{
+				rel: "preload",
+				href: "/Nohemi/Nohemi-Regular-BF6438cc579d934.woff",
+				as: "font",
+				type: "font/woff",
+				crossOrigin: "anonymous",
+			},
+			{
+				rel: "preload",
+				href: "/Nohemi/Nohemi-Bold-BF6438cc577b524.woff",
+				as: "font",
+				type: "font/woff",
+				crossOrigin: "anonymous",
+			},
+			{
+				rel: "preload",
+				href: "/Nohemi/Nohemi-VF-BF6438cc58ad63d.ttf",
+				as: "font",
+				type: "font/ttf",
+				crossOrigin: "anonymous",
+			},
+			{
+				rel: "stylesheet",
+				href: appCss,
+			},
+			{
+				rel: "icon",
+				type: "image/x-icon",
+				href: "/favicon.ico",
+			},
+			{
+				rel: "icon",
+				type: "image/png",
+				sizes: "16x16",
+				href: "/favicon-16x16.png",
+			},
+			{
+				rel: "icon",
+				type: "image/png",
+				sizes: "32x32",
+				href: "/favicon-32x32.png",
+			},
+			{
+				rel: "apple-touch-icon",
+				sizes: "180x180",
+				href: "/apple-touch-icon.png",
+			},
+			{
+				rel: "manifest",
+				href: "/manifest.json",
+			},
+		],
+		scripts: [
+			{
+				src: "https://tally.so/widgets/embed.js",
+				async: true,
+			},
+			{
+				src: umamiScriptUrl,
+				async: true,
+				defer: true,
+				"data-website-id": umamiConfig.websiteId,
+			},
+		],
+	}),
+	shellComponent: RootDocument,
+	errorComponent: (props) => {
+		return (
+			<RootDocument>
+				<SharedDefaultCatchBoundary {...props} />
+			</RootDocument>
+		);
+	},
+	notFoundComponent: () => <SharedNotFound />,
 });
 
 function RootDocument({ children }: { children: React.ReactNode }) {
-  useEffect(() => {
-    // Make sure to run this only after hydration
-    scan({
-      enabled: process.env.NODE_ENV === "development",
-    });
-  }, []);
+	useEffect(() => {
+		captureLifecycleEvents();
+		// Make sure to run this only after hydration
+		scan({
+			enabled: process.env.NODE_ENV === "development",
+		});
+	}, []);
 
-  return (
-    <html lang="en">
-      <head>
-        <HeadContent />
-      </head>
-      <body className="min-h-screen flex flex-col overscroll-none">
-        {children}
-        <TanStackDevtools
-          config={{
-            hideUntilHover: true,
-            position: "bottom-left",
-          }}
-          plugins={[
-            {
-              name: "Tanstack Router",
-              render: <TanStackRouterDevtoolsPanel />,
-            },
-            TanStackQueryDevtools,
-          ]}
-        />
-        <Scripts />
-      </body>
-    </html>
-  );
+	return (
+		<html lang="en">
+			<head>
+				<HeadContent />
+			</head>
+			<body className="min-h-screen flex flex-col overscroll-none">
+				{children}
+				<TanStackDevtools
+					config={{
+						hideUntilHover: true,
+						position: "bottom-left",
+					}}
+					plugins={[
+						{
+							name: "Tanstack Router",
+							render: <TanStackRouterDevtoolsPanel />,
+						},
+						TanStackQueryDevtools,
+					]}
+				/>
+				<Scripts />
+			</body>
+		</html>
+	);
 }
