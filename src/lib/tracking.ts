@@ -105,9 +105,14 @@ async function trackUmamiEvent(event: string): Promise<void> {
 function isPostHogEnabled(): boolean {
 	return (
 		typeof window !== "undefined" &&
-		env.VITE_PH_ENABLED !== "false" &&
+		env.VITE_POSTHOG_DISABLED !== "true" &&
 		!!POSTHOG_KEY
 	);
+}
+
+function debugPostHog(message: string, data?: Record<string, unknown>): void {
+	if (env.VITE_POSTHOG_DEBUG !== "true") return;
+	console.info("[PostHog]", message, data ?? {});
 }
 
 function getReferrerDomain(): string {
@@ -190,7 +195,18 @@ function normalizeProperties(
 }
 
 function initPostHog(): void {
-	if (!isPostHogEnabled() || posthogInitialized) {
+	if (posthogInitialized) {
+		debugPostHog("init skipped: already initialized");
+		return;
+	}
+
+	if (!isPostHogEnabled()) {
+		debugPostHog("init skipped: disabled or missing key", {
+			hasWindow: typeof window !== "undefined",
+			disabled: env.VITE_POSTHOG_DISABLED === "true",
+			hasKey: !!POSTHOG_KEY,
+			host: POSTHOG_HOST,
+		});
 		return;
 	}
 
@@ -221,6 +237,12 @@ function initPostHog(): void {
 		},
 	});
 	posthogInitialized = true;
+	debugPostHog("initialized", {
+		host: POSTHOG_HOST,
+		keyPrefix: POSTHOG_KEY.slice(0, 8),
+		distinctId: anonymousId,
+		path: window.location.pathname,
+	});
 }
 
 function capturePostHogEvent(
@@ -228,8 +250,13 @@ function capturePostHogEvent(
 	properties?: AnalyticsProperties,
 ): void {
 	initPostHog();
-	if (!posthogInitialized) return;
-	posthog.capture(event, normalizeProperties(properties));
+	if (!posthogInitialized) {
+		debugPostHog("capture skipped: not initialized", { event });
+		return;
+	}
+	const normalizedProperties = normalizeProperties(properties);
+	debugPostHog("capture", { event, properties: normalizedProperties });
+	posthog.capture(event, normalizedProperties);
 }
 
 function mapLegacyEvent(

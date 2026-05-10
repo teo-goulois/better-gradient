@@ -14,6 +14,14 @@ type TrackPostHogServerEventInput = {
 
 const DEFAULT_POSTHOG_KEY = "phc_qBjjWJrivwd3o22DBN6RUtoUFddf5tiAsUQGuzo5LGEC";
 
+function debugPostHogServer(
+	message: string,
+	data?: Record<string, unknown>,
+): void {
+	if (envServer.POSTHOG_DEBUG !== "true") return;
+	console.info("[PostHog server]", message, data ?? {});
+}
+
 function pickHeader(
 	request: Request | undefined,
 	name: string,
@@ -26,7 +34,14 @@ export async function trackPostHogServerEvent(
 ): Promise<void> {
 	try {
 		const apiKey = envServer.POSTHOG_KEY ?? DEFAULT_POSTHOG_KEY;
-		if (!apiKey || envServer.POSTHOG_ENABLED === "false") return;
+		if (!apiKey || envServer.POSTHOG_DISABLED === "true") {
+			debugPostHogServer("capture skipped: disabled or missing key", {
+				event: input.event,
+				disabled: envServer.POSTHOG_DISABLED === "true",
+				hasKey: !!apiKey,
+			});
+			return;
+		}
 
 		const host = (envServer.POSTHOG_HOST ?? "https://eu.i.posthog.com").replace(
 			/\/$/,
@@ -46,7 +61,7 @@ export async function trackPostHogServerEvent(
 			}).filter(([, value]) => value !== undefined),
 		);
 
-		await fetch(`${host}/capture/`, {
+		const response = await fetch(`${host}/capture/`, {
 			method: "POST",
 			headers: {
 				"Content-Type": "application/json",
@@ -57,6 +72,12 @@ export async function trackPostHogServerEvent(
 				distinct_id: input.distinctId,
 				properties,
 			}),
+		});
+		debugPostHogServer("capture", {
+			event: input.event,
+			host,
+			status: response.status,
+			ok: response.ok,
 		});
 	} catch (error) {
 		console.error("Failed to track PostHog server event:", error);

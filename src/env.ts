@@ -16,6 +16,8 @@ export const env = createEnv({
 		VITE_PH_ENABLED: z.string().optional(),
 		VITE_POSTHOG_KEY: z.string().optional(),
 		VITE_POSTHOG_HOST: z.url().optional(),
+		VITE_POSTHOG_DISABLED: z.string().optional(),
+		VITE_POSTHOG_DEBUG: z.string().optional(),
 	},
 
 	/**

@@ -13,6 +13,8 @@ export const envServer = createEnv({
 		POSTHOG_KEY: z.string().optional(),
 		POSTHOG_HOST: z.url().optional(),
 		POSTHOG_ENABLED: z.string().optional(),
+		POSTHOG_DISABLED: z.string().optional(),
+		POSTHOG_DEBUG: z.string().optional(),
 	},
 
 	/**
@@ -29,5 +31,8 @@ export const envServer = createEnv({
 		POSTHOG_KEY: process.env.POSTHOG_KEY ?? process.env.VITE_POSTHOG_KEY,
 		POSTHOG_HOST: process.env.POSTHOG_HOST ?? process.env.VITE_POSTHOG_HOST,
 		POSTHOG_ENABLED: process.env.POSTHOG_ENABLED ?? process.env.VITE_PH_ENABLED,
+		POSTHOG_DISABLED:
+			process.env.POSTHOG_DISABLED ?? process.env.VITE_POSTHOG_DISABLED,
+		POSTHOG_DEBUG: process.env.POSTHOG_DEBUG ?? process.env.VITE_POSTHOG_DEBUG,
 	},
 });
