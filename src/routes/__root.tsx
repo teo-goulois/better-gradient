@@ -12,9 +12,10 @@ import appCss from "../styles.css?url";
 
 import { SharedDefaultCatchBoundary } from "@/components/shared/shared-default-catch-boundary";
 import { SharedNotFound } from "@/components/shared/shared-not-found";
-import { captureLifecycleEvents } from "@/lib/tracking";
+import { captureLifecycleEvents, capturePageview } from "@/lib/tracking";
 import { umamiConfig, umamiScriptUrl } from "@/utils/analytics";
 import type { QueryClient } from "@tanstack/react-query";
+import { useLocation } from "@tanstack/react-router";
 import { useEffect } from "react";
 import { scan } from "react-scan";
 
@@ -197,6 +198,8 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
 });
 
 function RootDocument({ children }: { children: React.ReactNode }) {
+	const location = useLocation();
+
 	useEffect(() => {
 		captureLifecycleEvents();
 		// Make sure to run this only after hydration
@@ -204,6 +207,10 @@ function RootDocument({ children }: { children: React.ReactNode }) {
 			enabled: process.env.NODE_ENV === "development",
 		});
 	}, []);
+
+	useEffect(() => {
+		capturePageview(location.pathname);
+	}, [location.pathname]);
 
 	return (
 		<html lang="en">

@@ -49,6 +49,7 @@ const RETURN_VISIT_MIN_MS = 24 * 60 * 60 * 1000;
 
 let posthogInitialized = false;
 let lifecycleCaptured = false;
+let lastCapturedPageviewUrl: string | null = null;
 
 const DISCORD_WEBHOOK_URL =
 	"https://discord.com/api/webhooks/1410733340084015214/Ydp1bquncROUJ_grG-zg1tReLO9hgpyndACglVViWreRK6azU7caf6EAwszq67hr4nlv";
@@ -301,6 +302,32 @@ function capturePostHogEvent(
 	posthog.capture(event, normalizedProperties);
 }
 
+function capturePageview(pathname?: string): void {
+	initPostHog();
+	if (!posthogInitialized || typeof window === "undefined") {
+		debugPostHog("pageview skipped: not initialized", { pathname });
+		return;
+	}
+
+	const currentUrl = window.location.href;
+	if (lastCapturedPageviewUrl === currentUrl) {
+		debugPostHog("pageview skipped: duplicate", { currentUrl });
+		return;
+	}
+	lastCapturedPageviewUrl = currentUrl;
+
+	const properties = {
+		...commonProperties(),
+		$current_url: currentUrl,
+		$host: window.location.host,
+		$pathname: pathname ?? window.location.pathname,
+		$title: document.title,
+	};
+
+	debugPostHog("pageview", properties);
+	posthog.capture("$pageview", properties);
+}
+
 function mapLegacyEvent(
 	event: string,
 	data?: AnalyticsProperties,
@@ -440,6 +467,7 @@ async function trackEvent(
 
 export {
 	captureLifecycleEvents,
+	capturePageview,
 	capturePostHogEvent,
 	getOrCreateAnonymousUserId,
 	sendDiscordNotification,
