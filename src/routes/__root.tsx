@@ -188,11 +188,7 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
 	}),
 	shellComponent: RootDocument,
 	errorComponent: (props) => {
-		return (
-			<RootDocument>
-				<SharedDefaultCatchBoundary {...props} />
-			</RootDocument>
-		);
+		return <SharedDefaultCatchBoundary {...props} />;
 	},
 	notFoundComponent: () => <SharedNotFound />,
 });

@@ -1,4 +1,4 @@
-{
+w{
   "name": "better-gradient",
   "private": true,
   "type": "module",
@@ -15,7 +15,7 @@
     "db:pull": "drizzle-kit pull",
     "db:generate": "drizzle-kit generate",
     "db:studio": "drizzle-kit studio",
-    "dev-localify": "echo Localify URL: https://better-gradient.localify && vite dev --host 127.0.0.1 --port 59639"
+    "dev-localify": "echo Localify URL: https://better-gradient.localify && LOCALIFY_DEV=1 vite dev --host 127.0.0.1 --port 59639 --strictPort --force"
   },
   "dependencies": {
     "@base-ui-components/react": "1.0.0-beta.3",
@@ -65,7 +65,7 @@
     "@types/react-dom": "^19.0.3",
     "@types/seedrandom": "^3.0.8",
     "@vitejs/plugin-react": "^4.7.0",
-    "babel-plugin-react-compiler": "19.1.0-rc.3",
+    "babel-plugin-react-compiler": "1.0.0",
     "drizzle-kit": "^0.31.5",
     "jsdom": "^26.0.0",
     "tw-animate-css": "^1.3.7",

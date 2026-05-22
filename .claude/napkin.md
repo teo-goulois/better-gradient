@@ -13,9 +13,11 @@
 - Keep analytics instrumentation thin and centralized; avoid noisy low-value events.
 - For PostHog in Vite production builds, provide a client-side fallback project key or ensure `VITE_POSTHOG_KEY` is present during build; runtime-only env changes will not affect already-built client bundles.
 - Do not gate PostHog on the legacy `VITE_PH_ENABLED` flag; Vercel can carry stale public build env values. Use `VITE_POSTHOG_DISABLED=true` only for an explicit analytics opt-out.
+- `$pageview` is now manually captured from `src/routes/__root.tsx`; when analyzing PostHog, treat pageview data as starting on 2026-05-12, not from the first custom event day.
 
 ## Patterns That Don't Work
 - Avoid shell string writes for markdown content with quotes.
+- Raw `/share/:state` URLs create very high-cardinality path values in PostHog; normalize share paths before relying on path breakdowns.
 
 ## Domain Notes
 - Better Gradient is a TanStack Start/Vite app with an existing Umami-style analytics helper in `src/lib/tracking.ts`.
