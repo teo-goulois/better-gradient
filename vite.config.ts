@@ -7,6 +7,8 @@ import { devtools } from "@tanstack/devtools-vite";
 // @ts-ignore
 import postcssEasingGradients from "postcss-easing-gradients";
 
+const isLocalifyDev = process.env.LOCALIFY_DEV === '1'
+
 const config = defineConfig({
   css: {
     postcss: {
@@ -27,7 +29,16 @@ const config = defineConfig({
     }),
   ],
   server: {
-		allowedHosts: ["better-gradient.localify"],
+    allowedHosts: ['better-gradient.localify'],
+    ...(isLocalifyDev
+      ? {
+          hmr: {
+            protocol: 'ws',
+            host: '127.0.0.1',
+            clientPort: 59639,
+          },
+        }
+      : {}),
   },
 });
 

@@ -18,6 +18,8 @@ export const env = createEnv({
 		VITE_POSTHOG_HOST: z.url().optional(),
 		VITE_POSTHOG_DISABLED: z.string().optional(),
 		VITE_POSTHOG_DEBUG: z.string().optional(),
+		VITE_POSTHOG_REPLAY_FORCE: z.string().optional(),
+		VITE_POSTHOG_REPLAY_SAMPLE_RATE: z.string().optional(),
 	},
 
 	/**
