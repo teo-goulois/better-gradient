@@ -5,110 +5,114 @@ import { ColorSlider } from "@/components/ui/color-slider";
 import { ColorSwatch } from "@/components/ui/color-swatch";
 import { Description } from "@/components/ui/field";
 import {
-  Popover,
-  PopoverContent,
-  type PopoverContentProps,
+	Popover,
+	PopoverContent,
+	type PopoverContentProps,
 } from "@/components/ui/popover";
 import { withRafThrottle } from "@/lib/utils/raf-throttle";
 import { useMeshStore } from "@/store/store-mesh";
 import { IconEyeDropper, IconX } from "@intentui/icons";
 import { parseColor } from "@react-stately/color";
-import { use, useMemo, useState } from "react";
+import { use, useEffect, useMemo, useState } from "react";
 import {
-  ColorPicker as ColorPickerPrimitive,
-  type ColorPickerProps as ColorPickerPrimitiveProps,
-  ColorPickerStateContext,
+	ColorPicker as ColorPickerPrimitive,
+	type ColorPickerProps as ColorPickerPrimitiveProps,
+	ColorPickerStateContext,
 } from "react-aria-components";
 import { twJoin, twMerge } from "tailwind-merge";
 interface Props
-  extends ColorPickerPrimitiveProps,
-    Pick<PopoverContentProps, "placement"> {
-  label?: string;
-  className?: string;
-  children?: React.ReactNode;
-  showArrow?: boolean;
-  isDisabled?: boolean;
-  description?: string;
-  eyeDropper?: boolean;
-  onRemove?: () => void;
-  divProps?: React.HTMLAttributes<HTMLDivElement>;
+	extends ColorPickerPrimitiveProps,
+		Pick<PopoverContentProps, "placement"> {
+	label?: string;
+	className?: string;
+	children?: React.ReactNode;
+	showArrow?: boolean;
+	isDisabled?: boolean;
+	description?: string;
+	eyeDropper?: boolean;
+	onRemove?: () => void;
+	divProps?: React.HTMLAttributes<HTMLDivElement>;
 }
 
 export const MeshSidebarColorPicker = ({
-  showArrow = false,
-  placement = "bottom start",
-  label,
-  isDisabled,
-  children,
-  description,
-  eyeDropper,
-  className,
-  onRemove,
-  divProps,
+	showArrow = false,
+	placement = "bottom start",
+	label,
+	isDisabled,
+	children,
+	description,
+	eyeDropper,
+	className,
+	onRemove,
+	divProps,
 
-  ...props
+	...props
 }: Props) => {
-  const palette = useMeshStore((state) => state.palette);
+	const palette = useMeshStore((state) => state.palette);
 
-  const { onChange, ...restProps } = props;
-  type OnChange = NonNullable<ColorPickerPrimitiveProps["onChange"]>;
-  const throttledOnChange = useMemo(() => {
-    if (!onChange) return undefined;
-    const throttled = withRafThrottle<Parameters<OnChange>>(
-      onChange as OnChange
-    );
-    return (...args: Parameters<OnChange>) => throttled(...args);
-  }, [onChange]);
+	const { onChange, value: controlledValue, ...restProps } = props;
+	type OnChange = NonNullable<ColorPickerPrimitiveProps["onChange"]>;
+	const throttledOnChange = useMemo(() => {
+		if (!onChange) return undefined;
+		const throttled = withRafThrottle<Parameters<OnChange>>(
+			onChange as OnChange,
+		);
+		return (...args: Parameters<OnChange>) => throttled(...args);
+	}, [onChange]);
 
-  const [value, setValue] = useState(restProps.value);
+	const [value, setValue] = useState(controlledValue);
 
-  return (
-    <div
-      className={twMerge(
-        "flex flex-col items-start gap-y-1 relative",
-        className
-      )}
-    >
-      {palette.length > 1 && (
-        <Button
-          isCircle
-          size="sq-xxs"
-          intent="secondary"
-          className={twJoin(
-            "size-4",
-            "rounded-full z-10",
-            "absolute -top-1 -right-1 opacity-0 group-hover:opacity-100 transition-opacity"
-          )}
-          onPress={onRemove}
-        >
-          <IconX className="size-2" />
-        </Button>
-      )}
+	useEffect(() => {
+		setValue(controlledValue);
+	}, [controlledValue]);
 
-      <ColorPickerPrimitive
-        {...restProps}
-        value={value}
-        onChange={(value) => {
-          setValue(value);
-          throttledOnChange?.(value);
-        }}
-      >
-        <Popover>
-          <Button
-            isDisabled={isDisabled}
-            size={label ? "md" : "sq-sm"}
-            intent="outline"
-            isCircle
-            className={twJoin(
-              "w-auto *:data-[slot=color-swatch]:size-9",
-              !label && "size-fit",
-              "p-0"
-            )}
-          >
-            <ColorSwatch className="rounded-full" />
-            {label && label}
-          </Button>
-          {/* <Popover.Trigger className="relative group">
+	return (
+		<div
+			className={twMerge(
+				"flex flex-col items-start gap-y-1 relative",
+				className,
+			)}
+		>
+			{palette.length > 1 && (
+				<Button
+					isCircle
+					size="sq-xxs"
+					intent="secondary"
+					className={twJoin(
+						"size-4",
+						"rounded-full z-10",
+						"absolute -top-1 -right-1 opacity-0 group-hover:opacity-100 transition-opacity",
+					)}
+					onPress={onRemove}
+				>
+					<IconX className="size-2" />
+				</Button>
+			)}
+
+			<ColorPickerPrimitive
+				{...restProps}
+				value={value}
+				onChange={(value) => {
+					setValue(value);
+					throttledOnChange?.(value);
+				}}
+			>
+				<Popover>
+					<Button
+						isDisabled={isDisabled}
+						size={label ? "md" : "sq-sm"}
+						intent="outline"
+						isCircle
+						className={twJoin(
+							"w-auto *:data-[slot=color-swatch]:size-9",
+							!label && "size-fit",
+							"p-0",
+						)}
+					>
+						<ColorSwatch className="rounded-full" />
+						{label && label}
+					</Button>
+					{/* <Popover.Trigger className="relative group">
             <Button
               isDisabled={isDisabled}
               size={label ? "md" : "sq-sm"}
@@ -125,77 +129,77 @@ export const MeshSidebarColorPicker = ({
             </Button>
             
           </Popover.Trigger> */}
-          {/* </Popover.Trigger> */}
-          <PopoverContent
-            className="**:data-[slot=color-area]:w-full **:data-[slot=color-slider]:w-full sm:min-w-min sm:max-w-56 sm:**:data-[slot=color-area]:size-56 *:[[role=dialog]]:p-4 sm:*:[[role=dialog]]:p-3"
-            showArrow={showArrow}
-            placement={placement}
-          >
-            <div className="flex flex-col gap-y-1.5 p-4">
-              {children || (
-                <>
-                  <ColorArea
-                    colorSpace="hsb"
-                    xChannel="saturation"
-                    yChannel="brightness"
-                  />
-                  <ColorSlider
-                    showOutput={false}
-                    colorSpace="hsb"
-                    channel="hue"
-                  />
-                  <div className="flex items-center gap-1.5">
-                    {eyeDropper && <EyeDropper />}
-                    <ColorField
-                      onKeyDown={(e) => {
-                        if (e.key === "Enter") {
-                          e.currentTarget.blur();
-                        }
-                      }}
-                      className="h-9"
-                      aria-label="Hex"
-                    />
-                  </div>
-                </>
-              )}
-            </div>
-          </PopoverContent>
-        </Popover>
-      </ColorPickerPrimitive>
-      {description && <Description>{description}</Description>}
-    </div>
-  );
+					{/* </Popover.Trigger> */}
+					<PopoverContent
+						className="**:data-[slot=color-area]:w-full **:data-[slot=color-slider]:w-full sm:min-w-min sm:max-w-56 sm:**:data-[slot=color-area]:size-56 *:[[role=dialog]]:p-4 sm:*:[[role=dialog]]:p-3"
+						showArrow={showArrow}
+						placement={placement}
+					>
+						<div className="flex flex-col gap-y-1.5 p-4">
+							{children || (
+								<>
+									<ColorArea
+										colorSpace="hsb"
+										xChannel="saturation"
+										yChannel="brightness"
+									/>
+									<ColorSlider
+										showOutput={false}
+										colorSpace="hsb"
+										channel="hue"
+									/>
+									<div className="flex items-center gap-1.5">
+										{eyeDropper && <EyeDropper />}
+										<ColorField
+											onKeyDown={(e) => {
+												if (e.key === "Enter") {
+													e.currentTarget.blur();
+												}
+											}}
+											className="h-9"
+											aria-label="Hex"
+										/>
+									</div>
+								</>
+							)}
+						</div>
+					</PopoverContent>
+				</Popover>
+			</ColorPickerPrimitive>
+			{description && <Description>{description}</Description>}
+		</div>
+	);
 };
 
 declare global {
-  interface Window {
-    EyeDropper?: new () => { open: () => Promise<{ sRGBHex: string }> };
-  }
+	interface Window {
+		EyeDropper?: new () => { open: () => Promise<{ sRGBHex: string }> };
+	}
 }
 
 const EyeDropper = () => {
-  const state = use(ColorPickerStateContext);
-  if (!state) return null;
+	const state = use(ColorPickerStateContext);
+	if (!state) return null;
 
-  if (!window.EyeDropper) {
-    return "EyeDropper is not supported in your browser.";
-  }
+	if (!window.EyeDropper) {
+		return "EyeDropper is not supported in your browser.";
+	}
 
-  return (
-    <Button
-      aria-label="Eye dropper"
-      size="sq-sm"
-      intent="outline"
-      onPress={() => {
-        const eyeDropper = window.EyeDropper ? new window.EyeDropper() : null;
-        eyeDropper
-          ?.open()
-          .then((result) => state?.setColor(parseColor(result.sRGBHex)));
-      }}
-    >
-      <IconEyeDropper />
-    </Button>
-  );
+	return (
+		<Button
+			aria-label="Eye dropper"
+			size="sq-sm"
+			intent="outline"
+			onPress={() => {
+				const eyeDropper = window.EyeDropper ? new window.EyeDropper() : null;
+				eyeDropper
+					?.open()
+					.then((result) => state?.setColor(parseColor(result.sRGBHex)));
+			}}
+		>
+			<IconEyeDropper />
+		</Button>
+	);
 };
 
 export type { Props as MeshSidebarColorPickerProps };

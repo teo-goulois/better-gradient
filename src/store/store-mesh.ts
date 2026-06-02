@@ -157,10 +157,20 @@ const INITIAL_PALETTE = configPreset[0].config.palette;
 const INITIAL_SEED = "seed-1";
 const INITIAL_SHAPES: BlobShape[] = configPreset[0].config.shapes;
 
+const normalizeCanvas = (
+	canvas: Partial<CanvasSettings> | undefined,
+	fallback: CanvasSettings = DEFAULT_CANVAS,
+): CanvasSettings => ({
+	...fallback,
+	...canvas,
+	background: canvas?.background ?? fallback.background,
+	backgroundMode: canvas?.backgroundMode ?? fallback.backgroundMode,
+});
+
 const initialStateBase: Omit<MeshState, keyof MeshStoreActions> = {
 	palette: INITIAL_PALETTE,
 	filters: DEFAULT_FILTERS,
-	canvas: DEFAULT_CANVAS,
+	canvas: normalizeCanvas(DEFAULT_CANVAS),
 	seed: INITIAL_SEED,
 	shapes: INITIAL_SHAPES,
 	shapesLive: null,
@@ -265,7 +275,7 @@ export const useMeshStore = create<MeshState>()(
 					// clamp shape fill indices in case palette shrunk
 					const clampedShapes = curr.shapes.map((s) => ({
 						...s,
-						// Shapes index directly into full palette [0..length-1]
+						// Shapes index directly into the palette [0..length-1]
 						fillIndex: Math.max(
 							0,
 							Math.min(s.fillIndex, Math.max(0, palette.length - 1)),
@@ -303,7 +313,12 @@ export const useMeshStore = create<MeshState>()(
 					const width = clamp(canvas.width ?? curr.canvas.width, 64, 6000);
 					const height = clamp(canvas.height ?? curr.canvas.height, 64, 6000);
 					const next = {
-						canvas: { ...curr.canvas, ...canvas, width, height },
+						canvas: normalizeCanvas({
+							...curr.canvas,
+							...canvas,
+							width,
+							height,
+						}),
 					} as Partial<MeshState>;
 					const history = opts?.history ?? "push";
 					if (history === "skip") set(next);
@@ -523,7 +538,7 @@ export const useMeshStore = create<MeshState>()(
 				addShapeFromPoints: (points, opts, mode) => {
 					const curr = get();
 					const history = mode?.history ?? "push";
-					// pick palette index with slight downweight for background (index 0)
+					// Keep the existing generation balance by slightly downweighting index 0.
 					const r = prng(`${curr.seed}-add-${Date.now()}-${curr._past.length}`);
 					const paletteLen = Math.max(1, curr.palette.length);
 					let fillIndex = Math.max(
@@ -650,7 +665,11 @@ export const useMeshStore = create<MeshState>()(
 					try {
 						const json = decodeURIComponent(escape(atob(encoded)));
 						const data = JSON.parse(json);
-						set({ ...initialStateBase, ...data });
+						set({
+							...initialStateBase,
+							...data,
+							canvas: normalizeCanvas(data.canvas),
+						});
 					} catch (e) {
 						// ignore malformed state
 					}
@@ -678,11 +697,14 @@ export const useMeshStore = create<MeshState>()(
 			onRehydrateStorage: () => (state) => {
 				// Initialize shapes if empty
 				const s = state as unknown as MeshState;
+				if (s) {
+					s.canvas = normalizeCanvas(s.canvas);
+				}
 				if (s && (!s.shapes || s.shapes.length === 0)) {
 					const shapes = generateShapes({
 						seed: s.seed,
 						count: 6,
-						canvas: s.canvas ?? DEFAULT_CANVAS,
+						canvas: s.canvas,
 						palette: s.palette ?? [],
 					});
 					if (state) {

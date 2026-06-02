@@ -9,6 +9,7 @@ export const DEFAULT_CANVAS: CanvasSettings = {
 	width: DEFAULT_CANVAS_SIZE.width,
 	height: DEFAULT_CANVAS_SIZE.height,
 	background: { id: crypto.randomUUID(), color: "#ffffff" },
+	backgroundMode: "solid",
 };
 
 export const DEFAULT_FILTERS: Filters = {

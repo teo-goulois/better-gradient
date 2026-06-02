@@ -4,11 +4,20 @@ import { configPreset } from "@/lib/config/config.preset";
 import { db } from "@/lib/db";
 import { apiKeysTable, apiRateLimitsTable } from "@/lib/db/schema";
 import { rasterizeSvg } from "@/lib/mesh-raster.server";
-import { cssBackgroundFromState, svgStringFromState } from "@/lib/mesh-svg";
+import {
+	type ExportGrainMode,
+	cssBackgroundFromState,
+	svgStringFromState,
+} from "@/lib/mesh-svg";
 import { trackPostHogServerEvent } from "@/lib/posthog.server";
 import { trackUmamiServerEvent } from "@/lib/umami.server";
 import { clamp, generateShapes, prng } from "@/lib/utils/utils.mesh";
-import type { CanvasSettings, Filters, RgbHex } from "@/types/types.mesh";
+import type {
+	CanvasBackgroundMode,
+	CanvasSettings,
+	Filters,
+	RgbHex,
+} from "@/types/types.mesh";
 import { createServerFileRoute } from "@tanstack/react-start/server";
 import { eq, sql } from "drizzle-orm";
 
@@ -41,6 +50,28 @@ function parseQuality(value: string | null): number | undefined {
 	if (!value) return undefined;
 	const parsed = Number(value);
 	return Number.isFinite(parsed) ? parsed : undefined;
+}
+
+function parseBackgroundMode(
+	value: string | null,
+): CanvasBackgroundMode | "invalid" {
+	if (!value) return "solid";
+	const normalized = value.trim().toLowerCase();
+	if (normalized === "solid") return "solid";
+	if (normalized === "transparent") return "transparent";
+	return "invalid";
+}
+
+function parseGrainMode(
+	value: string | null,
+	backgroundMode: CanvasBackgroundMode,
+): ExportGrainMode | "invalid" {
+	if (!value) {
+		return backgroundMode === "transparent" ? "remove" : "keep";
+	}
+	const normalized = value.trim().toLowerCase();
+	if (normalized === "keep" || normalized === "remove") return normalized;
+	return "invalid";
 }
 
 async function hash(value: string): Promise<string> {
@@ -101,12 +132,14 @@ function buildCanvas(
 	palette: RgbHex[],
 	width: number,
 	height: number,
+	backgroundMode: CanvasBackgroundMode,
 ): CanvasSettings {
 	const fallback: RgbHex = { id: "bg", color: "#ffffff" };
 	return {
 		width,
 		height,
 		background: palette[0] ?? fallback,
+		backgroundMode,
 	};
 }
 
@@ -214,6 +247,26 @@ export const ServerRoute = createServerFileRoute("/api/gradient").methods({
 				},
 			});
 		}
+		const backgroundMode = parseBackgroundMode(params.get("background"));
+		if (backgroundMode === "invalid") {
+			return new Response("Unsupported background: use solid or transparent", {
+				status: 400,
+				headers: {
+					...CORS_HEADERS,
+					"Content-Type": "text/plain; charset=utf-8",
+				},
+			});
+		}
+		const grainMode = parseGrainMode(params.get("grain"), backgroundMode);
+		if (grainMode === "invalid") {
+			return new Response("Unsupported grain: use keep or remove", {
+				status: 400,
+				headers: {
+					...CORS_HEADERS,
+					"Content-Type": "text/plain; charset=utf-8",
+				},
+			});
+		}
 		const size = parseNumber(params.get("size"));
 		const widthRaw = parseNumber(params.get("width")) ?? size;
 		const heightRaw = parseNumber(params.get("height")) ?? size;
@@ -288,7 +341,12 @@ export const ServerRoute = createServerFileRoute("/api/gradient").methods({
 			params.get("email"),
 		);
 		const paletteResult = pickPalette(seedResult.seed);
-		const canvas = buildCanvas(paletteResult.palette, width, height);
+		const canvas = buildCanvas(
+			paletteResult.palette,
+			width,
+			height,
+			backgroundMode,
+		);
 		const filters = buildFilters();
 
 		await trackUmamiServerEvent({
@@ -305,6 +363,8 @@ export const ServerRoute = createServerFileRoute("/api/gradient").methods({
 				quality: quality ?? null,
 				seed_source: seedResult.source,
 				palette_index: paletteResult.index,
+				background_mode: backgroundMode,
+				grain_mode: filters.grainEnabled ? grainMode : "disabled",
 			},
 		});
 		await trackPostHogServerEvent({
@@ -320,6 +380,8 @@ export const ServerRoute = createServerFileRoute("/api/gradient").methods({
 				palette_count: paletteResult.palette.length,
 				quality: quality ?? null,
 				seed_source: seedResult.source,
+				background_mode: backgroundMode,
+				grain_mode: filters.grainEnabled ? grainMode : "disabled",
 			},
 		});
 		const shapes = generateShapes({
@@ -340,6 +402,7 @@ export const ServerRoute = createServerFileRoute("/api/gradient").methods({
 						shapes,
 						palette: paletteResult.palette,
 						filters,
+						grainMode,
 					})
 				: null;
 
@@ -391,6 +454,7 @@ export const ServerRoute = createServerFileRoute("/api/gradient").methods({
 					shapes,
 					palette: paletteResult.palette,
 					filters,
+					grainMode,
 				});
 				return new Response(css, {
 					headers: {

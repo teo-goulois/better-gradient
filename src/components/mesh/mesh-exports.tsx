@@ -1,6 +1,7 @@
 "use client";
 import { saveGradientToDb } from "@/lib/actions/actions.gradient";
 import {
+	type ExportGrainMode,
 	svgDataUrl,
 	svgStringFromState,
 	svgToPngDataUrl,
@@ -21,6 +22,8 @@ type Props = {
 	contentRef?: { current: HTMLDivElement | null };
 };
 
+type ExportFormat = "png" | "webp" | "svg" | "css";
+
 export const MeshExports = ({ outerRef, contentRef }: Props) => {
 	const canvas = useMeshStore((state) => state.canvas);
 	const shapes = useMeshStore((state) => state.shapes);
@@ -31,6 +34,14 @@ export const MeshExports = ({ outerRef, contentRef }: Props) => {
 	const [feedbackStates, setFeedbackStates] = useState<Record<string, boolean>>(
 		{},
 	);
+	const [transparentExportGrainMode, setTransparentExportGrainMode] =
+		useState<ExportGrainMode>("remove");
+
+	const shouldChooseTransparentGrain =
+		canvas.backgroundMode === "transparent" && filters.grainEnabled;
+
+	const getExportGrainMode = (): ExportGrainMode =>
+		shouldChooseTransparentGrain ? transparentExportGrainMode : "keep";
 
 	const showFeedback = (action: string) => {
 		setFeedbackStates((prev) => ({ ...prev, [action]: true }));
@@ -55,12 +66,17 @@ export const MeshExports = ({ outerRef, contentRef }: Props) => {
 		});
 	};
 
-	const exportProperties = (format: "png" | "webp" | "svg" | "css") => ({
+	const exportProperties = (
+		format: ExportFormat,
+		grainMode: ExportGrainMode,
+	) => ({
 		format,
 		width: contentRef?.current?.clientWidth ?? canvas.width,
 		height: contentRef?.current?.clientHeight ?? canvas.height,
 		shape_count: shapes.length,
 		palette_count: palette.length,
+		background_mode: canvas.backgroundMode,
+		grain_mode: filters.grainEnabled ? grainMode : "disabled",
 	});
 
 	const downloadPng = async () => {
@@ -70,14 +86,16 @@ export const MeshExports = ({ outerRef, contentRef }: Props) => {
 			width: w,
 			height: h,
 		};
+		const grainMode = getExportGrainMode();
 		const svg = svgStringFromState({
 			canvas,
 			shapes,
 			palette,
 			filters,
 			outputSize,
+			grainMode,
 		});
-		capturePostHogEvent("export_started", exportProperties("png"));
+		capturePostHogEvent("export_started", exportProperties("png", grainMode));
 		const url = await svgToPngDataUrl(svg, {
 			...outputSize,
 			scale: 1,
@@ -92,6 +110,8 @@ export const MeshExports = ({ outerRef, contentRef }: Props) => {
 			height: h,
 			shapes_count: shapes.length,
 			colors_count: palette.length,
+			background_mode: canvas.backgroundMode,
+			grain_mode: filters.grainEnabled ? grainMode : "disabled",
 		});
 		persist("png");
 	};
@@ -103,14 +123,16 @@ export const MeshExports = ({ outerRef, contentRef }: Props) => {
 			width: w,
 			height: h,
 		};
+		const grainMode = getExportGrainMode();
 		const svg = svgStringFromState({
 			canvas,
 			shapes,
 			palette,
 			filters,
 			outputSize,
+			grainMode,
 		});
-		capturePostHogEvent("export_started", exportProperties("webp"));
+		capturePostHogEvent("export_started", exportProperties("webp", grainMode));
 		const url = await svgToWebpDataUrl(svg, {
 			...outputSize,
 			scale: 1,
@@ -125,6 +147,8 @@ export const MeshExports = ({ outerRef, contentRef }: Props) => {
 			height: h,
 			shapes_count: shapes.length,
 			colors_count: palette.length,
+			background_mode: canvas.backgroundMode,
+			grain_mode: filters.grainEnabled ? grainMode : "disabled",
 		});
 		persist("webp");
 	};
@@ -132,14 +156,16 @@ export const MeshExports = ({ outerRef, contentRef }: Props) => {
 	const downloadSvg = () => {
 		const width = contentRef?.current?.clientWidth ?? canvas.width;
 		const height = contentRef?.current?.clientHeight ?? canvas.height;
+		const grainMode = getExportGrainMode();
 		const svg = svgStringFromState({
 			canvas,
 			shapes,
 			palette,
 			filters,
 			outputSize: { width, height },
+			grainMode,
 		});
-		capturePostHogEvent("export_started", exportProperties("svg"));
+		capturePostHogEvent("export_started", exportProperties("svg", grainMode));
 		const blob = new Blob([svg], { type: "image/svg+xml" });
 		const url = URL.createObjectURL(blob);
 		const a = document.createElement("a");
@@ -153,6 +179,8 @@ export const MeshExports = ({ outerRef, contentRef }: Props) => {
 			height,
 			shapes_count: shapes.length,
 			colors_count: palette.length,
+			background_mode: canvas.backgroundMode,
+			grain_mode: filters.grainEnabled ? grainMode : "disabled",
 		});
 		persist("svg");
 	};
@@ -160,14 +188,16 @@ export const MeshExports = ({ outerRef, contentRef }: Props) => {
 	const copyCss = async () => {
 		const width = contentRef?.current?.clientWidth ?? canvas.width;
 		const height = contentRef?.current?.clientHeight ?? canvas.height;
+		const grainMode = getExportGrainMode();
 		const svg = svgStringFromState({
 			canvas,
 			shapes,
 			palette,
 			filters,
 			outputSize: { width, height },
+			grainMode,
 		});
-		capturePostHogEvent("export_started", exportProperties("css"));
+		capturePostHogEvent("export_started", exportProperties("css", grainMode));
 		const data = svgDataUrl(svg);
 		const css = `background-image: url("${data}");\nbackground-size: 100% 100%;\nbackground-repeat: no-repeat;`;
 		await navigator.clipboard.writeText(css);
@@ -177,6 +207,8 @@ export const MeshExports = ({ outerRef, contentRef }: Props) => {
 			height,
 			shapes_count: shapes.length,
 			colors_count: palette.length,
+			background_mode: canvas.backgroundMode,
+			grain_mode: filters.grainEnabled ? grainMode : "disabled",
 		});
 		persist("css");
 	};
@@ -204,6 +236,32 @@ export const MeshExports = ({ outerRef, contentRef }: Props) => {
 					</Popover.Header>
 					<Separator />
 					<Popover.Body className="flex flex-col gap-2 p-3">
+						{shouldChooseTransparentGrain && (
+							<div className="rounded-lg border bg-muted/50 p-3">
+								<p className="text-sm font-semibold">Transparent background</p>
+								<p className="text-xs text-muted-fg">
+									Choose how grain is handled in this export.
+								</p>
+								<div className="mt-2.5 grid grid-cols-2 gap-1 rounded-lg bg-muted p-1">
+									{(["remove", "keep"] as const).map((mode) => (
+										<ButtonPrimitive
+											key={mode}
+											aria-pressed={transparentExportGrainMode === mode}
+											onPress={() => setTransparentExportGrainMode(mode)}
+											className={twJoin(
+												"rounded-md px-2 py-1.5 text-xs font-medium",
+												"transition-[background-color,color,box-shadow,transform] duration-200 pressed:scale-[0.97]",
+												transparentExportGrainMode === mode
+													? "bg-bg text-fg shadow-sm"
+													: "text-muted-fg hover:text-fg",
+											)}
+										>
+											{mode === "remove" ? "Remove grain" : "Keep grain"}
+										</ButtonPrimitive>
+									))}
+								</div>
+							</div>
+						)}
 						<div className="flex flex-col gap-2">
 							<p className="text-sm font-medium text-muted-fg">Export</p>
 							<div className="flex flex-col gap-2">

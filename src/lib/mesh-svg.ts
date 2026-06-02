@@ -6,6 +6,8 @@ import type {
 	RgbHex,
 } from "@/types/types.mesh";
 
+export type ExportGrainMode = "keep" | "remove";
+
 // Convert points to SVG path data
 export function pathDataFromPoints(points: Point[]): string {
 	if (points.length === 0) return "";
@@ -32,10 +34,13 @@ export function svgStringFromState(args: {
 	outputSize?: { width: number; height: number };
 	includeVertices?: boolean;
 	vertexSizePx?: number;
+	grainMode?: ExportGrainMode;
 }): string {
 	const { canvas, shapes, palette, filters } = args;
 
 	const blur = Math.max(0, Math.min(filters.blur, 256));
+	const backgroundMode = canvas.backgroundMode ?? "solid";
+	const shouldRenderGrain = filters.grainEnabled && args.grainMode !== "remove";
 
 	const wCanvas = canvas.width;
 	const hCanvas = canvas.height;
@@ -79,7 +84,7 @@ export function svgStringFromState(args: {
 		`<filter id="blur" x="${filterX}" y="${filterY}" width="${filterW}" height="${filterH}" filterUnits="userSpaceOnUse"><feGaussianBlur stdDeviation="${blur}"/></filter>`,
 	);
 
-	if (filters.grainEnabled) {
+	if (shouldRenderGrain) {
 		// Procedural grain filter using turbulence + specular lighting
 		svgParts.push(
 			`<filter id="grain" x="${filterX}" y="${filterY}" width="${filterW}" height="${filterH}" filterUnits="userSpaceOnUse" primitiveUnits="userSpaceOnUse" color-interpolation-filters="linearRGB">
@@ -92,10 +97,12 @@ export function svgStringFromState(args: {
 	}
 	svgParts.push("</defs>");
 
-	// Background rect to ensure coverage after blur
-	svgParts.push(
-		`<rect width="${wCanvas}" height="${hCanvas}" fill="${canvas.background.color}"/>`,
-	);
+	if (backgroundMode === "solid") {
+		// Background rect to ensure coverage after blur.
+		svgParts.push(
+			`<rect width="${wCanvas}" height="${hCanvas}" fill="${canvas.background.color}"/>`,
+		);
+	}
 
 	// Shapes: support per-shape blur override while preserving array order
 	// 1) Ensure a filter exists for each blur value used
@@ -143,7 +150,7 @@ export function svgStringFromState(args: {
 		}
 	}
 
-	if (filters.grainEnabled) {
+	if (shouldRenderGrain) {
 		const opacity = Math.max(0, Math.min(filters.grain, 1));
 		svgParts.push(
 			`<rect width="${wCanvas}" height="${hCanvas}" fill="#FFFFFF" filter="url(#grain)" opacity="${opacity}"/>`,
@@ -163,6 +170,7 @@ export function cssBackgroundFromState(args: {
 	shapes: BlobShape[];
 	palette: RgbHex[];
 	filters: Filters;
+	grainMode?: ExportGrainMode;
 }): string {
 	const svg = svgStringFromState({ ...args });
 	const data = svgDataUrl(svg);

@@ -9,7 +9,7 @@ export type Point = { x: number; y: number };
 export type BlobShape = {
 	id: string;
 	points: Point[];
-	fillIndex: number; // index in palette (includes background at index 0)
+	fillIndex: number; // index in palette
 	opacity?: number; // 0..1 (default 1)
 	blur?: number; // px override; falls back to global filters.blur when undefined
 };
@@ -22,10 +22,13 @@ export type Filters = {
 	spread: number; // 0..100
 };
 
+export type CanvasBackgroundMode = "solid" | "transparent";
+
 export type CanvasSettings = {
 	width: number;
 	height: number;
 	background: RgbHex;
+	backgroundMode: CanvasBackgroundMode;
 };
 
 export type FrameRect = {

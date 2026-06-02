@@ -253,6 +253,16 @@ function DevelopersPage() {
 								description: "WebP quality (0-1 or 1-100).",
 								defaultValue: "0.95",
 							},
+							{
+								name: "background",
+								description: "Canvas background: solid or transparent.",
+								defaultValue: "solid",
+							},
+							{
+								name: "grain",
+								description: "Transparent export grain: keep or remove.",
+								defaultValue: "remove when transparent",
+							},
 						].map((row) => (
 							<div
 								key={row.name}
@@ -273,7 +283,9 @@ function DevelopersPage() {
 					<div className="mt-4 border border-neutral-200 bg-neutral-50 px-4 py-3 text-sm text-neutral-600">
 						If you pass both <span className="font-mono">seed</span> and{" "}
 						<span className="font-mono">email</span>, the seed takes precedence.
-						Width and height override size when both are provided.
+						Width and height override size when both are provided. Transparent
+						backgrounds remove grain by default unless{" "}
+						<span className="font-mono">grain=keep</span> is provided.
 					</div>
 
 					<div className="mt-12 grid grid-cols-1 lg:grid-cols-2 gap-px bg-neutral-200 border border-neutral-200 relative">
@@ -285,7 +297,7 @@ function DevelopersPage() {
 							<div className="bg-neutral-900 text-neutral-100 border border-neutral-300 p-4 font-mono text-sm overflow-x-auto">
 								<pre>{`curl -H "Authorization: Bearer YOUR_API_KEY" \\
   -o mesh.webp \\
-  "https://better-gradient.com/api/gradient?format=webp&width=1600&height=900&seed=hello"`}</pre>
+  "https://better-gradient.com/api/gradient?format=webp&width=1600&height=900&seed=hello&background=transparent&grain=remove"`}</pre>
 							</div>
 							<p className="text-sm text-neutral-600 mt-4">
 								Replace the seed value to generate a unique gradient.

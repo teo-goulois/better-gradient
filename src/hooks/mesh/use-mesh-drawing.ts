@@ -29,6 +29,7 @@ export const useMeshDrawing = ({ canvasRef }: Props) => {
 		img.onload = () => {
 			const draw = () => {
 				if (cancelled) return;
+				ctx.clearRect(0, 0, canvas.width, canvas.height);
 				ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
 			};
 			if ("decode" in img && typeof img.decode === "function") {

@@ -179,7 +179,6 @@ function createMoodBias(
 			};
 			break;
 		}
-		case "balanced":
 		default: {
 			baseBias = () => 0;
 			break;
@@ -231,10 +230,7 @@ export function generatePolygon(
 		isAngular ? variety.radiusJitter.max : variety.radiusJitter.max * 0.85,
 	);
 
-	const sizeJitter = rng.float(
-		variety.sizeJitter.min,
-		variety.sizeJitter.max,
-	);
+	const sizeJitter = rng.float(variety.sizeJitter.min, variety.sizeJitter.max);
 	const baseRadius = minSide * rng.float(minScale, maxScale) * sizeJitter;
 
 	const aspect = rng.float(variety.aspect.min, variety.aspect.max);
@@ -292,7 +288,11 @@ export function sampleCentersWithMinDistance(
 	const xMax = (1 + overscan) * bounds.w;
 	const yMin = -overscan * bounds.h;
 	const yMax = (1 + overscan) * bounds.h;
-	const pad = clamp(minSide * (GEN_CONFIG.insidePadding ?? 0), 0, minSide * 0.25);
+	const pad = clamp(
+		minSide * (GEN_CONFIG.insidePadding ?? 0),
+		0,
+		minSide * 0.25,
+	);
 	const insideBounds = {
 		xMin: pad,
 		xMax: bounds.w - pad,
@@ -412,7 +412,7 @@ export function generateShapes(args: {
 	);
 	const centers = [...centersInside, ...centersOutside];
 
-	// Helper: pick a palette index with reduced probability for index 0
+	// Helper: keep the existing generation balance by slightly downweighting index 0.
 	const pickWeightedPaletteIndex = (
 		rng: ReturnType<typeof prng>,
 		length: number,
@@ -420,7 +420,7 @@ export function generateShapes(args: {
 		const len = Math.max(1, length);
 		if (len === 1) return 0;
 		const weights: number[] = new Array(len).fill(1);
-		weights[0] = 0.5; // downweight background/first color
+		weights[0] = 0.5;
 		const sum = weights.reduce((acc, v) => acc + v, 0);
 		const target = rng.float(0, sum);
 		let acc = 0;
