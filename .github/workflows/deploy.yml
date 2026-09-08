@@ -1,0 +1,45 @@
+name: Deploy to Cloudflare
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: cloudflare-production
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    env:
+      VITE_SITE_URL: https://better-gradient.com
+      VITE_SERVER_URL: https://better-gradient.com
+      VITE_APP_TITLE: ${{ vars.VITE_APP_TITLE || 'Better Gradient' }}
+      VITE_PH_ENABLED: ${{ vars.VITE_PH_ENABLED || 'true' }}
+      VITE_POSTHOG_KEY: ${{ vars.VITE_POSTHOG_KEY || 'phc_qBjjWJrivwd3o22DBN6RUtoUFddf5tiAsUQGuzo5LGEC' }}
+      VITE_POSTHOG_HOST: ${{ vars.VITE_POSTHOG_HOST || 'https://eu.i.posthog.com' }}
+      VITE_POSTHOG_DISABLED: ${{ vars.VITE_POSTHOG_DISABLED || 'false' }}
+      VITE_POSTHOG_DEBUG: ${{ vars.VITE_POSTHOG_DEBUG || 'false' }}
+      VITE_POSTHOG_REPLAY_FORCE: ${{ vars.VITE_POSTHOG_REPLAY_FORCE || 'false' }}
+      VITE_POSTHOG_REPLAY_SAMPLE_RATE: ${{ vars.VITE_POSTHOG_REPLAY_SAMPLE_RATE || '0.02' }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm check:cloudflare
+      - run: pnpm test
+      - run: pnpm build:server
+      - run: pnpm test:smoke
+      - run: pnpm run deploy
+        env:
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}

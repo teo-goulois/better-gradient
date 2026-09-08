@@ -1,0 +1,28 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "better-gradient",
+  "main": "cloudflare/worker.ts",
+  "compatibility_date": "2026-09-08",
+  "compatibility_flags": ["nodejs_compat"],
+  "workers_dev": true,
+  "preview_urls": false,
+  "keep_vars": true,
+  "assets": {
+    "directory": ".output/public",
+    "html_handling": "none",
+    "not_found_handling": "none"
+  },
+  "containers": [
+    {
+      "class_name": "BetterGradientApp",
+      "image": "./Dockerfile",
+      "instance_type": "standard-1",
+      "max_instances": 1
+    }
+  ],
+  "durable_objects": {
+    "bindings": [{ "name": "APP", "class_name": "BetterGradientApp" }]
+  },
+  "migrations": [{ "tag": "v1", "new_sqlite_classes": ["BetterGradientApp"] }],
+  "observability": { "enabled": true }
+}

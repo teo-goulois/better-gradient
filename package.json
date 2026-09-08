@@ -15,7 +15,12 @@
     "db:pull": "drizzle-kit pull",
     "db:generate": "drizzle-kit generate",
     "db:studio": "drizzle-kit studio",
-    "dev-localify": "echo Localify URL: https://better-gradient.localify && LOCALIFY_DEV=1 vite dev --host 127.0.0.1 --port 59639 --strictPort --force"
+    "dev-localify": "echo Localify URL: https://better-gradient.localify && LOCALIFY_DEV=1 vite dev --host 127.0.0.1 --port 59639 --strictPort --force",
+    "build:server": "START_TARGET=node-server vite build",
+    "build:cloudflare": "node scripts/build-cloudflare.mjs",
+    "check:cloudflare": "tsc -p cloudflare/tsconfig.json",
+    "deploy": "node scripts/validate-cloudflare-build.mjs && wrangler deploy",
+    "test:smoke": "node scripts/smoke.mjs"
   },
   "dependencies": {
     "@base-ui-components/react": "1.0.0-beta.3",
@@ -58,6 +63,8 @@
   },
   "devDependencies": {
     "@biomejs/biome": "1.9.4",
+    "@cloudflare/containers": "0.3.7",
+    "@cloudflare/workers-types": "5.20260906.1",
     "@tailwindcss/typography": "^0.5.19",
     "@testing-library/dom": "^10.4.0",
     "@testing-library/react": "^16.2.0",
@@ -72,6 +79,11 @@
     "typescript": "^5.9.3",
     "vite": "^7.1.9",
     "vitest": "^3.0.5",
-    "web-vitals": "^5.1.0"
+    "web-vitals": "^5.1.0",
+    "wrangler": "4.129.0"
+  },
+  "packageManager": "pnpm@10.33.0",
+  "engines": {
+    "node": ">=22.12.0"
   }
 }

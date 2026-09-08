@@ -12,3 +12,8 @@ count.txt
 todos.json
 
 seo
+
+.wrangler/
+.cloudflare/
+.dev.vars
+.dev.vars.*

@@ -1,0 +1,14 @@
+node_modules
+.git
+.env
+.env.*
+.dev.vars*
+.output
+.nitro
+.tanstack
+.wrangler
+.cloudflare
+.localify
+.localify-dev
+dist
+seo

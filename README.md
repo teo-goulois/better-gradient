@@ -26,8 +26,8 @@
 
 Make sure you have:
 
-- [Node.js](https://nodejs.org/) (v18+ recommended)
-- npm or pnpm
+- [Node.js](https://nodejs.org/) 22.12 or newer
+- pnpm 10.33.0 (the version pinned in `package.json`)
 
 ### Installation
 
@@ -56,6 +56,18 @@ To create a production build:
 ```bash
 pnpm build
 ```
+
+### Cloudflare deployment
+
+The Cloudflare deployment keeps the Node server and sharp in a Container. Static
+assets are served by Workers, except for the large demonstration video, which
+streams from the Container.
+
+Pushes to `main` run tests, build the Linux server, check its runtime, and deploy
+through GitHub Actions. Other branches do not deploy.
+
+See [Cloudflare setup and rollback](docs/cloudflare.md) for secrets, the first
+deployment, domain migration, and local Docker builds.
 
 ---
 
