@@ -118,7 +118,7 @@ First deploy to the `workers.dev` URL printed by Wrangler. Container provisionin
 can continue after the command finishes. Verify the homepage, editor, gallery,
 blog, API formats and a video range request on that URL before switching DNS.
 
-Once verified, add `better-gradient.com` as a Worker custom domain. Check whether
+`wrangler.jsonc` declares `better-gradient.com` as a Worker custom domain. Check whether
 `www.better-gradient.com` is in use and preserve its redirect. Save the existing
 Vercel DNS records before replacing any record. Keep the Vercel deployment and
 its environment settings until the Cloudflare domain has been verified.
@@ -149,6 +149,8 @@ Twenty tests and the isolated Linux production smoke test passed. Worker types
 passed. The full application typecheck still reports the same 27 pre-existing
 errors as before this migration.
 
-The public domain is still served by Vercel. GitHub has the account identifier
-and public analytics variables; the deployment token, first GitHub workflow run,
-and domain cutover remain pending. Confirmation email delivery was not exercised.
+The deployment token is configured. The first GitHub Actions run for commit
+`ceea489` passed all checks and deployed the Worker and Container in under two
+minutes. The apex custom domain is declared in Wrangler for the next deployment.
+Before cutover, authoritative DNS returned `216.198.79.1` with a 300-second TTL;
+`www.better-gradient.com` did not exist. Confirmation email delivery was not exercised.
