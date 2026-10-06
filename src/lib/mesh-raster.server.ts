@@ -1,5 +1,3 @@
-import sharp from "sharp";
-
 export type RasterFormat = "png" | "webp";
 
 type RasterOptions = {
@@ -23,6 +21,10 @@ export async function rasterizeSvg(
 	svg: string,
 	options: RasterOptions,
 ): Promise<Buffer> {
+	if (process.env.BETTER_GRADIENT_RUNTIME === "worker") {
+		throw new Error("PNG/WebP API requests must use Browser Run.");
+	}
+	const { default: sharp } = await import("sharp");
 	const pipeline = sharp(Buffer.from(svg));
 	if (options.format === "png") {
 		return pipeline.png().toBuffer();

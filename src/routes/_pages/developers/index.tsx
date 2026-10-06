@@ -3,6 +3,8 @@ import { Button } from "@/components/ui/button";
 import { DottedBackground } from "@/components/ui/dotted-background";
 import { GridCursor } from "@/components/ui/grid-cursor";
 import { requestApiKey } from "@/lib/actions/actions.api-key";
+import { BROWSER_BUDGET_MS, QUOTA_WINDOW_DAYS } from "@/lib/config/config.api";
+import { CONTACT_URL } from "@/lib/config/config.contact";
 import { trackEvent } from "@/lib/tracking";
 import { buildAbsoluteUrl, seo } from "@/utils/seo";
 import { Link, createFileRoute } from "@tanstack/react-router";
@@ -191,6 +193,25 @@ function DevelopersPage() {
 								Add your API key as a bearer token to access higher limits
 								(300/min per key). Public traffic is limited to 30/min per IP.
 							</p>
+							<p className="text-sm text-neutral-600 mt-4">
+								PNG and WebP API rendering shares{" "}
+								{Math.floor(BROWSER_BUDGET_MS / 60_000)} minutes of rendering
+								time across all users over {QUOTA_WINDOW_DAYS} days, with one
+								render at a time. Failed requests also count. If rendering is
+								unavailable, use SVG or download PNG/WebP from the editor.
+							</p>
+							<p className="text-sm text-neutral-600 mt-4">
+								Need higher API limits?{" "}
+								<a
+									href={CONTACT_URL}
+									target="_blank"
+									rel="noopener noreferrer"
+									className="underline hover:text-neutral-900"
+								>
+									Contact me
+								</a>{" "}
+								with your use case and expected request volume.
+							</p>
 							<div className="mt-4 border border-neutral-200 bg-neutral-50 px-4 py-3 font-mono text-sm text-neutral-800">
 								Authorization: Bearer YOUR_API_KEY
 							</div>
@@ -360,7 +381,9 @@ document.body.style.cssText = css;`}</pre>
 							</ul>
 							<div className="mt-5 border border-neutral-200 bg-neutral-50 px-4 py-3 text-sm text-neutral-600">
 								Errors return plain text with status 400 or 500. Rate limits
-								respond with 429 and include X-RateLimit headers.
+								respond with 429 and include X-RateLimit headers. PNG/WebP
+								rendering returns 503 when busy or out of allowance;
+								Retry-After indicates when to try again.
 							</div>
 						</div>
 					</div>

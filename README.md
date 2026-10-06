@@ -59,15 +59,9 @@ pnpm build
 
 ### Cloudflare deployment
 
-The Cloudflare deployment keeps the Node server and sharp in a Container. Static
-assets are served by Workers, except for the large demonstration video, which
-streams from the Container.
-
-Pushes to `main` run tests, build the Linux server, check its runtime, and deploy
-through GitHub Actions. Other branches do not deploy.
-
-See [Cloudflare setup and rollback](docs/cloudflare.md) for secrets, the first
-deployment, domain migration, and local Docker builds.
+The Cloudflare deployment runs the app in Workers and converts API PNG/WebP images
+with Browser Run. Editor exports run in the visitor's browser. See
+[Cloudflare deployment](docs/cloudflare.md) for project quotas, builds and migration.
 
 ---
 

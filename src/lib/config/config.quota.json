@@ -1,0 +1,9 @@
+{
+	"share": 0.33,
+	"windowDays": 32,
+	"workerCpuMsPerRequest": 200,
+	"initialWorkerRequests": 250,
+	"initialBrowserMs": 60000,
+	"browserReservationMs": 300000,
+	"browserActionTimeoutMs": 90000
+}

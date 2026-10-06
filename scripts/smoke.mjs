@@ -8,8 +8,9 @@ import { createRequire } from "node:module";
 import { tmpdir } from "node:os";
 import { resolve } from "node:path";
 
-const require = createRequire(resolve(".output/server/package.json"));
-const { createClient } = await import(resolve(".output/server/node_modules/@libsql/client/lib-esm/node.js"));
+const output = process.env.BETTER_GRADIENT_NODE_OUTPUT ?? ".output";
+const require = createRequire(resolve(output, "server/package.json"));
+const { createClient } = await import(resolve(output, "server/node_modules/@libsql/client/lib-esm/node.js"));
 const sharp = require("sharp");
 const directory = await mkdtemp(`${tmpdir()}/better-gradient-smoke-`);
 const dbUrl = `file:${directory}/test.db`;
@@ -36,10 +37,15 @@ const guard = `const original = globalThis.fetch; globalThis.fetch = (input, ini
   if (url.hostname === '127.0.0.1') return original(input, init);
   return Promise.resolve(new Response('{}', {status: 200}));
 };`;
-const server = spawn(process.execPath, ["--import", `data:text/javascript,${encodeURIComponent(guard)}`, ".output/server/index.mjs"], {
+const portReservation = createServer();
+portReservation.listen(0, "127.0.0.1");
+await once(portReservation, "listening");
+const port = portReservation.address().port;
+await new Promise((done) => portReservation.close(done));
+const server = spawn(process.execPath, ["--import", `data:text/javascript,${encodeURIComponent(guard)}`, resolve(output, "server/index.mjs")], {
   env: {
     PATH: process.env.PATH,
-    NODE_ENV: "production", HOST: "127.0.0.1", PORT: "0",
+    NODE_ENV: "production", HOST: "127.0.0.1", PORT: String(port),
     TURSO_DATABASE_URL: dbUrl, TURSO_AUTH_TOKEN: "",
     MARBLE_API_URL: `http://127.0.0.1:${cms.address().port}`, MARBLE_WORKSPACE_KEY: "fixture",
     RESEND_API_KEY: "fixture", RESEND_FROM_EMAIL: "test@example.invalid", POSTHOG_DISABLED: "true",

@@ -406,6 +406,16 @@ export const ServerRoute = createServerFileRoute("/api/gradient").methods({
 					})
 				: null;
 
+		if (
+			process.env.BETTER_GRADIENT_RUNTIME === "worker" &&
+			(format === "png" || format === "webp")
+		) {
+			// The outer Worker renders this authenticated, validated SVG using Browser Run.
+			return new Response(svg, {
+				headers: { ...headers, "Content-Type": "image/svg+xml; charset=utf-8" },
+			});
+		}
+
 		switch (format) {
 			case "svg": {
 				return new Response(svg, {

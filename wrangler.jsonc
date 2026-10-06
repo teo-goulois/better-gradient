@@ -1,29 +1,56 @@
 {
-  "$schema": "node_modules/wrangler/config-schema.json",
-  "name": "better-gradient",
-  "main": "cloudflare/worker.ts",
-  "compatibility_date": "2026-09-08",
-  "compatibility_flags": ["nodejs_compat"],
-  "workers_dev": true,
-  "routes": [{ "pattern": "better-gradient.com", "custom_domain": true }],
-  "preview_urls": false,
-  "keep_vars": true,
-  "assets": {
-    "directory": ".output/public",
-    "html_handling": "none",
-    "not_found_handling": "none"
-  },
-  "containers": [
-    {
-      "class_name": "BetterGradientApp",
-      "image": "./Dockerfile",
-      "instance_type": "standard-1",
-      "max_instances": 1
-    }
-  ],
-  "durable_objects": {
-    "bindings": [{ "name": "APP", "class_name": "BetterGradientApp" }]
-  },
-  "migrations": [{ "tag": "v1", "new_sqlite_classes": ["BetterGradientApp"] }],
-  "observability": { "enabled": true }
+	"$schema": "node_modules/wrangler/config-schema.json",
+	"name": "better-gradient",
+	"main": "cloudflare/worker.ts",
+	"compatibility_date": "2026-09-08",
+	"compatibility_flags": ["nodejs_compat"],
+	"workers_dev": true,
+	"routes": [
+		{
+			"pattern": "better-gradient.com",
+			"custom_domain": true
+		}
+	],
+	"preview_urls": false,
+	"keep_vars": true,
+	"assets": {
+		"directory": ".cloudflare/worker/public",
+		"binding": "ASSETS",
+		"html_handling": "none",
+		"not_found_handling": "none"
+	},
+	"durable_objects": {
+		"bindings": [
+			{
+				"name": "BUDGET",
+				"class_name": "UsageBudget"
+			}
+		]
+	},
+	"r2_buckets": [
+		{
+			"binding": "VIDEOS",
+			"bucket_name": "better-gradient-public-videos"
+		}
+	],
+	"migrations": [
+		{
+			"tag": "v1",
+			"new_sqlite_classes": ["BetterGradientApp"]
+		},
+		{
+			"tag": "v2-browser-run",
+			"deleted_classes": ["BetterGradientApp"],
+			"new_sqlite_classes": ["UsageBudget"]
+		}
+	],
+	"observability": {
+		"enabled": false
+	},
+	"browser": {
+		"binding": "BROWSER"
+	},
+	"limits": {
+		"cpu_ms": 200
+	}
 }

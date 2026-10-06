@@ -1,4 +1,5 @@
 import { defineConfig } from 'vite'
+import { createRequire } from 'node:module'
 import { tanstackStart } from '@tanstack/react-start/plugin/vite'
 import viteReact from '@vitejs/plugin-react'
 import viteTsConfigPaths from 'vite-tsconfig-paths'
@@ -8,8 +9,16 @@ import { devtools } from '@tanstack/devtools-vite'
 import postcssEasingGradients from 'postcss-easing-gradients';
 
 const isLocalifyDev = process.env.LOCALIFY_DEV === '1'
+const isWorkerBuild = process.env.BETTER_GRADIENT_RUNTIME === 'worker'
+const require = createRequire(import.meta.url)
 
 const config = defineConfig({
+  define: {
+    'process.env.BETTER_GRADIENT_RUNTIME': JSON.stringify(isWorkerBuild ? 'worker' : 'node'),
+  },
+  resolve: {
+    alias: isWorkerBuild ? [{ find: /^@libsql\/client$/, replacement: require.resolve('@libsql/client/web') }] : [],
+  },
   css:{
     postcss: {
       plugins: [

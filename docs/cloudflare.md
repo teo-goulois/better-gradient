@@ -1,156 +1,145 @@
 # Cloudflare deployment
 
-Better Gradient uses a Worker for public requests and static files, with its
-existing TanStack Start Node server in a Cloudflare Container. This keeps sharp,
-SVG filters, PNG/WebP quality settings, and the API's 6,000-pixel dimension limit.
-Turso, Marble, Resend, PostHog and Umami remain the existing external services.
-There is no database migration or API key regeneration.
+Better Gradient serves TanStack Start pages, server functions and its SVG/CSS API
+in a Worker. Turso uses HTTP in this build. Editor PNG/WebP exports run in the
+visitor's browser. API PNG/WebP output uses Browser Run Quick Actions, rendering
+the same generated SVG in Chromium with blur, grain and transparency.
+There is no production Container and no Docker build step.
 
-The Container requires Workers Paid. Its compute, memory and disk usage are
-[billed separately](https://developers.cloudflare.com/containers/platform/pricing/).
-The initial configuration allows one `standard-1` instance and sleeps after five
-minutes without requests. The first server request after sleep can take longer.
-Static asset requests do not start the Container. This is a single-instance
-configuration; raise both the instance limit and routing pool if traffic needs
-more capacity.
+The outer Worker first admits each dynamic request through the persistent
+`UsageBudget` Durable Object. API validation, authentication and rate limits stay
+in the application route. Raster output is rendered only after this route succeeds.
+A content hash of SVG, format and quality keys the image cache; authentication is
+checked even on cache hits. Random requests produce fresh SVGs. Image responses
+stream to the client; conversion does not allocate full RGBA surfaces in the Worker.
 
-`step-2-position.mp4` exceeds the Workers static asset limit. `public/.assetsignore`
-keeps it out of the asset upload. The Node server streams the original file and
-the Worker handles byte ranges for seeking. The file is not loaded into Worker
-memory in full.
+The large `/video/step-2-position.mp4` is stored in `better-gradient-public-videos`.
+The Worker serves GET, HEAD and byte ranges from R2. `public/.assetsignore` excludes
+this file from static asset upload. This application never writes image exports to
+R2; the only R2 object is the fixed video. Other static assets are served directly by
+Cloudflare without invoking the Worker.
 
-## GitHub Actions
+## Project allowances
 
-`.github/workflows/deploy.yml` runs only on pushes to `main`. It installs the
-locked dependencies with Node 22 and pnpm 10.33.0, checks the Worker types, runs
-tests, builds the Node server on Linux, exercises that build, and deploys it.
-Deployments run one at a time; a new push does not interrupt an active deploy.
-There are no preview deploys or database schema commands.
+`src/lib/config/config.quota.json` is the canonical policy;
+`src/lib/config/config.api.ts` derives the project budgets. Better Gradient is allocated
+33% of the Workers Paid included usage, preserving the remainder for other projects.
+[Workers pricing](https://developers.cloudflare.com/workers/platform/pricing/) and
+[Browser Run pricing](https://developers.cloudflare.com/browser-run/pricing/).
 
-In the repository's **Settings > Secrets and variables > Actions**, add:
+| Resource | Project allocation | Enforcement |
+| --- | --- | --- |
+| Browser Run | 11,880,000 ms, or 3 h 18 min | Persistent reservations before rendering; measured usage on success |
+| Workers CPU | 9,900,000 ms | Reserve 200 ms for each admitted dynamic request, including errors |
+| Worker requests | At most 3,300,000 | CPU reservations impose a stricter 49,500 dynamic admissions |
+| R2 reads | Below 3,300,000 included share | At most one R2 read per admitted video request |
+| R2 storage | Below 3.3 GB included share | One fixed video of about 43 MB; no application writes |
+| Durable Object requests | Below 330,000 included share | One admission call and at most one raster call per admitted request |
 
-| Secret | Value |
-| --- | --- |
-| `CLOUDFLARE_ACCOUNT_ID` | The account containing the `better-gradient` Worker |
-| `CLOUDFLARE_API_TOKEN` | A dedicated deployment token for that account, authorized to deploy Workers and Containers and push container images |
+`wrangler.jsonc` sets the CPU ceiling per invocation. The deployment validator
+checks that it matches the policy. The request allowance deliberately reserves the
+whole ceiling, rather than claiming that runtime wall time measures CPU. Dynamic
+pages, API calls and server functions share this allowance. Static assets bypass
+it. The initial ledger conservatively includes pre-migration traffic and the
+October 6 Browser Run probes; these credits are added only when the ledger is new.
 
-Create a custom token with Account > Workers Scripts > Edit and Account >
-Containers > Edit/Write. For domain management, add Zone > Workers Routes > Edit
-and Zone > Zone > Read, limited to `better-gradient.com`. Limit account access to
-the account hosting the Worker.
+Counters use UTC day buckets retaining at least the preceding 32 full days. They
+expire conservatively at a UTC day boundary, preventing two full allowances around
+a monthly reset. The same Durable Object name and storage key must be retained
+across deployments. A site quota returns HTTP 503 before further application work.
+An already open editor can continue exporting client-side.
 
-Use a persistent API token, not Wrangler's expiring local OAuth token. See
-[Cloudflare's GitHub Actions setup](https://developers.cloudflare.com/workers/ci-cd/external-cicd/github-actions/)
-and [Container deployment](https://developers.cloudflare.com/containers/guides/deploy/).
-If custom domains are managed through Wrangler, the token also needs permission
-to edit Worker routes for the target zone.
+Each uncached raster reserves five minutes before starting. Only one render runs
+at a time; the active reservation survives isolate restarts. Browser Run is given
+five-second load/selector timeouts and a 90-second action timeout. Successful
+responses with valid `X-Browser-Ms-Used` replace the reservation with measured time
+plus a one-second margin. Failures, invalid metering and interrupted settlements
+keep the full reserve. An orphaned active reservation becomes available after five
+minutes, without refunding its usage. No renderer starts if persistence fails.
+There are no browser sessions kept alive between requests or Container timers.
 
-Public `VITE_*` settings are GitHub repository **variables**. The workflow supplies
-production defaults for the site URL and current analytics configuration. Set
-`VITE_POSTHOG_KEY` and `VITE_POSTHOG_HOST` to the current project values if they
-change. Runtime Worker secrets cannot change JavaScript already built for the
-browser; rebuild after changing public settings.
+The last five minutes of the browser allowance stay unavailable for a new render
+unless a full reservation fits. HTTP 503 includes `Retry-After`, CORS and a contact
+link. `src/lib/config/config.contact.ts` centralizes the existing feedback form.
+The developer page explains the shared render time and offers higher-limit contact.
+There is no November 7 suspension policy for Browser Run.
 
-## Server secrets
+These guards limit application work, not the Cloudflare invoice. Rejected HTTP
+requests still invoke a Worker and can be billed; a flood of rejected requests can
+also invoke the budget Durable Object. No account-wide euro spending cap is
+provided by this code. Already incurred Container usage, other projects, domains,
+taxes and exchange rates affect the account invoice. The base plan is $5 USD for
+the account. The target is zero new usage overages from normal Better Gradient
+operation; a universal EUR 10 guarantee is not possible from this application's
+request handlers. Runtime and provider failures can also affect strict ceilings.
 
-Copy these values from the existing production deployment into Worker secrets:
+The budget ledger stays a few KB, well below its storage share. There are no
+application bindings to KV, Images, AI, Queues or D1. Worker Logs are disabled to
+avoid their separate usage charges; ordinary Cloudflare metrics remain available.
 
-| Name | Feature |
-| --- | --- |
-| `TURSO_DATABASE_URL` | Existing gradients, export counts, API keys and quotas |
-| `TURSO_AUTH_TOKEN` | Turso access |
-| `MARBLE_API_URL` | Blog API base URL |
-| `MARBLE_WORKSPACE_KEY` | Existing blog workspace |
-| `RESEND_API_KEY` | API key confirmation emails |
-| `RESEND_FROM_EMAIL` | Existing verified sender |
+## Builds and deployment
 
-For example, `pnpm exec wrangler secret put TURSO_AUTH_TOKEN` prompts for the
-value without committing it. Optional `POSTHOG_KEY`, `POSTHOG_HOST`,
-`POSTHOG_ENABLED`, `POSTHOG_DISABLED`, `POSTHOG_DEBUG` and `VITE_SITE_URL` are
-forwarded to the Container as well. `cloudflare/config.ts` explicitly selects
-these application settings; infrastructure credentials are not passed through.
-Secrets are preserved by ordinary deploys. When rotating a runtime secret, also
-restart the running Container so its process receives the new environment.
+`pnpm dev` and Localify keep their existing local Node behavior. Sharp remains
+available for local Node development and raster tests; it is excluded from the
+Worker bundle. `pnpm build:worker` builds `.cloudflare/worker`, preserving `.output`.
+`pnpm build:cloudflare` aliases this command. No Linux native artifact is needed.
 
-## Local builds and first deployment
-
-Keep using `pnpm dev` or the existing Localify command for development.
-
-Cloudflare runs Linux x64. On macOS, build through Docker so sharp and libSQL
-have the correct native binaries:
+Before the first deployment, create and populate the video bucket once:
 
 ```sh
-pnpm install --frozen-lockfile
+pnpm exec wrangler r2 bucket create better-gradient-public-videos
+pnpm exec wrangler r2 object put better-gradient-public-videos/step-2-position.mp4 --file public/video/step-2-position.mp4 --content-type video/mp4 --remote
+```
+
+```sh
 pnpm check:cloudflare
 pnpm test
-pnpm build:cloudflare
-pnpm exec wrangler login
+pnpm build:worker
+pnpm test:worker
+pnpm exec wrangler deploy --dry-run
 pnpm run deploy
 ```
 
-Docker must be running. `Dockerfile.build` builds Linux artifacts into `.output`;
-`Dockerfile` packages those artifacts for deployment. The local build passes only
-listed public Vite settings through a temporary build secret. `.env` and server
-credentials are excluded from both Docker contexts. On a Linux x64 CI runner,
-`pnpm build:server` produces the same layout directly. The deploy script rejects a
-build missing the Linux x64 sharp binary.
+The `v2-browser-run` migration creates `UsageBudget` and deletes the obsolete
+`BetterGradientApp` class. It does not touch Turso data. After deploying, inspect
+`wrangler containers list`; delete any leftover Better Gradient application using
+its exact application ID, then confirm that no Container instance is running.
+Do not delete another project's Container or R2 bucket.
 
-`pnpm test:smoke` executes the production Node build with a temporary SQLite
-database, a local CMS fixture, and blocked external analytics/email requests.
-On macOS, run it inside the built Linux image:
+The GitHub workflow deploys only pushes to `main`, using locked dependencies,
+Worker types, tests, the Worker build and runtime smoke checks. Deployments run
+sequentially. There are no preview deployments or database migrations. The token
+needs existing Worker/custom-domain permissions, Browser Run and R2 access; the
+one-time removal of the old Container also needs Containers Edit.
 
-```sh
-docker build --platform linux/amd64 -t better-gradient-check .
-docker run --rm --platform linux/amd64 \
-  --mount type=bind,src="$PWD/scripts",dst=/app/scripts,readonly \
-  better-gradient-check node scripts/smoke.mjs
-```
+## Runtime configuration
 
-The smoke test covers SSR, database reads, blog responses, SEO files, static
-files, API SVG/CSS/PNG/WebP output, valid and invalid API keys, quotas, CORS and
-delivery of the large video. Worker tests cover forwarding headers and video
-ranges. Email delivery and a full editor interaction still need separate live
-verification; the fixture checks do not prove those external services work.
+Preserve the existing Worker secrets: `TURSO_DATABASE_URL`, `TURSO_AUTH_TOKEN`,
+`MARBLE_API_URL`, `MARBLE_WORKSPACE_KEY`, `RESEND_API_KEY` and `RESEND_FROM_EMAIL`.
+Optional PostHog settings retain their existing meanings. No infrastructure token
+or OAuth credential is copied into the Worker. Browser Run uses its native binding.
 
-## Domain cutover and rollback
+Public `VITE_*` settings are compiled into client JavaScript. Rebuild when they
+change. Ordinary deployment preserves encrypted secrets. Use `wrangler secret put`
+for changes; do not commit credentials.
 
-First deploy to the `workers.dev` URL printed by Wrangler. Container provisioning
-can continue after the command finishes. Verify the homepage, editor, gallery,
-blog, API formats and a video range request on that URL before switching DNS.
+## Verification and recovery
 
-`wrangler.jsonc` declares `better-gradient.com` as a Worker custom domain. Check whether
-`www.better-gradient.com` is in use and preserve its redirect. Save the existing
-Vercel DNS records before replacing any record. Keep the Vercel deployment and
-its environment settings until the Cloudflare domain has been verified.
+`pnpm test` covers native/SVG generation, request forwarding, video ranges,
+persistent allowances, concurrent renders, measured settlements and failures.
+`pnpm test:worker` runs actual workerd with isolated database/CMS/R2 fixtures and a
+mock Browser Run binding. It checks routes, auth/CORS, raster routing and cache
+behavior. This is not a real Chromium rendering proof.
 
-`vercel.json` disables automatic Vercel builds for commits containing that file,
-using [Vercel's Git configuration](https://vercel.com/docs/project-configuration/git-configuration).
-The existing live deployment remains available. After cutover, disconnect the
-Vercel Git integration as well if older branches without this file can still
-receive pushes.
+The October 6 remote binding probe rendered PNG/WebP 1920×1080 and PNG 6000×6000
+with the current SVG generator. Its metadata confirms alpha and dimensions; it
+is not pixel-for-pixel parity proof with sharp. Production QA must independently
+check API PNG/WebP, repeated-cache behavior, auth, editor downloads, video ranges,
+site pages and absence of Containers. Full application TypeScript checks have
+pre-existing errors; the Worker check remains required and clean.
 
-For an application rollback, redeploy the previous known-good source commit
-with its Container image. A Worker version rollback alone does not establish
-that the Container image was rolled back. For a hosting rollback, restore the
-saved Vercel DNS records and remove the Worker custom domain or route that
-intercepts that hostname. The unchanged Turso database keeps both deployments
-on the same data.
-
-## Verification on September 8, 2026
-
-The Worker and Container were deployed and one active instance was confirmed.
-The `workers.dev` hostname returned the homepage, editor, gallery, blog,
-developers page, robots file and sitemap. SVG, CSS, PNG and WebP API responses
-were checked remotely; PNG and WebP retained transparency. Video range requests
-at the start and at byte 100,000 returned HTTP 206 with the requested 1,024 bytes.
-The editor rendered in the browser and its square size preset responded.
-
-Twenty tests and the isolated Linux production smoke test passed. Worker types
-passed. The full application typecheck still reports the same 27 pre-existing
-errors as before this migration.
-
-The deployment token is configured. The first GitHub Actions run for commit
-`ceea489` passed all checks and deployed the Worker and Container in under two
-minutes. The apex custom domain is declared in Wrangler for the next deployment.
-Before cutover, authoritative DNS returned `216.198.79.1` with a 300-second TTL;
-`www.better-gradient.com` did not exist. Confirmation email delivery was not exercised.
+Retain the current budget name and ledger when fixing or redeploying. A previous
+Container-era Worker version cannot be safely rolled back after deleting its
+Durable Object class and Container application. Recover by deploying a corrected
+Worker with the Browser Run architecture. Reintroducing Containers needs an
+explicit migration and will bring back resource charges.

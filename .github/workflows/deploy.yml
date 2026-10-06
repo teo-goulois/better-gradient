@@ -37,8 +37,8 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm check:cloudflare
       - run: pnpm test
-      - run: pnpm build:server
-      - run: pnpm test:smoke
+      - run: pnpm build:worker
+      - run: pnpm test:worker
       - run: pnpm run deploy
         env:
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}

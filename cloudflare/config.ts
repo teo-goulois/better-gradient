@@ -1,24 +1,3 @@
-const runtimeKeys = [
-	"TURSO_DATABASE_URL",
-	"TURSO_AUTH_TOKEN",
-	"MARBLE_API_URL",
-	"MARBLE_WORKSPACE_KEY",
-	"RESEND_API_KEY",
-	"RESEND_FROM_EMAIL",
-	"VITE_SITE_URL",
-	"POSTHOG_KEY",
-	"POSTHOG_HOST",
-	"POSTHOG_ENABLED",
-	"POSTHOG_DISABLED",
-	"POSTHOG_DEBUG",
-] as const;
-
-export function containerEnv(env: Partial<Record<(typeof runtimeKeys)[number], string>>) {
-	return Object.fromEntries(
-		runtimeKeys.flatMap((key) => env[key] === undefined ? [] : [[key, env[key]!]]),
-	);
-}
-
 export function forwardRequest(request: Request): Request {
 	const forwarded = new Request(request);
 	const url = new URL(request.url);

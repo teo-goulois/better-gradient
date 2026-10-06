@@ -1,6 +1,8 @@
 import { createEnv } from "@t3-oss/env-core";
 import { z } from "zod";
-import "dotenv/config";
+if (process.env.BETTER_GRADIENT_RUNTIME !== "worker") {
+	await import("dotenv/config");
+}
 
 export const envServer = createEnv({
 	server: {

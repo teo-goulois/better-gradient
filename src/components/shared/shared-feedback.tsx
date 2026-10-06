@@ -1,5 +1,6 @@
 "use client";
 
+import { CONTACT_FORM_ID } from "@/lib/config/config.contact";
 import { ButtonPrimitive } from "../ui/button";
 
 export const SharedFeedback = () => {
@@ -7,7 +8,7 @@ export const SharedFeedback = () => {
     <div className="absolute bottom-0 z-10 left-0">
       <ButtonPrimitive
         className="font-semibold cursor-pointer hover:underline"
-        data-tally-open="3NapOQ"
+        data-tally-open={CONTACT_FORM_ID}
         data-tally-width="500"
         data-tally-align-left="1"
         data-tally-emoji-text="👋"

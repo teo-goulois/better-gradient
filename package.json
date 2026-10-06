@@ -17,10 +17,12 @@
     "db:studio": "drizzle-kit studio",
     "dev-localify": "echo Localify URL: https://better-gradient.localify && LOCALIFY_DEV=1 vite dev --host 127.0.0.1 --port 59639 --strictPort --force",
     "build:server": "START_TARGET=node-server vite build",
-    "build:cloudflare": "node scripts/build-cloudflare.mjs",
+    "build:worker": "BETTER_GRADIENT_RUNTIME=worker START_TARGET=cloudflare-module vite build",
+    "build:cloudflare": "pnpm build:worker",
     "check:cloudflare": "tsc -p cloudflare/tsconfig.json",
     "deploy": "node scripts/validate-cloudflare-build.mjs && wrangler deploy",
-    "test:smoke": "node scripts/smoke.mjs"
+    "test:smoke": "node scripts/smoke.mjs",
+    "test:worker": "node scripts/smoke-worker.mjs"
   },
   "dependencies": {
     "@base-ui-components/react": "1.0.0-beta.3",
@@ -63,7 +65,6 @@
   },
   "devDependencies": {
     "@biomejs/biome": "1.9.4",
-    "@cloudflare/containers": "0.3.7",
     "@cloudflare/workers-types": "5.20260906.1",
     "@tailwindcss/typography": "^0.5.19",
     "@testing-library/dom": "^10.4.0",
