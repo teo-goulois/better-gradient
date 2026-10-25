@@ -183,6 +183,7 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
 				async: true,
 				defer: true,
 				"data-website-id": umamiConfig.websiteId,
+				"data-domains": umamiConfig.domains,
 			},
 		],
 	}),
